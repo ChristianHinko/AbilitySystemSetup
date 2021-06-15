@@ -64,6 +64,9 @@ void AAbilitySystemSetupPawn::OnRep_PlayerState()
 	{
 		if (IsPlayerControlled())
 		{
+			AbilitySystemPlayerState = GetPlayerState<AAbilitySystemPlayerState>();
+			PlayerAbilitySystemComponent = AbilitySystemPlayerState->GetAbilitySystemComponent();
+
 			AbilitySystemSetup->SetupWithAbilitySystemPlayerControlled(AbilitySystemPlayerState);
 		}
 	}

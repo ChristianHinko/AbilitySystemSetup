@@ -73,11 +73,11 @@ private:
 	 */
 	UPROPERTY(/*Replicated*/)	// Replicated can be helpful for debugging issues
 		UASSAbilitySystemComponent* PlayerAbilitySystemComponent;
-	/**
-	 * This is used if an AIController is possessing. However, it is also used as a placeholder ASC for before the Player possesses this Pawn (so we can give Abilities and stuff).
-	 * These abilities will be transfered from this ASC to the Player's (this allows us to give Abilities as soon as possible). It is also used for creating Attribute Sets early on.
-	 */
-	UPROPERTY()
-		UASSAbilitySystemComponent* AIAbilitySystemComponent;
+	///**
+	// * This is used if an AIController is possessing. However, it is also used as a placeholder ASC for before the Player possesses this Pawn (so we can give Abilities and stuff).
+	// * These abilities will be transfered from this ASC to the Player's (this allows us to give Abilities as soon as possible). It is also used for creating Attribute Sets early on.
+	// */
+	//UPROPERTY()
+	//	UASSAbilitySystemComponent* AIAbilitySystemComponent;
 
 };
