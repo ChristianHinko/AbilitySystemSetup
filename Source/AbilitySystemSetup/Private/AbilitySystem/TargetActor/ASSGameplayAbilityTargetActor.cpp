@@ -48,12 +48,15 @@ void AASSGameplayAbilityTargetActor::PostInitializeComponents()
 void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
+	SourceActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
 
 	// Ensure we are re-enabled in case we were re-used
 	SetActorTickEnabled(true);
 
 
-
+	// TODO: This only updates on StartTargeting(). If you had a non-"EGameplayTargetingConfirmation::Instant" confirmation, this would result in the
+	// start location of where you began targeting. Add more configuration for this (maybe one that updates in StartTargeting(), one that updates on Tick(), and one
+	// that updates in ConfirmTargetingAndContinue())
 	if (bUseAimPointAsStartLocation)
 	{
 		StartLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
@@ -64,6 +67,7 @@ void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 
 		StartLocation.LiteralTransform.SetLocation(AimStart);
 	}
+
 }
 void AASSGameplayAbilityTargetActor::ConfirmTargetingAndContinue()
 {
