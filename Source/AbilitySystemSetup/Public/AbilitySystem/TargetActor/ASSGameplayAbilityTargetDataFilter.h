@@ -16,52 +16,31 @@
  * Base actor target filter.
  * Has ability to only consider Actors that implement the IAbilitySystemInterface.
  * 
- * Note: implementing one of these is actually really confusing to think about sometimes especially because of the bReverseFilter.
+ * Note: implementing one of these is actually really confusing to think about sometimes especially because of the bReverseFilter (ACTUALLY just ignore bReverseFilter, just let that be a thing that they do in the Super).
  * If you are going to make your own FilterPassesForActor(), the strat is to call the Super last and only have your custom filtering return
- * false (don't return true before calling the Super because then you lose the Super's chance to return false). And before you return false, make
- * sure bReverseFilter is false before doing so.
+ * false (don't return true before calling the Super because then you lose the Super's chance to return false).
+ * 
+ * When overriding FilterPassesForActor(), always call the Super at the end and only return false before doing so.
+ * Override ASSFilterPassesForActor() instead because FASSGameplayTargetDataFilter marks FilterPassesForActor() as final. The reason for this is 
+ * we always need this implementation to run before any child implementations.
+ * 
+ * Note: Yeah just ignore bReverseFilter it just ruins things. We tried using it and it makes things really annoying.
+ * If you really want something like this idk why they don't just "!" the return value.
  */
 USTRUCT(BlueprintType)
 struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTargetDataFilter
 {
 	GENERATED_BODY()
 
-	FASSGameplayTargetDataFilter()
-	{
-		bOnlyAcceptAbilitySystemInterfaces = true;
-	}
-	virtual ~FASSGameplayTargetDataFilter()
-	{
-	}
+	FASSGameplayTargetDataFilter();
 
 
-	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override
-	{
-		if (bOnlyAcceptAbilitySystemInterfaces)
-		{
-			//if (ActorToBeFiltered->Implements<UAbilitySystemInterface>() == false)
-			//{
-			//	return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
-			//}
-
-
-			const IAbilitySystemInterface* AbilitySystem = Cast<IAbilitySystemInterface>(ActorToBeFiltered);
-			if (!AbilitySystem)
-			{
-				return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
-			}
-
-			if (IsValid(AbilitySystem->GetAbilitySystemComponent()) == false)
-			{
-				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s(): %s's GetAbilitySystemComponent() returned NULL. Returned false - we shouldn't let null Ability System Components pass the filter"), *FString(__FUNCTION__), *(ActorToBeFiltered->GetName()));
-				return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
-			}
-		}
-
-
-		return Super::FilterPassesForActor(ActorToBeFiltered);
-	}
-
+	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override final;
+	/**
+	 * Override ASSFilterPassesForActor() instead because FASSGameplayTargetDataFilter marks FilterPassesForActor() as final. The reason for this is
+	 * we always need this implementation to run before any child implementations.
+	 */
+	virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const;
 
 	/**
 	 * Exclusively accept Actors that implement the IAbilitySystemInterface.
@@ -88,55 +67,16 @@ struct ABILITYSYSTEMSETUP_API FGTDF_MultiFilter : public FASSGameplayTargetDataF
 {
 	GENERATED_BODY()
 
-	FGTDF_MultiFilter()
-	{
-
-	}
-	virtual ~FGTDF_MultiFilter()
-	{
-	}
+	FGTDF_MultiFilter();
 
 
-	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override
-	{
-		if (RequiredActorClasses.Num() > 0)
-		{
-			// Check if this Actor is one of the RequiredActorClasses
-			bool bWasRequiredActor = false;
-			for (TSubclassOf<AActor> RequiredActorTSub : RequiredActorClasses)
-			{
-				if (RequiredActorTSub && ActorToBeFiltered->IsA(RequiredActorTSub))
-				{
-					bWasRequiredActor = true;
-				}
-			}
-
-			// If this Actor was one of the RequiredActorClasses
-			if (bWasRequiredActor)
-			{
-				if (bReverseFilter == true)
-				{
-					// Do the opposite and don't let them pass
-					return false;
-				}
-			}
-			else
-			{
-				if (bReverseFilter == false) // only return false if we are a normal filter
-				{
-					return false;
-				}
-			}
-		}
-
-
-
-		// If our custom multi logic didn't do anything, just run the Super
-		return Super::FilterPassesForActor(ActorToBeFiltered);
-	}
+	virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const override;
 
 	/** Subclass actors must be one of these to pass the filter. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		TArray<TSubclassOf<AActor>> RequiredActorClasses;
+	/** Subclass actors must NOT be one of these to pass the filter. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
+		TArray<TSubclassOf<AActor>> FilteredActorClasses;
 
 };
