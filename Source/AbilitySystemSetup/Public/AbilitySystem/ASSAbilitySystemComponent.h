@@ -15,7 +15,9 @@ class UASSGameplayAbility;
 #if 0
 /**
  *														--------------Example InputIDEnum--------------
- *	Enum that makes GAS aware of which abilities are binded to which input in your project settings. Recommended spot to declare would be in child ASC.
+ *	Enum that makes GAS aware of which abilities are binded to which input in your project settings. Recommended spot to declare would be in your game's custom PCH (Precompiled Header). This
+ *	is so that you don't always have to include the file your input enum is in when writing an ability (since our workflow enforces setting an input enum value in constructor of each ability).
+ *	
  *	"Unset" at 0 and "NoInput" at 1 is MANDITORY in your enum so the ability can enforce a good practice. We have a system so that if an ability's inputId is unset, it will throw an exception,
  *	forcing you to give each ability an input id. This is good practice since using ability input ids integrates stuff more into GAS.
  *
