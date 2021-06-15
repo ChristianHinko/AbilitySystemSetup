@@ -12,7 +12,7 @@ class UASSAbilitySystemComponent;
 
 
 
-DECLARE_MULTICAST_DELEGATE(FAbilityActorInfoState)
+DECLARE_MULTICAST_DELEGATE(FActorInfoStatus)
 
 
 /**
@@ -31,19 +31,30 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayAbilityActorInfo : public FGameplayAbi
 
     }
 
+    /** Fired when this Actor Info gets initted */
+    FActorInfoStatus& GetOnInittedDelegate() { return OnInitted; }
+
+
+
     // Our ASC. Should NEVER be null.
     UPROPERTY(BlueprintReadOnly, Category = "ASSActorInfo")
         TWeakObjectPtr<UASSAbilitySystemComponent> ASSAbilitySystemComponent;
 
 
+    /** Marked as final. Use ASSInitFromActor() instead. */
+    virtual void InitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent) override final;
     /**
-     * Broadcast this at the end of your InitFromActor().
-     * The reason this base class can't is because it would be done in the Super call and wouldn't be done after the subclass initialization.
+     * Override this instead of InitFromActor(). The reason InitFromActor() is marked as final is that this base class needs to know when we are
+     * fully initted so that we can broadcast OnInitted. InitFromActor() just calls ASSInitFromActor() and OnInitted after it.
      */
-    FAbilityActorInfoState OnInited;
+    virtual void ASSInitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent);
 
-    virtual void InitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent) override;
     virtual void SetAvatarActor(AActor* AvatarActor) override;
     virtual void ClearActorInfo() override;
+
+
+private:
+    /** Fired at the end of InitFromActor() */
+    FActorInfoStatus OnInitted;
 
 };
