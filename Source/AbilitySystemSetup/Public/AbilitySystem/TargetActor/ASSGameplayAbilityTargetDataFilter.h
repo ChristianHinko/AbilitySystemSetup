@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 #include "ASSGameplayAbilityTargetDataFilter.generated.h"
 
@@ -37,8 +39,21 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 	{
 		if (bOnlyAcceptAbilitySystemInterfaces)
 		{
-			if (ActorToBeFiltered->Implements<UAbilitySystemInterface>() == false)
+			//if (ActorToBeFiltered->Implements<UAbilitySystemInterface>() == false)
+			//{
+			//	return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
+			//}
+
+
+			const IAbilitySystemInterface* AbilitySystem = Cast<IAbilitySystemInterface>(ActorToBeFiltered);
+			if (!AbilitySystem)
 			{
+				return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
+			}
+
+			if (IsValid(AbilitySystem->GetAbilitySystemComponent()) == false)
+			{
+				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s(): %s's GetAbilitySystemComponent() returned NULL. Returned false - we shouldn't let null Ability System Components pass the filter"), *FString(__FUNCTION__), *(ActorToBeFiltered->GetName()));
 				return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
 			}
 		}
@@ -84,9 +99,28 @@ struct ABILITYSYSTEMSETUP_API FGTDF_MultiFilter : public FASSGameplayTargetDataF
 
 	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override
 	{
-		for (TSubclassOf<AActor> RequiredActorTSub : RequiredActorClasses)
+		if (RequiredActorClasses.Num() > 0)
 		{
-			if (RequiredActorTSub && !ActorToBeFiltered->IsA(RequiredActorTSub))
+			// Check if this Actor is one of the RequiredActorClasses
+			bool bWasRequiredActor = false;
+			for (TSubclassOf<AActor> RequiredActorTSub : RequiredActorClasses)
+			{
+				if (RequiredActorTSub && ActorToBeFiltered->IsA(RequiredActorTSub))
+				{
+					bWasRequiredActor = true;
+				}
+			}
+
+			// If this Actor was one of the RequiredActorClasses
+			if (bWasRequiredActor)
+			{
+				if (bReverseFilter == true)
+				{
+					// Do the opposite and don't let them pass
+					return false;
+				}
+			}
+			else
 			{
 				if (bReverseFilter == false) // only return false if we are a normal filter
 				{
@@ -94,6 +128,8 @@ struct ABILITYSYSTEMSETUP_API FGTDF_MultiFilter : public FASSGameplayTargetDataF
 				}
 			}
 		}
+
+
 
 		// If our custom multi logic didn't do anything, just run the Super
 		return Super::FilterPassesForActor(ActorToBeFiltered);
