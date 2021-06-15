@@ -18,6 +18,7 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 
 	ReticleClass = AASSGameplayAbilityWorldReticle::StaticClass();
 
+	//MultiFilter = Filter;
 	MultiFilter.bOnlyAcceptAbilitySystemInterfaces = true;
 	bAllowMultipleHitsPerActor = false;
 
@@ -32,7 +33,7 @@ void AASSGameplayAbilityTargetActor::PreInitializeComponents()
 	Super::PreInitializeComponents();
 
 
-	Filter = UAbilitySystemBlueprintLibrary::MakeFilterHandle(MultiFilter, SourceActor);
+	Filter = UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(MultiFilter, SourceActor);
 }
 void AASSGameplayAbilityTargetActor::PostInitializeComponents()
 {
