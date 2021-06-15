@@ -93,6 +93,8 @@ protected:
 
 	/** This is when the Wait Target Data Task starts using us */
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
+	/** Where we perform our logic for collecting Target Data */
+	virtual void ConfirmTargetingAndContinue() override;
 
 	/**
 	 * Calculates AimDir which is used in DirWithPlayerController().

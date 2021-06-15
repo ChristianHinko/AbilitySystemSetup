@@ -29,7 +29,8 @@ AGATA_Trace::AGATA_Trace(const FObjectInitializer& ObjectInitializer)
 
 void AGATA_Trace::ConfirmTargetingAndContinue()
 {
-	check(ShouldProduceTargetData());
+	Super::ConfirmTargetingAndContinue();
+
 	if (SourceActor)
 	{
 		// The Target Data that we will broadcast - kind of like our return data

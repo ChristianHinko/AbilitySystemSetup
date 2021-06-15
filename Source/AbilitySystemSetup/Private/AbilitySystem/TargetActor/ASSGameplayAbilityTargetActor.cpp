@@ -65,6 +65,14 @@ void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 		StartLocation.LiteralTransform.SetLocation(AimStart);
 	}
 }
+void AASSGameplayAbilityTargetActor::ConfirmTargetingAndContinue()
+{
+	check(ShouldProduceTargetData());
+	if (!IsConfirmTargetingAllowed())
+	{
+		return;
+	}
+}
 void AASSGameplayAbilityTargetActor::StopTargeting()
 {
 	SetActorTickEnabled(false); // disable tick while we aren't being used
