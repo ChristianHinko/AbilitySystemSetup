@@ -43,7 +43,7 @@ public:
 
 };
 
-/** stupid */
+/** stupid */ // Also this doesn't work on InstancedPerExecution abilities
 #define TryCallOnAvatarSetOnPrimaryInstance																						\
 if (HasAnyFlags(RF_ClassDefaultObject) && InstancingPolicy != EGameplayAbilityInstancingPolicy::NonInstanced)					\
 {																																\
