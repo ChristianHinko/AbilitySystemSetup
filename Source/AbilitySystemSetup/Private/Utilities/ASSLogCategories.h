@@ -13,9 +13,6 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGameplayAbilitySetup, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogGameplayAbilityTargetActorSetup, Log, All)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetup, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemCharacter, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemPawn, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemActor, Log, All)
 
 
 
