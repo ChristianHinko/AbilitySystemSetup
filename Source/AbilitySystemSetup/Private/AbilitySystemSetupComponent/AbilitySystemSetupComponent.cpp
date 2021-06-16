@@ -4,10 +4,11 @@
 #include "AbilitySystemSetupComponent/AbilitySystemSetupComponent.h"
 
 #include "Net/UnrealNetwork.h"
+#include "AbilitySystemInterface.h"
 #include "AbilitySystem/ASSGameplayAbility.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerState.h"
 #include "Components/InputComponent.h"
-#include "Player/AbilitySystemPlayerState.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "DS_AbilitySystemSetup.h"
@@ -84,7 +85,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystem->GetAbilitySystemComponent());
 	if (!PlayerAbilitySystemComponent)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GrantStartingAbilities). PlayerAbilitySystemComponent was NULL"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GrantStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), *FString(__FUNCTION__));
 		return;
 	}
 

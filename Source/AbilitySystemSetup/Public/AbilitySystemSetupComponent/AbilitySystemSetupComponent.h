@@ -108,7 +108,7 @@ public:
 
 
 	/** Hooks the Avatar Actor to the ASC when it's a Player Controller */
-	void SetupWithAbilitySystemPlayerControlled(APlayerState* AbilitySystemPlayerState);
+	void SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState);
 	/** Hooks the Avatar Actor to the ASC when it's an AI Controller */
 	void SetupWithAbilitySystemAIControlled();
 
