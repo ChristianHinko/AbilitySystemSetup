@@ -13,10 +13,9 @@ public class AbilitySystemSetup : ModuleRules
 			new string[] {
 				"CoreUObject",
 				"Engine",
-				"InputCore",
 				"GameplayAbilities",
-				"GameplayTags",
 				"GameplayTasks",
+				"GameplayTags",
 				"NetCore", // for push model
 				"HelperLibraries",
 				"DeveloperSettings"
