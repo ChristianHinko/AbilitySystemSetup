@@ -10,7 +10,7 @@
 
 
 /**
- * Base FGameplayEffectContext struct
+ * Base FGameplayEffectContext struct. Nothing different from parent yet
  */
 USTRUCT()
 struct ABILITYSYSTEMSETUP_API FASSGameplayEffectContext : public FGameplayEffectContext
