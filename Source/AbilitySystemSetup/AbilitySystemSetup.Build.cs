@@ -8,16 +8,17 @@ public class AbilitySystemSetup : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core" });
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
-				"InputCore",
+				"CoreUObject",
+				"Engine",
 				"GameplayAbilities",
-				"HelperLibraries",
-				"GameplayTags",
 				"GameplayTasks",
-				"DeveloperSettings",
-				"NetCore" // for push model
+				"GameplayTags",
+				"NetCore", // for push model
+				"HelperLibraries",
+				"DeveloperSettings"
 			}
 		);
 	}
