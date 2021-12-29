@@ -136,7 +136,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 
 		if (GetOwnerRole() == ROLE_Authority) // Sync abilities between ASCs
 		{
-			const bool wasPlayer = (OwningPawn->PreviousController && OwningPawn->PreviousController->IsPlayerController());
+			// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+			const bool wasPlayer = (/*OwningPawn->*/PreviousController && /*OwningPawn->*/PreviousController->IsPlayerController());
 			const bool isPlayer = OwningPawn->GetController()->IsPlayerController();
 
 			// If we went from AI -> Player
@@ -213,7 +214,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 		// Sync abilities between ASCs
 		{
-			const bool wasPlayer = (OwningPawn->PreviousController && OwningPawn->PreviousController->IsPlayerController());
+			// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+			const bool wasPlayer = (/*OwningPawn->*/PreviousController && /*OwningPawn->*/PreviousController->IsPlayerController());
 			const bool isPlayer = OwningPawn->GetController()->IsPlayerController();
 
 			// If we went from Player -> AI
@@ -446,7 +448,10 @@ void UAbilitySystemSetupComponent::UnPossessed()
 
 	if (OwningPawn->IsPlayerControlled()/* || OwningPawn->GetPlayerState()->IsABot()*/) // should we be checking if we have a Player State bot whenever we want to use the Player ASC
 	{
-		PreviousPlayerASC = PlayerAbilitySystemComponent; // make sure we set previous ASC right before unpossess
+		PreviousPlayerASC = PlayerAbilitySystemComponent; // make sure we set previous ASC right before UnPossessed
 	}
+
+	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
 }
 #pragma endregion

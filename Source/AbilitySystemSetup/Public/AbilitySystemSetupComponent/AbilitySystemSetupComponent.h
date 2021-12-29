@@ -94,7 +94,7 @@ protected:
 	/**
 	 * Points to the PlayerState's ASC
 	 */
-	UPROPERTY(/*Replicated*/)	// Replicated can be helpful for debugging issues
+	UPROPERTY(/*Replicated*/)	// replicated can be helpful for debugging issues
 		UASSAbilitySystemComponent* PlayerAbilitySystemComponent;
 	/**
 	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC for before the Player possesses this character (so we can give abilities and stuff).
@@ -122,7 +122,10 @@ public:
 	 */
 	void BindASCInput(UInputComponent* InputComponent);
 
-	/** On OwningPawn becomes UnPossessed. Note: CALL THIS BEFORE Super::UnPossessed() */
+	/**
+	 * On OwningPawn becomes UnPossessed.
+	 * NOTE: CALL THIS BEFORE Super::UnPossessed()
+	 */
 	virtual void UnPossessed();
 
 protected:
@@ -177,7 +180,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveAbilitiesOnUnpossessed : 1;
 	/**
-	   ---CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING---
+	 * --- CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING ---
 	 * Removes all tags relating to this specific character from the PlayerState's ASC
 	 * Remove all tags related to the character, that way when we possess a new character,
 	 * the old tags don't interfere with the new character.
@@ -197,6 +200,10 @@ protected:
 
 private:
 	UASSAbilitySystemComponent* PreviousPlayerASC;
+
+	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+	UPROPERTY()
+		AController* PreviousController;
 
 
 	/** Initialize Attribute values using the DefaultAttributeValuesEffect */
