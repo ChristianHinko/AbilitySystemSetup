@@ -3,8 +3,8 @@
 
 #include "AbilitySystem/ASSAbilitySystemGlobals.h"
 
-#include "AbilitySystem/ASSGameplayAbilityTypes.h"
-#include "AbilitySystem/ASSGameplayEffectTypes.h"
+#include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
+#include "AbilitySystem/Types/ASSGameplayEffectTypes.h"
 
 
 

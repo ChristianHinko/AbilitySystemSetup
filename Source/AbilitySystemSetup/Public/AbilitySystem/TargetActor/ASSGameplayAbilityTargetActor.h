@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "AbilitySystem/ASSGameplayAbilityWorldReticle.h"
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
+#include "AbilitySystem/TargetActor/ASSGameplayAbilityWorldReticle.h"
 
 #include "ASSGameplayAbilityTargetActor.generated.h"
 

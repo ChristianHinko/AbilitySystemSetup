@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/ASSGameplayAbilityTypes.h"
+#include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 
