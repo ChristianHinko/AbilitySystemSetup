@@ -10,7 +10,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Components/InputComponent.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
+#include "Utilities/ASSLogCategories.h"
 #include "DS_AbilitySystemSetup.h"
 #include "AbilitySystemSetupComponent/AbilitySystemSetupInterface.h"
 

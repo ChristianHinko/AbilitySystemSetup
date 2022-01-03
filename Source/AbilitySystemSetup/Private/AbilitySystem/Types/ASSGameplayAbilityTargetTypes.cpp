@@ -3,7 +3,7 @@
 
 #include "AbilitySystem/Types/ASSGameplayAbilityTargetTypes.h"
 
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
+#include "Utilities/ASSLogCategories.h"
 
 
 
