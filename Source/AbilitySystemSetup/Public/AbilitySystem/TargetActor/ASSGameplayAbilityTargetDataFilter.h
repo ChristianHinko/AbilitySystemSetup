@@ -6,7 +6,7 @@
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
-#include "Utilities/ASSLogCategories.h"
+#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 #include "ASSGameplayAbilityTargetDataFilter.generated.h"
 

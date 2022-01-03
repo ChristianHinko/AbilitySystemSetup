@@ -2,7 +2,7 @@
 
 #include "AbilitySystemSetup.h"
 
-#include "Utilities/ASSLogCategories.h"
+#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 
 

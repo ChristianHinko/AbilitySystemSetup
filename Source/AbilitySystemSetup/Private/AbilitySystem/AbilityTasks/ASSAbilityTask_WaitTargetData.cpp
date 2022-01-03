@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
-#include "Utilities/ASSLogCategories.h"
+#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 
 
