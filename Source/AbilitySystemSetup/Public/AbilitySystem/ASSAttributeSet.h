@@ -32,3 +32,21 @@ protected:
 	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
 
 };
+
+/**
+ * Our custom FAttributeSetInitter.
+ * 
+ * This solves a lot of things
+ *		1) Gives up a way to initialize attributes that are dependent on others (can make custom formulas for their initializations)
+ *		2) And we can maybe make a subclass for Curves with infinite scaling as you level up rather than Curve Tables with discrete values (from FAttributeSetInitterDiscreteLevels)
+ * 
+ */
+struct ABILITYSYSTEMSETUP_API FASSAttributeSetInitter : public FAttributeSetInitter
+{
+public:
+	virtual void PreloadAttributeSetData(const TArray<UCurveTable*>& CurveData) override;
+	virtual void InitAttributeSetDefaults(UAbilitySystemComponent* AbilitySystemComponent, FName GroupName, int32 Level, bool bInitialInit) const override;
+	virtual void ApplyAttributeDefault(UAbilitySystemComponent* AbilitySystemComponent, FGameplayAttribute& InAttribute, FName GroupName, int32 Level) const override;
+	virtual TArray<float> GetAttributeSetValues(UClass* AttributeSetClass, FProperty* AttributeProperty, FName GroupName) const override;
+
+};

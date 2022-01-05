@@ -21,3 +21,28 @@ void UASSAttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& Affec
 		AbilitySystemComponent->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
 	}
 }
+
+
+////////////////////////////////////////////////////////////////
+/// FASSAttributeSetInitter
+////////////////////////////////////////////////////////////////
+
+void FASSAttributeSetInitter::PreloadAttributeSetData(const TArray<UCurveTable*>& CurveData)
+{
+
+}
+
+void FASSAttributeSetInitter::InitAttributeSetDefaults(UAbilitySystemComponent* AbilitySystemComponent, FName GroupName, int32 Level, bool bInitialInit) const
+{
+
+}
+
+void FASSAttributeSetInitter::ApplyAttributeDefault(UAbilitySystemComponent* AbilitySystemComponent, FGameplayAttribute& InAttribute, FName GroupName, int32 Level) const
+{
+
+}
+
+TArray<float> FASSAttributeSetInitter::GetAttributeSetValues(UClass* AttributeSetClass, FProperty* AttributeProperty, FName GroupName) const
+{
+	return TArray<float>();
+}
