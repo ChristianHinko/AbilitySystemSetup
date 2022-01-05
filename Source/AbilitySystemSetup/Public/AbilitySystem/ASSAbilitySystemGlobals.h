@@ -24,4 +24,6 @@ public:
 	virtual FGameplayAbilityActorInfo* AllocAbilityActorInfo() const override;
 	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
 
+	virtual void AllocAttributeSetInitter() override;
+
 };

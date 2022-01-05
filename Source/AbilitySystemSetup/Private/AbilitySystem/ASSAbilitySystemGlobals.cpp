@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
 #include "AbilitySystem/Types/ASSGameplayEffectTypes.h"
+#include "AbilitySystem/ASSAttributeSet.h"
 
 
 
@@ -21,4 +22,9 @@ FGameplayAbilityActorInfo* UASSAbilitySystemGlobals::AllocAbilityActorInfo() con
 FGameplayEffectContext* UASSAbilitySystemGlobals::AllocGameplayEffectContext() const
 {
 	return new FASSGameplayEffectContext();
+}
+
+void UASSAbilitySystemGlobals::AllocAttributeSetInitter()
+{
+	GlobalAttributeSetInitter = TSharedPtr<FAttributeSetInitter>(new FASSAttributeSetInitter());
 }
