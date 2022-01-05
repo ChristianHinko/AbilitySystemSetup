@@ -34,9 +34,9 @@ protected:
 };
 
 /**
- * Our custom FAttributeSetInitter.
+ * Our custom FAttributeSetInitter. This is a good FAttributeSetInitter for any game as it seams to be the first thing that comes to our mind when we want a way to init attributes for a game.
  * 
- * This solves a lot of things
+ * Using an FAttributeSetInitter makes initializing attributes super flexible
  *		1) Gives up a way to initialize attributes that are dependent on others (can make custom formulas for their initializations)
  *		2) And we can maybe make a subclass for Curves with infinite scaling as you level up rather than Curve Tables with discrete values (from FAttributeSetInitterDiscreteLevels)
  * 
