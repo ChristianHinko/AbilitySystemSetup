@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 #include "GameplayAbilities/Public/GameplayEffectExtension.h"
+#include "Utilities/ASSNativeGameplayTags.h"
 
 
 
@@ -20,6 +21,20 @@ void UASSAttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& Affec
 
 		AbilitySystemComponent->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
 	}
+}
+
+void UASSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+
+
+	FGameplayTagContainer AssetTags;
+	Data.EffectSpec.GetAllAssetTags(AssetTags);
+	if (AssetTags.HasTag(Tag_InitializationEffect))
+	{
+		OnDefaultStatsEffectApplied();
+	}
+
 }
 
 

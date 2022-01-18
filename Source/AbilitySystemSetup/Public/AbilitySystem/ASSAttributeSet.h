@@ -25,13 +25,22 @@ class ABILITYSYSTEMSETUP_API UASSAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
+	/**
+	 * This event is called whenever a default stats Effect has been applied (a Gameplay Effect with the asset tag "Effect.Initialization").
+	 * Useful for any Attributes that require more complex default value calculations.
+	 * Useful for non-Attribute type properties that exist on the Attribute Set.
+	 */
+	virtual void OnDefaultStatsEffectApplied() { };
 
 
 protected:
 	/** Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes. (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before) */
 	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
 
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
 };
+
 
 /**
  * Our custom FAttributeSetInitter.
