@@ -13,6 +13,7 @@
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "DS_AbilitySystemSetup.h"
 #include "AbilitySystemSetupComponent/AbilitySystemSetupInterface.h"
+#include "AbilitySystemGlobals.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -252,7 +253,12 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 		return;
 	}
 
-	// Can run on Server and Client
+
+	// Init Attribute Set defaults NOTE: we don't use the FAttributeSetInitter system but we are calling this here if we ever wanted to
+	UAbilitySystemGlobals::Get().GetAttributeSetInitter()->InitAttributeSetDefaults(ASC, FName(TEXT("Default"))/*GetCharacterName()*/, 1/*GetLevel()*/, true);
+
+
+	// Apply default Attribute values effects
 	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
 	EffectContextHandle.AddInstigator(GetOwner(), GetOwner());
 	EffectContextHandle.AddSourceObject(GetOwner());
