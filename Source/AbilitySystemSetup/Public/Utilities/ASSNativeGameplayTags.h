@@ -6,5 +6,6 @@
 #include "NativeGameplayTags.h"
 
 
+
 // Effect tags
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_InitializationEffect)
+ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_InitializationEffect)
