@@ -24,7 +24,7 @@ FGameplayEffectContext* UASSAbilitySystemGlobals::AllocGameplayEffectContext() c
 	return new FASSGameplayEffectContext();
 }
 
-void UASSAbilitySystemGlobals::AllocAttributeSetInitter()
-{
-	GlobalAttributeSetInitter = TSharedPtr<FAttributeSetInitter>(new FASSAttributeSetInitter());
-}
+//void UASSAbilitySystemGlobals::AllocAttributeSetInitter()
+//{
+//	GlobalAttributeSetInitter = TSharedPtr<FAttributeSetInitter>(new FASSAttributeSetInitter());
+//}
