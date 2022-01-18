@@ -3,7 +3,7 @@
 
 #include "AbilitySystem/ASSAttributeSet.h"
 
-#include "AbilitySystem/ASSAbilitySystemComponent.h"
+#include "AbilitySystemComponent.h"
 #include "GameplayAbilities/Public/GameplayEffectExtension.h"
 #include "Utilities/ASSNativeGameplayTags.h"
 
