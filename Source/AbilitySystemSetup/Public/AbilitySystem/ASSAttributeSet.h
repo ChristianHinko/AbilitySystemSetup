@@ -48,8 +48,11 @@ protected:
 /**
  * Our custom FAttributeSetInitter.
  * 
- * NOT YET IMPLEMENTED!!!!!!
- * We can maybe use this for Curves with infinite scaling as you level up rather than Curve Tables with discrete values (from FAttributeSetInitterDiscreteLevels)
+ * Not implemented. Optional struct some games may find useful.
+ * 
+ * Possible reasons to use an FAttributeSetInitter
+ *  - Curve tables defining descrete attribute values for each ASC level (this would use FAttributeSetInitterDiscreteLevels)
+ *	- We can maybe use this for Curves with infinite scaling as you level up
  */
 struct ABILITYSYSTEMSETUP_API FASSAttributeSetInitter : public FAttributeSetInitter
 {
