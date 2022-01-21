@@ -4,5 +4,5 @@
 
 
 
-// Effect tags
-UE_DEFINE_GAMEPLAY_TAG(Tag_InitializationEffect,				TEXT("Effect.Initialization"))
+// Ex declaration
+//UE_DEFINE_GAMEPLAY_TAG(Tag_Ex,				TEXT("This.Is.An.Example"))
