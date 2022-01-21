@@ -33,16 +33,20 @@ protected:
 
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
-
-	/**
-	 * This event is called whenever a default stats Effect has been applied (a Gameplay Effect with the asset tag "Effect.Initialization").
-	 * Useful for non-Attribute typed properties that exist on the Attribute Set.
-	 * Could also be useful for any Attributes that require more complex default value calculations BUT you should use an Execution Calculation for that.
-	 * NOTE: Server only event!
-	 */
-	virtual void OnDefaultStatsEffectApplied() { };
-
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
