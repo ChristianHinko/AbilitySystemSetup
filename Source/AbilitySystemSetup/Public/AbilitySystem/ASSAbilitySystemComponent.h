@@ -90,8 +90,8 @@ public:
 
 	virtual bool ShouldDoServerAbilityRPCBatch() const override { return true; }
 
-	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UASSGameplayAbility> ASSNewAbility, UObject* InSourceObject, int32 level = 1);
-	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UGameplayAbility> NewAbility, UObject* InSourceObject, int32 level = 1);
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+
 	void GrantAbilities(TArray<FGameplayAbilitySpec> Abilities);
 
 	/** Gives abilities that an other given ASC has */

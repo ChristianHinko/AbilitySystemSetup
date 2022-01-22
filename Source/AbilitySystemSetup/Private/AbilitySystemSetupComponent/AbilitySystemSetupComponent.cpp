@@ -302,8 +302,8 @@ bool UAbilitySystemSetupComponent::GrantStartingAbilities()
 	{
 		return false;
 	}
-	UASSAbilitySystemComponent* CastedASC = Cast<UASSAbilitySystemComponent>(OwningAbilitySystemInterface->GetAbilitySystemComponent());
-	if (!CastedASC)
+	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant startup abilities on %s but GetAbilitySystemComponent() returned NULL"), *FString(__FUNCTION__), *GetName());
 		return false;
@@ -314,7 +314,8 @@ bool UAbilitySystemSetupComponent::GrantStartingAbilities()
 	// ---------Grant non handle starting abilities---------
 	for (int32 i = 0; i < NonHandleStartingAbilities.Num(); ++i)
 	{
-		CastedASC->GrantAbility(NonHandleStartingAbilities[i], GetOwner()/*, GetLevel()*/); // GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
+		FGameplayAbilitySpec Spec(NonHandleStartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner());// GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
+		ASC->GiveAbility(Spec);
 	}
 
 	return true;

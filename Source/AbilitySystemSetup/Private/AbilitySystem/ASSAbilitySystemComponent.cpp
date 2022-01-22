@@ -114,47 +114,28 @@ void UASSAbilitySystemComponent::InitializeComponent()
 #endif
 }
 
-/*
-	Wrapper version of GiveAbility. Always call this instead for our games. InSourceObject is the actor that owns the granted ability. Make sure InSourceObject isset to a meaningful value (shouldn't pass null for it).
-	By default this method will look at the ability's AbilityInputID variable and use that as the ability's inputID. But if you specify one it will override it.
-*/
-FGameplayAbilitySpecHandle UASSAbilitySystemComponent::GrantAbility(TSubclassOf<UASSGameplayAbility> ASSNewAbility, UObject* InSourceObject, int32 level)
+void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {
-	if (IsOwnerActorAuthoritative() == false)
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	if (!IsValid(AbilitySpec.SourceObject))
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() called without Authority. Did nothing and returned empty spec handle"), *FString(__FUNCTION__));
-		return FGameplayAbilitySpecHandle();
+		UE_LOG(LogAbilitySystemComponentSetup, Fatal, TEXT("%s() SourceObject was not valid when ability was given. Some dev must have forgotten to set it when giving the ability"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
+#endif
 
-	if (ASSNewAbility)
+	UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(AbilitySpec.Ability);
+	if (IsValid(ASSAbility))
 	{
-		UGameplayAbility* AbilityToGive = ASSNewAbility.GetDefaultObject();
-		//// if we don't have the ability yet give it, else log an error and let it return an invalid spec handle
-		//if (GetActivatableAbilities().ContainsByPredicate([&AbilityToGive](const FGameplayAbilitySpec& Spec)
-		//	{ return Spec.Ability == AbilityToGive; }) == false)
-		//{
-			FGameplayAbilitySpecHandle AbilitySpecHandle = GiveAbility(FGameplayAbilitySpec(AbilityToGive, level, static_cast<int32>(ASSNewAbility.GetDefaultObject()->AbilityInputID), InSourceObject));
-
-			return AbilitySpecHandle;
-		//}
-		//else
-		//{
-		//	UE_LOG(LogAbilitySystemComponentSetup, Error, TEXT("%s() Tried granting an already-activatable ability. %s was not granted"), *FString(__FUNCTION__), *(AbilityToGive->GetName()));
-		//}
+		AbilitySpec.InputID = static_cast<int32>(ASSAbility->AbilityInputID);
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Error, TEXT("%s() Couldn't grant ability. NewAbility was null"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() no meaningful AbilityInputID for given ability because the UASSGameplayAbility was null"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
-	return FGameplayAbilitySpecHandle();
-}
 
-FGameplayAbilitySpecHandle UASSAbilitySystemComponent::GrantAbility(TSubclassOf<UGameplayAbility> NewAbility, UObject* InSourceObject, int32 level)
-{
-	TSubclassOf<UASSGameplayAbility> ASSNewAbility = TSubclassOf<UASSGameplayAbility>(NewAbility);
-	return GrantAbility(ASSNewAbility, InSourceObject, level);
-}
 
+	Super::OnGiveAbility(AbilitySpec);
+}
 
 void UASSAbilitySystemComponent::GrantAbilities(TArray<FGameplayAbilitySpec> Abilities)
 {
