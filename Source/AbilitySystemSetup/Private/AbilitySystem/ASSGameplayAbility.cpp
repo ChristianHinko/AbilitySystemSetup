@@ -21,7 +21,7 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
 {
 	if (AbilityInputID == 0)
 	{
-		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s()  Ability implementor forgot to set an AbilityInputID in the ability's constructor. Go back and set it so we get ability input events"), *FString(__FUNCTION__));
+		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s()  Ability implementor forgot to set an AbilityInputID in the ability's constructor. Go back and set it so we get ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 
 	TryCallOnAvatarSetOnPrimaryInstance
@@ -56,7 +56,7 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 		if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))	// If we are a client without a valid prediction key
 		{
-			UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability activated but the client has no valid prediction key"), *FString(__FUNCTION__));
+			UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability activated but the client has no valid prediction key"), ANSI_TO_TCHAR(__FUNCTION__));
 		}
 	}
 

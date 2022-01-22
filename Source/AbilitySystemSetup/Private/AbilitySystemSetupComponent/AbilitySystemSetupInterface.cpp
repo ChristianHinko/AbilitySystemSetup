@@ -22,7 +22,7 @@ void IAbilitySystemSetupInterface::CreateAttributeSets()
 	}
 	else
 	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), *FString(__FUNCTION__), *(MyAttributeSet->GetName()));
+		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(MyAttributeSet->GetName()));
 	}
 
 	if (!MyOtherAttributeSet)
@@ -31,7 +31,7 @@ void IAbilitySystemSetupInterface::CreateAttributeSets()
 	}
 	else
 	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), *FString(__FUNCTION__), *(MyOtherAttributeSet->GetName()));
+		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(MyOtherAttributeSet->GetName()));
 	}
 }
 void IAbilitySystemSetupInterface::RegisterAttributeSets()
@@ -45,7 +45,7 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 	}
 	else
 	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyAttributeSet was either NULL or already added to the character's ASC. Character: %s"), *FString(__FUNCTION__), *GetName());
+		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyAttributeSet was either NULL or already added to the character's ASC. Character: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 	}
 
 	if (MyOtherAttributeSet && !GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyOtherAttributeSet))
@@ -54,7 +54,7 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 	}
 	else
 	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyOtherAttributeSet was either NULL or already added to the character's ASC. Character: %s"), *FString(__FUNCTION__), *GetName());
+		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyOtherAttributeSet was either NULL or already added to the character's ASC. Character: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 	}
 }
 

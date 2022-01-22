@@ -18,7 +18,7 @@ void UASSEngineSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (AbilitySystemGlobals.IsAbilitySystemGlobalsInitialized())
 	{
 		// Idk when this would happen but just in case
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s(): AbilitySystemGlobals already Initted for some reason - idk when this would happen"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s(): AbilitySystemGlobals already Initted for some reason - idk when this would happen"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 

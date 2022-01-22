@@ -66,7 +66,7 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 	OwningAbilitySystemSetupInterface = Cast<IAbilitySystemSetupInterface>(GetOwner());
 	if (!OwningAbilitySystemSetupInterface)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() MAKE SURE YOU IMPLEMENT THE IAbilitySystemSetupInterface INTERFACE WHEN USING THIS COMPONENT"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() MAKE SURE YOU IMPLEMENT THE IAbilitySystemSetupInterface INTERFACE WHEN USING THIS COMPONENT"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 }
 
@@ -80,13 +80,13 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	IAbilitySystemInterface* AbilitySystem = Cast<IAbilitySystemInterface>(PlayerState);
 	if (!AbilitySystem)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystem->GetAbilitySystemComponent());
 	if (!PlayerAbilitySystemComponent)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
@@ -179,7 +179,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	}
 	if (!AIAbilitySystemComponent)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). AIAbilitySystemComponent was NULL"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). AIAbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
@@ -249,7 +249,7 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 	}
 	if (!DefaultAttributeValuesEffectTSub)
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Missing DefaultAttributeValuesEffect for %s. Please fill DefaultAttributeValuesEffect in Blueprint."), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Missing DefaultAttributeValuesEffect for %s. Please fill DefaultAttributeValuesEffect in Blueprint."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return;
 	}
 
@@ -270,7 +270,7 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to apply the default attributes effect on %s but failed. Maybe check if you filled out your DefaultAttributeValuesEffect correctly in Blueprint"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to apply the default attributes effect on %s but failed. Maybe check if you filled out your DefaultAttributeValuesEffect correctly in Blueprint"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 	}
 }
 
@@ -279,7 +279,7 @@ void UAbilitySystemSetupComponent::ApplyStartupEffects()
 	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
 	if (!ASC)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to apply startup Effects on %s but GetAbilitySystemComponent() returned NULL"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to apply startup Effects on %s but GetAbilitySystemComponent() returned NULL"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return;
 	}
 
@@ -305,7 +305,7 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to give startup abilities on %s but GetAbilitySystemComponent() returned NULL"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to give startup abilities on %s but GetAbilitySystemComponent() returned NULL"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return false;
 	}
 
@@ -332,7 +332,7 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UDS_AbilitySystemSetup>();
 		if (IsValid(AbilitySystemSetupDeveloperSettings) == false)
 		{
-			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), *FString(__FUNCTION__), *GetName());
+			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		}
 		ASC->BindAbilityActivationToInputComponent
 		(
@@ -362,7 +362,7 @@ int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
 	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
 	if (!ASC)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Attribute Sets from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Attribute Sets and possibly Attribute Set duplicates now (very bad). Owner: %s"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Attribute Sets from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Attribute Sets and possibly Attribute Set duplicates now (very bad). Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return 0;
 	}
 
@@ -392,7 +392,7 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
 	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
 	if (!ASC)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Abilities from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Abilitie(s) and possibly duplicates. Owner: %s"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Abilities from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Abilitie(s) and possibly duplicates. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return 0;
 	}
 
