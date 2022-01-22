@@ -141,7 +141,7 @@ void UASSAbilitySystemComponent::GiveAbilities(TArray<FGameplayAbilitySpec> Abil
 {
 	if (IsOwnerActorAuthoritative() == false)
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() called without Authority. Did nothing"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
