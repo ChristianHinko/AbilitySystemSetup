@@ -58,12 +58,12 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 	}
 }
 
-void IAbilitySystemSetupInterface::GrantStartingAbilities()
+void IAbilitySystemSetupInterface::GiveStartingAbilities()
 {
-	//Super::GrantStartingAbilities();
+	//Super::GiveStartingAbilities();
 
 
-	MyAbilitySpecHandle = GetAbilitySystemComponent()->GrantAbility(MyAbilityTSub, this/*, GetLevel()*/);
-	MyOtherAbilitySpecHandle = GetAbilitySystemComponent()->GrantAbility(MyOtherAbilityTSub, this/*, GetLevel()*/);
+	MyAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyAbilityTSub, /*GetLevel()*/1, -1, this));
+	MyOtherAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyOtherAbilityTSub, /*GetLevel()*/1, -1, this));
 }
 #endif

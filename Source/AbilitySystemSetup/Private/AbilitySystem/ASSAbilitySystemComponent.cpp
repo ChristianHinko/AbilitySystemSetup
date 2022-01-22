@@ -137,7 +137,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	Super::OnGiveAbility(AbilitySpec);
 }
 
-void UASSAbilitySystemComponent::GrantAbilities(TArray<FGameplayAbilitySpec> Abilities)
+void UASSAbilitySystemComponent::GiveAbilities(TArray<FGameplayAbilitySpec> Abilities)
 {
 	if (IsOwnerActorAuthoritative() == false)
 	{
@@ -422,10 +422,10 @@ void UASSAbilitySystemComponent::FullReset()
 
 	if (IsOwnerActorAuthoritative())
 	{
-		//	Ungrant abilities. Will remove all abilitity tags/blocked bindings as well
+		//	Ungive abilities. Will remove all abilitity tags/blocked bindings as well
 		ClearAllAbilities();
 
-		//	Clear Effects. Will remove all granted tags and cues as well
+		//	Clear Effects. Will remove all given tags and cues as well
 		for (const FActiveGameplayEffect& Effect : &ActiveGameplayEffects)
 		{
 			RemoveActiveGameplayEffect(Effect.Handle);

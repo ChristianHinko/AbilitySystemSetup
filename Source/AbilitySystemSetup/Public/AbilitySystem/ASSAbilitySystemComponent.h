@@ -92,7 +92,7 @@ public:
 
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
-	void GrantAbilities(TArray<FGameplayAbilitySpec> Abilities);
+	void GiveAbilities(TArray<FGameplayAbilitySpec> Abilities);
 
 	/** Gives abilities that an other given ASC has */
 	void RecieveAbilitiesFrom(UAbilitySystemComponent* From);

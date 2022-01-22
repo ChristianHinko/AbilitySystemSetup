@@ -21,13 +21,13 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
 {
 	if (AbilityInputID == 0)
 	{
-		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s()  Ability implementor forgot to set an AbilityInputID in the ability's constructor. Go back and set it so our grant ability calls know what input id to give it"), *FString(__FUNCTION__));
+		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s()  Ability implementor forgot to set an AbilityInputID in the ability's constructor. Go back and set it so we get ability input events"), *FString(__FUNCTION__));
 	}
 
 	TryCallOnAvatarSetOnPrimaryInstance
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (ActivateAbilityOnGrant && ActorInfo)
+	if (bActivateAbilityOnGive && ActorInfo)
 	{
 		if (ActorInfo->AbilitySystemComponent.Get())
 		{

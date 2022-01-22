@@ -22,7 +22,7 @@ class UAbilitySystemSetupInterface : public UInterface
  * Contains events for:
  *		- Creating attribute sets for your ASC
  *		- Registering them with your ASC
- *		- Granting starting abilities for your ASC by spec handle
+ *		- Giving starting abilities for your ASC by spec handle
  * 
  * @SEE "AbilitySystemSetupInterface.cpp" for example implementations of these events!
  * 
@@ -47,9 +47,9 @@ protected:
 	 */
 	virtual void RegisterAttributeSets() = 0;
 	/**
-	 * Called on server only. This is the earliest place you can grant Abilities. This is meant for granting Abilities and assigning them with Spec Handles.
+	 * Called on server only. This is the earliest place you can give Abilities. This is meant for giving Abilities and assigning them with Spec Handles.
 	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
-	virtual void GrantStartingAbilities() = 0;
+	virtual void GiveStartingAbilities() = 0;
 
 };

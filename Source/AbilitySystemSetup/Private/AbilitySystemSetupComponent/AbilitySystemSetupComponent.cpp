@@ -80,13 +80,13 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	IAbilitySystemInterface* AbilitySystem = Cast<IAbilitySystemInterface>(PlayerState);
 	if (!AbilitySystem)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GrantStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), *FString(__FUNCTION__));
 		return;
 	}
 	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystem->GetAbilitySystemComponent());
 	if (!PlayerAbilitySystemComponent)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GrantStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -118,8 +118,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 			InitializeAttributes();
 			ApplyStartupEffects();
 
-			// This is the first time our setup is being run. So no matter what (even if bAIToPlayerSyncAbilities), grant our starting abilities.
-			GrantStartingAbilities();
+			// This is the first time our setup is being run. So no matter what (even if bAIToPlayerSyncAbilities), give our starting abilities.
+			GiveStartingAbilities();
 		}
 
 
@@ -145,12 +145,12 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 			if (wasPlayer == false && isPlayer == true)
 			{
 				//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(AIAbilitySystemComponent);
-				PlayerAbilitySystemComponent->GrantAbilities(PendingAbilitiesToSync);
+				PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
 				PendingAbilitiesToSync.Empty();
 			}
 			else // we went from Player -> Player // THIS IS NOT COMPLETELY WORKING YET
 			{
-				PlayerAbilitySystemComponent->GrantAbilities(PendingAbilitiesToSync);
+				PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
 				PendingAbilitiesToSync.Empty();
 			}
 
@@ -179,7 +179,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	}
 	if (!AIAbilitySystemComponent)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GrantStartingAbilities). AIAbilitySystemComponent was NULL"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). AIAbilitySystemComponent was NULL"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -199,8 +199,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		InitializeAttributes();
 		ApplyStartupEffects();
 
-		// This is the first time our setup is being run. So no matter what (even if bPlayerToAISyncAbilities), grant our starting Abilities
-		GrantStartingAbilities();
+		// This is the first time our setup is being run. So no matter what (even if bPlayerToAISyncAbilities), give our starting Abilities
+		GiveStartingAbilities();
 
 
 		bInitialized = true;
@@ -223,7 +223,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 			if (wasPlayer == true && isPlayer == false)
 			{
 				//AIAbilitySystemComponent->RecieveAbilitiesFrom(PlayerAbilitySystemComponent);
-				AIAbilitySystemComponent->GrantAbilities(PendingAbilitiesToSync);
+				AIAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
 				PendingAbilitiesToSync.Empty();
 			}
 
@@ -296,7 +296,7 @@ void UAbilitySystemSetupComponent::ApplyStartupEffects()
 	}
 }
 
-bool UAbilitySystemSetupComponent::GrantStartingAbilities()
+bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -305,13 +305,13 @@ bool UAbilitySystemSetupComponent::GrantStartingAbilities()
 	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant startup abilities on %s but GetAbilitySystemComponent() returned NULL"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to give startup abilities on %s but GetAbilitySystemComponent() returned NULL"), *FString(__FUNCTION__), *GetName());
 		return false;
 	}
 
-	OwningAbilitySystemSetupInterface->GrantStartingAbilities();
+	OwningAbilitySystemSetupInterface->GiveStartingAbilities();
 
-	// ---------Grant non handle starting abilities---------
+	// ---------Give non handle starting abilities---------
 	for (int32 i = 0; i < NonHandleStartingAbilities.Num(); ++i)
 	{
 		FGameplayAbilitySpec Spec(NonHandleStartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner());// GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
@@ -400,7 +400,7 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
 	for (int32 i = ASC->GetActivatableAbilities().Num() - 1; i >= 0; --i)
 	{
 		FGameplayAbilitySpec Spec = ASC->GetActivatableAbilities()[i];
-		if (Spec.SourceObject == GetOwner()) // for Abilities we check the SourceObject since thats what they use. SourceObjects are expected to be correct when set on GrantAbility()
+		if (Spec.SourceObject == GetOwner()) // for Abilities we check the SourceObject since thats what they use. SourceObjects are expected to be correct when set on GiveAbility()
 		{
 			ASC->ClearAbility(Spec.Handle);
 			++retVal;

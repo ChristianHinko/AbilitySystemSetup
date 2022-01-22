@@ -25,7 +25,7 @@ DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
  * For Avatar Actors of UAbilitySystemComponents that may be possessed by different Owner Actors.
  * 
  * This was designed to be as flexable as possible for things regarding unpossesion/reposession of the Pawn. Having the ASC on the Player State (or just not on the Pawn in general) can make unpossesion and repossession a huge pain since
- * granted Abilities and Attribute Sets exist on the Player State's ASC (because the pawn doesn't have one unless it's an AI).
+ * given Abilities and Attribute Sets exist on the Player State's ASC (because the pawn doesn't have one unless it's an AI).
  * To make this less painful, some useful bools were implemented:
  *		- bUnregisterAttributeSetsOnUnpossessed
  *		- bRemoveAbilitiesOnUnpossessed
@@ -34,7 +34,7 @@ DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
  * 
  * Some tips:
  * 		1) On UnPossessed of this Pawn (a lot of times also means that we are about to be possessed by another Controller)
- * 			- Removes granted Abilities
+ * 			- Removes given Abilities
  *			- Unregisters Attribute Sets
  *			
  * 		2) Levels
@@ -44,7 +44,7 @@ DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
  * 			
  * 		3) Abilities
  * 			- Any Abilities added with its SourceObject being this component's owning Actor will be automatically removed from the ASC on UnPossessed. If you want an Ability to persist between characters make sure you manually set its SourceObject to the PlayerState. (This may be kind of an annoying solution)
- * 			- If you want a Spec Handle for a starting Ability, grant it in GrantStartingAbilities() using AbilitySystemSetupInterface.
+ * 			- If you want a Spec Handle for a starting Ability, give it in GiveStartingAbilities() using AbilitySystemSetupInterface.
  * 			
  *		4) Attribute Sets
  * 			- Any Attribute Sets owned by this component's owning Actor will be automatically removed from the ASC on UnPossessed (owner actor is automatically set by the engine). If you want an attribute set to persist between characters make sure you manually set its owner to the PlayerState. (still haven't tested with non subobject attribute sets)
@@ -142,7 +142,7 @@ public:
 	FSetupWithAbilitySystemDelegate SetupWithAbilitySystemCompleted;
 	/**
 	 * This is broadcasted when the ability system is set up but startup effects aren't applied, default attributes aren't initialized, and
-	 * starting abilities aren't granted.
+	 * starting abilities aren't given.
 	 */
 	FSetupWithAbilitySystemDelegate PreApplyStartupEffects;
 #pragma endregion
@@ -155,10 +155,10 @@ public:
 		TArray<TSubclassOf<UGameplayEffect>> EffectsToApplyOnStartup;
 
 protected:
-	/** Called only on server. This is the earliest place you can grant an Ability. */
-	bool GrantStartingAbilities();
+	/** Called only on server. This is the earliest place you can give an Ability. */
+	bool GiveStartingAbilities();
 
-	/** Note: No AbilitySpecHandles are tracked upon grant. These Abilities must be activated by class or by ability tag. These Abilities are assigned EAbilityInputID::None */
+	/** Note: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by ability tag. These Abilities are assigned EAbilityInputID::None */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Abilities")
 		TArray<TSubclassOf<UASSGameplayAbility>> NonHandleStartingAbilities;
 
@@ -176,7 +176,7 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bUnregisterAttributeSetsOnUnpossessed : 1;
-	/** Remove all Abilities that were granted by us on unpossess */
+	/** Remove all Abilities that were given by us on unpossess */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveAbilitiesOnUnpossessed : 1;
 	/**
@@ -192,7 +192,7 @@ protected:
 
 	/** Removes all Attribute Sets that we added to the ASC */
 	int32 UnregisterOwnedAttributeSets();
-	/** Removes all Abilities that we granted to the ASC */
+	/** Removes all Abilities that we've given to the ASC */
 	int32 RemoveOwnedAbilities();
 	/** NOT IMPLEMENTED YET! Removes all tags relating to this specific character from the PlayerState's ASC */
 	int32 RemoveAllCharacterTags();
