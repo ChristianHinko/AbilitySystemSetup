@@ -244,7 +244,7 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
 	if (!ASC)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("GetAbilitySystemComponent() returned null on %s"), *FString(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("GetAbilitySystemComponent() returned null on %s"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	if (!DefaultAttributeValuesEffectTSub)
