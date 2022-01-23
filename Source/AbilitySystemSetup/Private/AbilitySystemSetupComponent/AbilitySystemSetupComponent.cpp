@@ -254,8 +254,8 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 	}
 
 
-	// Init Attribute Set defaults NOTE: we don't use the FAttributeSetInitter system but we are calling this here if we ever wanted to
-	UAbilitySystemGlobals::Get().GetAttributeSetInitter()->InitAttributeSetDefaults(ASC, FName(TEXT("Default"))/*GetCharacterName()*/, 1/*GetLevel()*/, true);
+	// Init Attribute Set defaults NOTE: we don't use the FAttributeSetInitter system but we are calling this here if we ever wanted to TODO: commented out because	UAbilitySystemGlobals::AllocAttributeSetInitter() never ends up getting called
+	//UAbilitySystemGlobals::Get().GetAttributeSetInitter()->InitAttributeSetDefaults(ASC, FName(TEXT("Default"))/*GetCharacterName()*/, 1/*GetLevel()*/, true);
 
 
 	// Apply default Attribute values effects
