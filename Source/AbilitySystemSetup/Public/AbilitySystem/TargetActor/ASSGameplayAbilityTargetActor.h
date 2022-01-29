@@ -49,12 +49,12 @@ public:
 	 * Filters out one hit result out of a given array. Is meant to be use in FHitResult loops.
 	 * Returns true if hit was filtered.
 	 */
-	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 indexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 	/**
 	 * Returns true if hit does not pass the filter.
 	 * Does NOT remove the hit from the given HitResults.
 	 */	
-	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 indexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 
 
 	/**
@@ -84,7 +84,7 @@ public:
 	/** Outputs a direction to use rather than a trace endpoint */
 	void DirWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceDir) const;
 
-	static bool ClipCameraRayToAbilityRange(FVector CameraLocation, FVector CameraDirection, FVector AbilityCenter, float AbilityRange, FVector& ClippedPosition);
+	static bool ClipCameraRayToAbilityRange(const FVector& CameraLocation, const FVector& CameraDirection, const FVector& AbilityCenter, const float AbilityRange, FVector& OutClippedPosition);
 
 
 protected:
@@ -108,7 +108,7 @@ protected:
 
 	TArray<TWeakObjectPtr<AASSGameplayAbilityWorldReticle>> ReticleActors;
 
-	AASSGameplayAbilityWorldReticle* SpawnReticleActor(FVector Location, FRotator Rotation);
+	AASSGameplayAbilityWorldReticle* SpawnReticleActor(const FVector& Location, const FRotator& Rotation);
 	virtual void DestroyReticleActors();
 
 

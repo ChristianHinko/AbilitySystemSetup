@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AbilitySystem/ASSAbilitySystemGlobals.h"
 
 #include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
@@ -9,7 +8,8 @@
 
 
 
-UASSAbilitySystemGlobals::UASSAbilitySystemGlobals()
+UASSAbilitySystemGlobals::UASSAbilitySystemGlobals(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

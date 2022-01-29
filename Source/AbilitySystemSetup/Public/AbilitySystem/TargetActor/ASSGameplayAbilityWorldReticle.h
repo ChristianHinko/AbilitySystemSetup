@@ -29,7 +29,7 @@ class ABILITYSYSTEMSETUP_API AASSGameplayAbilityWorldReticle : public AGameplayA
 	GENERATED_BODY()
 	
 public:
-	AASSGameplayAbilityWorldReticle();
+	AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer);
 
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Category = "Reticle")

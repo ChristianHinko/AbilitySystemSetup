@@ -5,7 +5,8 @@
 
 
 
-AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle()
+AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

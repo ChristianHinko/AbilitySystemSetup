@@ -16,7 +16,8 @@
 
 
 
-UASSAbilitySystemComponent::UASSAbilitySystemComponent()
+UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Some projects may want to use GAS' automatic input binding by default. Set these to false if you do		=@REVIEW MARKER@=
 	bDoNotAutoActivateFromGASBindings = true;
@@ -27,6 +28,7 @@ UASSAbilitySystemComponent::UASSAbilitySystemComponent()
 	/** The linked Anim Instance that this component will play montages in. Use NAME_None for the main anim instance. (Havn't explored this much yet)*/
 	AffectedAnimInstanceTag = NAME_None;
 }
+
 void UASSAbilitySystemComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
@@ -114,6 +116,7 @@ void UASSAbilitySystemComponent::InitializeComponent()
 #endif
 }
 
+
 void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -121,7 +124,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	{
 		UE_LOG(LogAbilitySystemComponentSetup, Fatal, TEXT("%s() SourceObject was not valid when ability was given. Some dev must have forgotten to set it when giving the ability"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
-#endif
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
 	UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(AbilitySpec.Ability);
 	if (IsValid(ASSAbility))
@@ -137,7 +140,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	Super::OnGiveAbility(AbilitySpec);
 }
 
-void UASSAbilitySystemComponent::GiveAbilities(TArray<FGameplayAbilitySpec> Abilities)
+void UASSAbilitySystemComponent::GiveAbilities(const TArray<FGameplayAbilitySpec>& Abilities)
 {
 	if (IsOwnerActorAuthoritative() == false)
 	{
@@ -155,7 +158,7 @@ void UASSAbilitySystemComponent::GiveAbilities(TArray<FGameplayAbilitySpec> Abil
 	}
 }
 
-void UASSAbilitySystemComponent::RecieveAbilitiesFrom(UAbilitySystemComponent* From)
+void UASSAbilitySystemComponent::RecieveAbilitiesFrom(const UAbilitySystemComponent* Other)
 {
 	if (IsOwnerActorAuthoritative() == false)
 	{
@@ -163,7 +166,7 @@ void UASSAbilitySystemComponent::RecieveAbilitiesFrom(UAbilitySystemComponent* F
 		return;
 	}
 
-	for (FGameplayAbilitySpec SpecToGive : From->GetActivatableAbilities())
+	for (FGameplayAbilitySpec SpecToGive : Other->GetActivatableAbilities())
 	{
 		if (GetActivatableAbilities().ContainsByPredicate([&SpecToGive](const FGameplayAbilitySpec& Spec)
 			{ return Spec.Ability == SpecToGive.Ability; }) == false)

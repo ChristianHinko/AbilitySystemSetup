@@ -8,8 +8,8 @@
 #include "ASSAbilitySystemComponent.generated.h"
 
 
-
 class UASSGameplayAbility;
+
 
 
 #if 0
@@ -85,17 +85,17 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySystemComponent : public UAbilitySystemC
 	GENERATED_BODY()
 
 public:
-	UASSAbilitySystemComponent();
+	UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer);
 
 
 	virtual bool ShouldDoServerAbilityRPCBatch() const override { return true; }
 
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
-	void GiveAbilities(TArray<FGameplayAbilitySpec> Abilities);
+	void GiveAbilities(const TArray<FGameplayAbilitySpec>& Abilities);
 
 	/** Gives abilities that an other given ASC has */
-	void RecieveAbilitiesFrom(UAbilitySystemComponent* From);
+	void RecieveAbilitiesFrom(const UAbilitySystemComponent* Other);
 
 	virtual void TargetConfirmByAbility(UGameplayAbility* AbilityToConfirmTargetOn);
 	virtual void TargetCancelByAbility(UGameplayAbility* AbilityToCancelTargetOn);

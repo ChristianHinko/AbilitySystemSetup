@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
 #include "Abilities/GameplayAbility.h"
@@ -99,20 +98,20 @@ void AASSGameplayAbilityTargetActor::FilterHitResults(TArray<FHitResult>& OutHit
 		}
 	}
 }
-bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 indexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
+bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
 {
-	if (HitResultFailsFilter(OutHitResults, indexToTryFilter, FilterHandle, inAllowMultipleHitsPerActor))
+	if (HitResultFailsFilter(OutHitResults, IndexToTryFilter, FilterHandle, inAllowMultipleHitsPerActor))
 	{
-		OutHitResults.RemoveAt(indexToTryFilter);
+		OutHitResults.RemoveAt(IndexToTryFilter);
 		return true;
 	}
 
 	// This index was not filtered
 	return false;
 }
-bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 indexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
+bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
 {
-	const FHitResult& HitToTryFilter = InHitResults[indexToTryFilter];
+	const FHitResult& HitToTryFilter = InHitResults[IndexToTryFilter];
 
 
 	if (FilterHandle.Filter.IsValid()) // if valid filter
@@ -131,7 +130,7 @@ bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResul
 
 
 		// Check if any Hit Results before this hit contains a Hit Result with this Actor already
-		for (int32 i = 0; i < indexToTryFilter; ++i)
+		for (int32 i = 0; i < IndexToTryFilter; ++i)
 		{
 			const FHitResult& Hit = InHitResults[i];
 
@@ -225,7 +224,7 @@ void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart,
 	OutAimDir = ViewRot.Vector();
 }
 
-bool AASSGameplayAbilityTargetActor::ClipCameraRayToAbilityRange(FVector CameraLocation, FVector CameraDirection, FVector AbilityCenter, float AbilityRange, FVector& ClippedPosition)
+bool AASSGameplayAbilityTargetActor::ClipCameraRayToAbilityRange(const FVector& CameraLocation, const FVector& CameraDirection, const FVector& AbilityCenter, const float AbilityRange, FVector& OutClippedPosition)
 {
 	const FVector CameraToCenter = AbilityCenter - CameraLocation;
 	const float DotToCenter = FVector::DotProduct(CameraToCenter, CameraDirection);
@@ -237,40 +236,42 @@ bool AASSGameplayAbilityTargetActor::ClipCameraRayToAbilityRange(FVector CameraL
 		{
 			const float DistanceFromCamera = FMath::Sqrt(RadiusSquared - DistanceSquared);
 			const float DistanceAlongRay = DotToCenter + DistanceFromCamera;					//Subtracting instead of adding will get the other intersection point
-			ClippedPosition = CameraLocation + (DistanceAlongRay * CameraDirection);			//Cam aim point clipped to range sphere
+			OutClippedPosition = CameraLocation + (DistanceAlongRay * CameraDirection);			//Cam aim point clipped to range sphere
 			return true;
 		}
 	}
+
 	return false;
 }
 
 
-AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnReticleActor(FVector Location, FRotator Rotation)
+AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnReticleActor(const FVector& Location, const FRotator& Rotation)
 {
-	if (ReticleClass)
+	if (!ReticleClass)
 	{
-		AASSGameplayAbilityWorldReticle* SpawnedReticleActor = GetWorld()->SpawnActor<AASSGameplayAbilityWorldReticle>(ReticleClass, Location, Rotation);
-		if (SpawnedReticleActor)
-		{
-			SpawnedReticleActor->ASSInitializeReticle(this, MasterPC, ASSReticleParams);
-			SpawnedReticleActor->SetActorHiddenInGame(true);
-			ReticleActors.Add(SpawnedReticleActor);
-
-			// This is to catch cases of playing on a listen server where we are using a replicated reticle actor.
-			// (In a client controlled player, this would only run on the client and therefor never replicate. If it runs
-			// on a listen server, the reticle actor may replicate. We want consistancy between client/listen server players.
-			// Just saying 'make the reticle actor non replicated' isnt a good answer, since we want to mix and match reticle
-			// actors and there may be other targeting types that want to replicate the same reticle actor class).
-			if (!ShouldProduceTargetDataOnServer)
-			{
-				SpawnedReticleActor->SetReplicates(false);
-			}
-
-			return SpawnedReticleActor;
-		}
+		return nullptr;
 	}
 
-	return nullptr;
+	AASSGameplayAbilityWorldReticle* SpawnedReticleActor = GetWorld()->SpawnActor<AASSGameplayAbilityWorldReticle>(ReticleClass, Location, Rotation);
+	if (IsValid(SpawnedReticleActor))
+	{
+		SpawnedReticleActor->ASSInitializeReticle(this, MasterPC, ASSReticleParams);
+		SpawnedReticleActor->SetActorHiddenInGame(true);
+		ReticleActors.Add(SpawnedReticleActor);
+
+		// This is to catch cases of playing on a listen server where we are using a replicated reticle actor.
+		// (In a client controlled player, this would only run on the client and therefor never replicate. If it runs
+		// on a listen server, the reticle actor may replicate. We want consistancy between client/listen server players.
+		// Just saying 'make the reticle actor non replicated' isnt a good answer, since we want to mix and match reticle
+		// actors and there may be other targeting types that want to replicate the same reticle actor class).
+		if (!ShouldProduceTargetDataOnServer)
+		{
+			SpawnedReticleActor->SetReplicates(false);
+		}
+
+	}
+
+	return SpawnedReticleActor;
 }
 
 void AASSGameplayAbilityTargetActor::DestroyReticleActors()
