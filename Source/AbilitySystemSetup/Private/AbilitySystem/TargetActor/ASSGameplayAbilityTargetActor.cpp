@@ -21,6 +21,7 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 	MultiFilter.bOnlyAcceptAbilitySystemInterfaces = true;
 	bAllowMultipleHitsPerActor = false;
 
+	MaxRange = 100000.f;
 	TraceChannel = ECollisionChannel::ECC_Visibility;
 
 	bUseAimPointAsStartLocation = true;
@@ -81,11 +82,6 @@ void AASSGameplayAbilityTargetActor::StopTargeting()
 {
 	SetActorTickEnabled(false); // disable tick while we aren't being used
 	DestroyReticleActors(); // we should have a Reticle pooling system for this eventually
-}
-
-float AASSGameplayAbilityTargetActor::GetMaxRange() const
-{
-	return 100000.f;
 }
 
 void AASSGameplayAbilityTargetActor::FilterHitResults(TArray<FHitResult>& OutHitResults, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
@@ -154,16 +150,16 @@ void AASSGameplayAbilityTargetActor::AimWithPlayerController(const AActor* InSou
 	FVector TraceDir;
 	DirWithPlayerController(InSourceActor, Params, TraceStart, TraceDir);
 
-	OutTraceEnd = TraceStart + (TraceDir * GetMaxRange());
+	OutTraceEnd = TraceStart + (TraceDir * MaxRange);
 }
 void AASSGameplayAbilityTargetActor::DirWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceDir) const
 {
 	FVector AimStart;
 	FVector AimDir;
 	CalculateAimDirection(AimStart, AimDir);
-	FVector AimEnd = AimStart + (AimDir * GetMaxRange());
+	FVector AimEnd = AimStart + (AimDir * MaxRange);
 
-	ClipCameraRayToAbilityRange(AimStart, AimDir, TraceStart, GetMaxRange(), AimEnd);
+	ClipCameraRayToAbilityRange(AimStart, AimDir, TraceStart, MaxRange, AimEnd);
 
 	// If the TraceStart is nearly equal to the AimStart, skip the useless camera trace and just return the aim direction
 	if (TraceStart.Equals(AimStart))
@@ -178,7 +174,7 @@ void AASSGameplayAbilityTargetActor::DirWithPlayerController(const AActor* InSou
 	InSourceActor->GetWorld()->LineTraceMultiByChannel(HitResults, AimStart, AimEnd, TraceChannel, Params);
 	FHitResult HitResult = HitResults.Num() ? HitResults[0] : FHitResult();
 
-	const bool bUseTraceResult = /*HitResult.bBlockingHit && */(FVector::DistSquared(TraceStart, HitResult.Location) <= (GetMaxRange() * GetMaxRange()));
+	const bool bUseTraceResult = /*HitResult.bBlockingHit && */(FVector::DistSquared(TraceStart, HitResult.Location) <= (MaxRange * MaxRange));
 
 	const FVector AdjustedEnd = (bUseTraceResult) ? HitResult.Location : AimEnd;
 
