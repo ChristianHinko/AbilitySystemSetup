@@ -9,7 +9,8 @@
 
 
 class IAbilitySystemSetupInterface;
-class UASSGameplayAbility;
+class UGameplayAbility;
+class UAbilitySystemComponent;
 class UASSAbilitySystemComponent;
 class IAbilitySystemInterface;
 class UGameplayEffect;
@@ -18,11 +19,11 @@ struct FGameplayAbilitySpec;
 
 
 
-DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbilitySystemComponent* const/*, PreviousASC*/, UAbilitySystemComponent* const/*, NewASC*/);
 
 
 /**
- * For Avatar Actors of UAbilitySystemComponents that may be possessed by different Owner Actors.
+ * For Avatar Actors that may be possessed by different Owner Actors.
  * 
  * This was designed to be as flexable as possible for things regarding unpossesion/reposession of the Pawn. Having the ASC on the Player State (or just not on the Pawn in general) can make unpossesion and repossession a huge pain since
  * given Abilities and Attribute Sets exist on the Player State's ASC (because the pawn doesn't have one unless it's an AI).
@@ -47,7 +48,7 @@ DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
  * 			- If you want a Spec Handle for a starting Ability, give it in GiveStartingAbilities() using AbilitySystemSetupInterface.
  * 			
  *		4) Attribute Sets
- * 			- Any Attribute Sets owned by this component's owning Actor will be automatically removed from the ASC on UnPossessed (owner actor is automatically set by the engine). If you want an attribute set to persist between characters make sure you manually set its owner to the PlayerState. (still haven't tested with non subobject attribute sets)
+ * 			- Any Attribute Sets owned by this component's owning Actor will be automatically removed from the ASC on UnPossessed (owner actor is automatically set by the engine). If you want an Attribute Set to persist between characters make sure you manually set its owner to the PlayerState. (still haven't tested with non subobject Attribute Sets)
  * 			- To use Attribute Sets, create them in CreateAttributeSets() using the AbilitySystemSetupInterface and register them with your ASC in RegisterAttributeSets() using the AbilitySystemSetupInterface.
  * 			
  *		4) Gameplay Effects
@@ -55,17 +56,17 @@ DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
  * 			- Gameplay Effects that you want applied initially (BeginPlay-type of GEs) can be done by filling out the EffectsToApplyOnStartup array in BP. (ie. GE_HealthRegen or GE_StaminaRegen)
  * 			
  *		5) Gameplay Tags		=@REVIEW MARKER@=
- * 			- Right now I have a setup for it calling RemoveAllCharacterTags() to remove any character tags from the Player's ASC on Unpossess if bRemoveCharacterTagsOnUnpossessed is set to true, but the function is NOT implemented.
- * 					There is no way of determining what tags to take off of the Player's ASC when unpossessing/destroying this character which is why it is not implemented. If we can figure out a way to give an owner to
- * 					specific tags without putting them on the actually actor, then this should be easily possible. You could implement it by removing all tags from the ASC that has a parent of "Character" so we know all
- * 					the "Character" tags will get removed on unpossess, but that removes some flexability for organization with gameplay tags. Havn't thought of a better way though. If you really feel you need this feature
+ * 			- Right now I have a setup for it calling RemoveAllCharacterTags() to remove any character Tags from the Player's ASC on Unpossess if bRemoveCharacterTagsOnUnpossessed is set to true, but the function is NOT implemented.
+ * 					There is no way of determining what Tags to take off of the Player's ASC when unpossessing/destroying this character which is why it is not implemented. If we can figure out a way to give an owner to
+ * 					specific Tags without putting them on the actually actor, then this should be easily possible. You could implement it by removing all Tags from the ASC that has a parent of "Character" so we know all
+ * 					the "Character" Tags will get removed on unpossess, but that removes some flexability for organization with Gameplay Tags. Havn't thought of a better way though. If you really feel you need this feature
  * 					implemented somehow, it might be better to just make a new GAS setup with the ASC on the character class.
- * 			- Was struggling on comming up with a good system to determine what tags to remove on Unpossess. We could try removing any tags that has "Character" as one of the parents in the tag, but then this limits us
- * 					us into only using tags with the parent of "Character" for character related stuff (ie. we wouldn't be able to throw a generic "Actor.IsOnFire" tag onto the character because then on Unpossess it wouldn't get removed).
- * 					Another thing to think about is how we will remove these tags. This leads us into having to make a simple and efficient way to add/remove tags through code for all machines. Will we use a GE? This will take care of
- * 					replicating it to all machines, but then you have to have a predefined GE asset that does it. But we would like to have the game figure out at runtime what tags to remove. Reliable RPCs using LooseGameplayTags is an
+ * 			- Was struggling on comming up with a good system to determine what Tags to remove on Unpossess. We could try removing any Tags that has "Character" as one of the parents in the Tag, but then this limits us
+ * 					us into only using Tags with the parent of "Character" for character related stuff (ie. we wouldn't be able to throw a generic "Actor.IsOnFire" Tag onto the character because then on Unpossess it wouldn't get removed).
+ * 					Another thing to think about is how we will remove these Tags. This leads us into having to make a simple and efficient way to add/remove Tags through code for all machines. Will we use a GE? This will take care of
+ * 					replicating it to all machines, but then you have to have a predefined GE asset that does it. But we would like to have the game figure out at runtime what Tags to remove. Reliable RPCs using LooseGameplayTags is an
  * 					option but not prefered, (not very efficient).
- * 					if that tag is on our ASC, it wouldn't be removed.
+ * 					if that Tag is on our ASC, it wouldn't be removed.
  *			
  * 		6) AIAbilitySystemComponent
  * 			- Subclasses can disable this feature by calling DoNotCreateDefaultSubobject() through the constructor using the ObjectInitializer.
@@ -78,8 +79,8 @@ DECLARE_MULTICAST_DELEGATE(FSetupWithAbilitySystemDelegate);
  * 			
  *		2) If you unpossess a Pawn and unregister his Attribute Sets (without being possessed by someone else), his Attributes are no longer associated with an ASC.
  * 			- Do not apply Effects to Pawns that have unregistered Attribute Sets (it will crash).
- * 				-(Possible future solution: have the AIAbilitySystemComponent take over when a Player unpossesses a character and unregisters its attributes and register those attribute sets with the AI ASC)
- *					-(Possible work around: have an AI controller possess the unpossessed character which will call SetUpWithAbilitySystem for the AIAbilitySystemComponent and register those attribute with the AI ASC)
+ * 				-(Possible future solution: have the AIAbilitySystemComponent take over when a Player unpossesses a character and unregisters its Attributes and register those Attribute Sets with the AI ASC)
+ *					-(Possible work around: have an AI controller possess the unpossessed character which will call SetUpWithAbilitySystem for the AIAbilitySystemComponent and register those Attribute with the AI ASC)
  *			
  * 
  */
@@ -97,8 +98,8 @@ protected:
 	UPROPERTY(/*Replicated*/)	// replicated can be helpful for debugging issues
 		UASSAbilitySystemComponent* PlayerAbilitySystemComponent;
 	/**
-	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC for before the Player possesses this character (so we can give abilities and stuff).
-	 * These abilities will be transfered from this ASC to the Player's (this allows us to give abilities early on)
+	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character (so we can give Abilities and stuff).
+	 * These Abilities will be transfered from this ASC to the Player's (this allows us to give Abilities early on)
 	 */
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystemSetup")
 		UASSAbilitySystemComponent* AIAbilitySystemComponent;
@@ -107,9 +108,17 @@ public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
 
 
-	/** Hooks the Avatar Actor to the ASC when it's a Player Controller */
+	/**
+	 * Gets the active Ability System Component.
+	 * That is, the Player's ASC if Player controlled or the AI's ASC if AI controlled.
+	 * 
+	 * Return this in your IAbilitySystemInterface::GetAbilitySystemComponent() implementation.
+	 */
+	UASSAbilitySystemComponent* GetAbilitySystemComponent() const;
+
+	/** Hooks up the Avatar Actor to the ASC when it's a Player Controller */
 	void SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState);
-	/** Hooks the Avatar Actor to the ASC when it's an AI Controller */
+	/** Hooks up the Avatar Actor to the ASC when it's an AI Controller */
 	void SetupWithAbilitySystemAIControlled();
 
 	UASSAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent; }
@@ -124,7 +133,7 @@ public:
 
 	/**
 	 * On OwningPawn becomes UnPossessed.
-	 * NOTE: CALL THIS BEFORE Super::UnPossessed()
+	 * NOTE: Call this BEFORE Super::UnPossessed()!
 	 */
 	virtual void UnPossessed();
 
@@ -132,19 +141,19 @@ protected:
 	virtual void InitializeComponent() override;
 
 	APawn* OwningPawn;
-	IAbilitySystemInterface* OwningAbilitySystemInterface;
 	IAbilitySystemSetupInterface* OwningAbilitySystemSetupInterface;
-
 
 
 public:
 #pragma region AbilitySystemSetup Delegates
-	FSetupWithAbilitySystemDelegate SetupWithAbilitySystemCompleted;
 	/**
-	 * This is broadcasted when the ability system is set up but startup effects aren't applied, default attributes aren't initialized, and
-	 * starting abilities aren't given.
+	 * Broadcasted when the Ability System is set up and ready to go
 	 */
-	FSetupWithAbilitySystemDelegate PreApplyStartupEffects;
+	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
+	/**
+	 * Broadcasted when the Ability System is set up BUT before startup Effects are applied, before Attributes are initialized, and before starting Abilities are given
+	 */
+	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
 #pragma endregion
 
 	/** Default Attributes values on startup. This should be an instant GE with the Modifier Op set to Override so you can choose what the starting Attribute values will be on spawn */
@@ -158,9 +167,9 @@ protected:
 	/** Called only on server. This is the earliest place you can give an Ability. */
 	bool GiveStartingAbilities();
 
-	/** Note: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by ability tag. These Abilities are assigned EAbilityInputID::None */
+	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Abilities")
-		TArray<TSubclassOf<UASSGameplayAbility>> NonHandleStartingAbilities;
+		TArray<TSubclassOf<UGameplayAbility>> NonHandleStartingAbilities;
 
 
 
@@ -181,9 +190,9 @@ protected:
 		uint8 bRemoveAbilitiesOnUnpossessed : 1;
 	/**
 	 * --- CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING ---
-	 * Removes all tags relating to this specific character from the PlayerState's ASC
-	 * Remove all tags related to the character, that way when we possess a new character,
-	 * the old tags don't interfere with the new character.
+	 * Removes all Tags relating to this specific character from the PlayerState's ASC
+	 * Remove all Tags related to the character, that way when we possess a new character,
+	 * the old Tags don't interfere with the new character.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveCharacterTagsOnUnpossessed : 1;
@@ -194,12 +203,13 @@ protected:
 	int32 UnregisterOwnedAttributeSets();
 	/** Removes all Abilities that we've given to the ASC */
 	int32 RemoveOwnedAbilities();
-	/** NOT IMPLEMENTED YET! Removes all tags relating to this specific character from the PlayerState's ASC */
+	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
 	int32 RemoveAllCharacterTags();
 
 
 private:
-	UASSAbilitySystemComponent* PreviousPlayerASC;
+	UPROPERTY()
+		UAbilitySystemComponent* PreviousASC;
 
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
 	UPROPERTY()
@@ -218,8 +228,6 @@ private:
 
 	/** Indicates that we already created Attribute Sets and registered them, initialized the Attributes, and applied the startup Effects */
 	uint8 bInitialized : 1;
-	/** Shows that we already have input binded with the ability system */
+	/** Shows that we already have input binded with the Ability System */
 	uint8 bASCInputBound : 1;
-	/** Indicates we currently should be dealing with the AIAbilitySystemComponent (this is commonly paired with "!IsPlayerControlled()") */
-	uint8 bShouldHandleAIAbilitySystemSetup : 1;
 };

@@ -5,11 +5,11 @@
 
 #include "Net/UnrealNetwork.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/ASSGameplayAbility.h"
+#include "Abilities/GameplayAbility.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "Components/InputComponent.h"
-#include "AbilitySystemComponent.h"
+#include "AbilitySystem/ASSAbilitySystemComponent.h"
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "DS_AbilitySystemSetup.h"
 #include "AbilitySystemSetupComponent/AbilitySystemSetupInterface.h"
@@ -47,9 +47,8 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	AIAbilitySystemComponentReplicationMode = EGameplayEffectReplicationMode::Minimal;
 
 	AIAbilitySystemComponent = CreateOptionalDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AIAbilitySystemComponent"));
-	if (AIAbilitySystemComponent)
+	if (IsValid(AIAbilitySystemComponent))
 	{
-		bShouldHandleAIAbilitySystemSetup = true;
 		AIAbilitySystemComponent->SetReplicationMode(AIAbilitySystemComponentReplicationMode);
 		AIAbilitySystemComponent->SetIsReplicated(true);
 	}
@@ -61,9 +60,8 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	OwningPawn = Cast<APawn>(GetOwner());
-	OwningAbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner());
-	OwningAbilitySystemSetupInterface = Cast<IAbilitySystemSetupInterface>(GetOwner());
+	OwningPawn = Cast<APawn>(GetOwner()); // TODO: maybe instead of Cast<APawn>() we can do a GetTypedOuter<APawn>() so this can work on plain Actors too
+	OwningAbilitySystemSetupInterface = Cast<IAbilitySystemSetupInterface>(GetOwner()); // TODO: maybe do a UBFL_InterfaceHelpers::GetInterfaceTypedOuter()?
 	if (!OwningAbilitySystemSetupInterface)
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() MAKE SURE YOU IMPLEMENT THE IAbilitySystemSetupInterface INTERFACE WHEN USING THIS COMPONENT"), ANSI_TO_TCHAR(__FUNCTION__));
@@ -72,6 +70,17 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 
 
 
+UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemComponent() const
+{
+	if (OwningPawn->IsPlayerControlled())
+	{
+		return PlayerAbilitySystemComponent;
+	}
+	else // AI controlled
+	{
+		return AIAbilitySystemComponent;
+	}
+}
 
 #pragma region Ability System Possess
 
@@ -83,6 +92,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
+
 	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystem->GetAbilitySystemComponent());
 	if (!IsValid(PlayerAbilitySystemComponent))
 	{
@@ -107,18 +117,18 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 			// Moved these Attribute Set stuff into this check because seems to make more sence - move outside if problems arise
 			OwningAbilitySystemSetupInterface->CreateAttributeSets();
 			OwningAbilitySystemSetupInterface->RegisterAttributeSets();
-			// Must call ForceReplication() after registering an attribute set(s)
+			// Must call ForceReplication() after registering an Attribute Set(s)
 			PlayerAbilitySystemComponent->ForceReplication();
 		}
 
-		PreApplyStartupEffects.Broadcast();	// good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, PlayerAbilitySystemComponent); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
 			InitializeAttributes();
 			ApplyStartupEffects();
 
-			// This is the first time our setup is being run. So no matter what (even if bAIToPlayerSyncAbilities), give our starting abilities.
+			// This is the first time our setup is being run. So no matter what (even if bAIToPlayerSyncAbilities), give our starting Abilities.
 			GiveStartingAbilities();
 		}
 
@@ -127,7 +137,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 	else // if something is posessing this us a second time
 	{
-		// Just register this our already-created attribute sets with the Player's ASC
+		// Just register this our already-created Attribute Sets with the Player's ASC
 		OwningAbilitySystemSetupInterface->RegisterAttributeSets();
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -135,24 +145,12 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 			PlayerAbilitySystemComponent->ForceReplication();
 		}
 
-		if (GetOwnerRole() == ROLE_Authority) // Sync abilities between ASCs
+		// Sync Abilities between ASCs
+		if (GetOwnerRole() == ROLE_Authority)
 		{
-			// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
-			const bool WasPlayer = (/*OwningPawn->*/PreviousController && /*OwningPawn->*/PreviousController->IsPlayerController());
-			const bool IsPlayer = OwningPawn->GetController()->IsPlayerController();
-
-			// If we went from AI -> Player
-			if (WasPlayer == false && IsPlayer == true)
-			{
-				//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(AIAbilitySystemComponent);
-				PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
-				PendingAbilitiesToSync.Empty();
-			}
-			else // we went from Player -> Player // THIS IS NOT COMPLETELY WORKING YET
-			{
-				PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
-				PendingAbilitiesToSync.Empty();
-			}
+			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
+			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
+			PendingAbilitiesToSync.Empty();
 
 			// TODO: we should have a way to sync Tags and active Effects and Abilities to across ACSs but this sounds really hard
 		}
@@ -165,15 +163,11 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 
 
-	SetupWithAbilitySystemCompleted.Broadcast();
+	OnAbilitySystemSetUp.Broadcast(PreviousASC, PlayerAbilitySystemComponent);
 }
 void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 {
 	if (GetOwnerRole() < ROLE_Authority)
-	{
-		return;
-	}
-	if (!bShouldHandleAIAbilitySystemSetup)
 	{
 		return;
 	}
@@ -195,7 +189,9 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		OwningAbilitySystemSetupInterface->RegisterAttributeSets();
 		// Must call ForceReplication() after registering an Attribute Set(s)
 		AIAbilitySystemComponent->ForceReplication();
-		PreApplyStartupEffects.Broadcast();					// at this point the ASC is safe to use
+
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, AIAbilitySystemComponent); // at this point the ASC is safe to use
+
 		InitializeAttributes();
 		ApplyStartupEffects();
 
@@ -213,26 +209,18 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		AIAbilitySystemComponent->ForceReplication();
 
 
-		// Sync abilities between ASCs
+		// Sync Abilities between ASCs
 		{
-			// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
-			const bool WasPlayer = (/*OwningPawn->*/PreviousController && /*OwningPawn->*/PreviousController->IsPlayerController());
-			const bool IsPlayer = OwningPawn->GetController()->IsPlayerController();
-
-			// If we went from Player -> AI
-			if (WasPlayer == true && IsPlayer == false)
-			{
-				//AIAbilitySystemComponent->RecieveAbilitiesFrom(PlayerAbilitySystemComponent);
-				AIAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
-				PendingAbilitiesToSync.Empty();
-			}
+			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
+			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
+			PendingAbilitiesToSync.Empty();
 
 			// TODO: We should have a way to sync Tags and active Effects and Abilities to across ACSs but this sounds really hard
 		}
 	}
 
 
-	SetupWithAbilitySystemCompleted.Broadcast();
+	OnAbilitySystemSetUp.Broadcast(PreviousASC, AIAbilitySystemComponent);
 }
 
 #pragma endregion
@@ -241,13 +229,13 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 void UAbilitySystemSetupComponent::InitializeAttributes()
 {
-	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("GetAbilitySystemComponent() returned null on %s"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	if (!DefaultAttributeValuesEffectTSub)
+	if (!IsValid(DefaultAttributeValuesEffectTSub))
 	{
 		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Missing DefaultAttributeValuesEffect for %s. Please fill DefaultAttributeValuesEffect in Blueprint."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return;
@@ -258,7 +246,7 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 	//UAbilitySystemGlobals::Get().GetAttributeSetInitter()->InitAttributeSetDefaults(ASC, FName(TEXT("Default"))/*GetCharacterName()*/, 1/*GetLevel()*/, true);
 
 
-	// Apply default Attribute values effects
+	// Apply default Attribute values Effects
 	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
 	EffectContextHandle.AddInstigator(GetOwner(), GetOwner());
 	EffectContextHandle.AddSourceObject(GetOwner());
@@ -276,7 +264,7 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 
 void UAbilitySystemSetupComponent::ApplyStartupEffects()
 {
-	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to apply startup Effects on %s but GetAbilitySystemComponent() returned NULL"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
@@ -302,7 +290,7 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 	{
 		return false;
 	}
-	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to give startup abilities on %s but GetAbilitySystemComponent() returned NULL"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
@@ -311,10 +299,10 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 
 	OwningAbilitySystemSetupInterface->GiveStartingAbilities();
 
-	// Give non-handle starting abilities
+	// Give non-handle starting Abilities
 	for (int32 i = 0; i < NonHandleStartingAbilities.Num(); ++i)
 	{
-		FGameplayAbilitySpec Spec(NonHandleStartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner());// GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
+		FGameplayAbilitySpec Spec(NonHandleStartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner()); // GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
 		ASC->GiveAbility(Spec);
 	}
 
@@ -331,7 +319,7 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 		return;
 	}
 
-	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
 		return;
@@ -367,7 +355,7 @@ int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
 	{
 		return 0;
 	}
-	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Attribute Sets from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Attribute Sets and possibly Attribute Set duplicates now (very bad). Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
@@ -399,7 +387,7 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
 	{
 		return 0;
 	}
-	UAbilitySystemComponent* ASC = OwningAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Abilities from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Abilitie(s) and possibly duplicates. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
@@ -423,21 +411,22 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
 
 int32 UAbilitySystemSetupComponent::RemoveAllCharacterTags() // only called on Authority
 {
-	// Needs implementation. Below I was trying to find a way to get all tags containing a parent of Character.
-	//int32 AmountFound = OwningAbilitySystemInterface()->GetAbilitySystemComponent()->GetTagCount(FGameplayTag::RequestGameplayTag("Character"));
+	// Needs implementation. Below I was trying to find a way to get all Tags containing a parent of Character.
+	//int32 AmountFound = GetAbilitySystemComponent()->GetTagCount(FGameplayTag::RequestGameplayTag("Character"));
 
 	return -1;
 }
 
 void UAbilitySystemSetupComponent::UnPossessed()
 {
-	PendingAbilitiesToSync = OwningAbilitySystemInterface->GetAbilitySystemComponent()->GetActivatableAbilities();
+	PendingAbilitiesToSync = GetAbilitySystemComponent()->GetActivatableAbilities();
 
 	// This goes before Super so we can get the Controller before it unpossess and the Pawn's reference becomes null. If it was
 	// null we can't do IsPlayerControlled() and GetAbilitySystemComponent() would return the wrong ASC so the functions that we are calling would
 	// probably act really weird and try doing stuff on the wrong ASC
 
-	if (OwningPawn->IsPlayerControlled() || (!OwningPawn->IsPlayerControlled() && bShouldHandleAIAbilitySystemSetup)) // if you were a Player or were an AI with the AIAbilitySystemComponent subobject (if we are supposed to be doing ASC logic)
+	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && !IsValid(AIAbilitySystemComponent));
+	if (bAIWithoutASC == false) // if we were a Player with an ASC or we were an AI with an ASC
 	{
 		if (bUnregisterAttributeSetsOnUnpossessed)
 		{
@@ -454,7 +443,7 @@ void UAbilitySystemSetupComponent::UnPossessed()
 				Spec->ActiveCount = 0;
 				//Spec->PendingRemove = false; // maybe not actually?
 
-				//OwningAbilitySystemInterface->GetAbilitySystemComponent()->ClearAbility(Spec->Handle);
+				//GetAbilitySystemComponent()->ClearAbility(Spec->Handle);
 			}
 		}
 		if (bRemoveCharacterTagsOnUnpossessed)
@@ -463,11 +452,8 @@ void UAbilitySystemSetupComponent::UnPossessed()
 		}
 	}
 
-
-	if (OwningPawn->IsPlayerControlled()/* || OwningPawn->GetPlayerState()->IsABot()*/) // should we be checking if we have a Player State bot whenever we want to use the Player ASC
-	{
-		PreviousPlayerASC = PlayerAbilitySystemComponent; // make sure we set previous ASC right before UnPossessed
-	}
+	// Make sure we set previous ASC right before UnPossessed
+	PreviousASC = GetAbilitySystemComponent();
 
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
 	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
