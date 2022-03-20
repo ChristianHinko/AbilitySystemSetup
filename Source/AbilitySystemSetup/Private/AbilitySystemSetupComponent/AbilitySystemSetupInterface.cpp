@@ -16,7 +16,7 @@ void IAbilitySystemSetupInterface::CreateAttributeSets()
 	//Super::CreateAttributeSets();
 
 
-	if (!MyAttributeSet)
+	if (!IsValid(MyAttributeSet))
 	{
 		MyAttributeSet = NewObject<UAS_MyAttributeSet>(this, UAS_MyAttributeSet::StaticClass(), TEXT("MyAttributeSet"));
 	}
@@ -25,7 +25,7 @@ void IAbilitySystemSetupInterface::CreateAttributeSets()
 		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(MyAttributeSet->GetName()));
 	}
 
-	if (!MyOtherAttributeSet)
+	if (!IsValid(MyOtherAttributeSet))
 	{
 		MyOtherAttributeSet = NewObject<UAS_MyOtherAttributeSet>(this, UAS_MyOtherAttributeSet::StaticClass(), TEXT("MyOtherAttributeSet"));
 	}
@@ -41,6 +41,7 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 
 	if (IsValid(MyAttributeSet) && GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyAttributeSet) == false)
 	{
+		MyAttributeSet->Rename(nullptr, this);
 		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyAttributeSet);
 	}
 	else
@@ -50,6 +51,7 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 
 	if (IsValid(MyOtherAttributeSet) && GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyOtherAttributeSet) == false)
 	{
+		MyOtherAttributeSet->Rename(nullptr, this);
 		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyOtherAttributeSet);
 	}
 	else
@@ -63,7 +65,7 @@ void IAbilitySystemSetupInterface::GiveStartingAbilities()
 	//Super::GiveStartingAbilities();
 
 
-	MyAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyAbilityTSub, 1/*GetLevel()*/, -1, this));
-	MyOtherAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyOtherAbilityTSub, 1/*GetLevel()*/, -1, this));
+	MyAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyAbilityTSub, /*GetLevel()*/1, -1, this));
+	MyOtherAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyOtherAbilityTSub, /*GetLevel()*/1, -1, this));
 }
 #endif

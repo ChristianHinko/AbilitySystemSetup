@@ -33,7 +33,7 @@ class ABILITYSYSTEMSETUP_API IAbilitySystemSetupInterface
 
 	friend class UAbilitySystemSetupComponent;
 public:
-	virtual UAbilitySystemSetupComponent* GetAbilitySystemSetup() const = 0;
+	virtual UAbilitySystemSetupComponent* GetAbilitySystemSetupComponent() const = 0;
 
 protected:
 	/**

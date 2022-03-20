@@ -19,13 +19,6 @@
 
 
 
-//void UAbilitySystemSetupComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-//{
-//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-//
-//	//DOREPLIFETIME(UAbilitySystemSetupComponent, PlayerAbilitySystemComponent);			// can be helpful for debugging
-//}
-
 UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -86,14 +79,14 @@ UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemCompon
 
 void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState)
 {
-	IAbilitySystemInterface* AbilitySystem = Cast<IAbilitySystemInterface>(PlayerState);
-	if (!AbilitySystem)
+	const IAbilitySystemInterface* AbilitySystemInterface = Cast<const IAbilitySystemInterface>(PlayerState);
+	if (!AbilitySystemInterface)
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
-	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystem->GetAbilitySystemComponent());
+	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent());
 	if (!IsValid(PlayerAbilitySystemComponent))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), ANSI_TO_TCHAR(__FUNCTION__));
@@ -110,15 +103,10 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 
 	if (!bInitialized)
 	{
-
-
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			// Moved these Attribute Set stuff into this check because seems to make more sence - move outside if problems arise
-			OwningAbilitySystemSetupInterface->CreateAttributeSets();
-			OwningAbilitySystemSetupInterface->RegisterAttributeSets();
-			// Must call ForceReplication() after registering an Attribute Set(s)
-			PlayerAbilitySystemComponent->ForceReplication();
+			CreateAttributeSets();
+			RegisterAttributeSets();
 		}
 
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, PlayerAbilitySystemComponent); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
@@ -137,13 +125,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 	else // if something is posessing this us a second time
 	{
-		// Just register this our already-created Attribute Sets with the Player's ASC
-		OwningAbilitySystemSetupInterface->RegisterAttributeSets();
-		if (GetOwnerRole() == ROLE_Authority)
-		{
-			// Must call ForceReplication() after registering an Attribute Set(s)
-			PlayerAbilitySystemComponent->ForceReplication();
-		}
+		// Just register our already-created Attribute Sets with the ASC
+		RegisterAttributeSets();
 
 		// Sync Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
@@ -184,11 +167,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 	if (!bInitialized)
 	{
-		// Must run these on Server but we run them on client too so that we don't have to wait.. It's how Dan does it so seams legit
-		OwningAbilitySystemSetupInterface->CreateAttributeSets();
-		OwningAbilitySystemSetupInterface->RegisterAttributeSets();
-		// Must call ForceReplication() after registering an Attribute Set(s)
-		AIAbilitySystemComponent->ForceReplication();
+		CreateAttributeSets();
+		RegisterAttributeSets();
 
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, AIAbilitySystemComponent); // at this point the ASC is safe to use
 
@@ -203,10 +183,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	}
 	else // if something is posessing this us a second time
 	{
-		// Just register this our already-created Attribute Sets with the AI's ASC
-		OwningAbilitySystemSetupInterface->RegisterAttributeSets();
-		// Must call ForceReplication() after registering an Attribute Set(s)
-		AIAbilitySystemComponent->ForceReplication();
+		// Just register this our already-created Attribute Sets with the ASC
+		RegisterAttributeSets();
 
 
 		// Sync Abilities between ASCs
@@ -226,6 +204,79 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 #pragma endregion
 
 #pragma region ASC Setup Helpers
+
+void UAbilitySystemSetupComponent::CreateAttributeSets()
+{
+	// Notify our owner
+	OwningAbilitySystemSetupInterface->CreateAttributeSets();
+
+	// Create the StartupAttributeSets
+	for (TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
+	{
+		// Ensure we have not already created an Attribute Set of this class
+		const bool bAlreadyCreated = CreatedAttributeSets.ContainsByPredicate(
+			[&AttributeSetClass](const UAttributeSet* AS)
+			{
+				return (AS->GetClass() == AttributeSetClass);
+			}
+		);
+
+		if (bAlreadyCreated)
+		{
+			// Already created this Attribute Set!
+			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to create a %s when one has already been created! Skipping this creation."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSetClass->GetName()));
+			continue;
+		}
+
+
+		// Create this new Attribute Set
+		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
+		CreatedAttributeSets.Add(NewAttributeSet);
+	}
+
+}
+
+void UAbilitySystemSetupComponent::RegisterAttributeSets()
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!IsValid(ASC))
+	{
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
+
+
+	// Notify our owner
+	OwningAbilitySystemSetupInterface->RegisterAttributeSets();
+
+	// Register our CreatedAttributeSets
+	for (UAttributeSet* AttributeSet : CreatedAttributeSets)
+	{
+		// Ensure we have not already registered an Attribute Set of this class
+		const bool bAlreadyRegistered = ASC->GetSpawnedAttributes_Mutable().ContainsByPredicate(
+			[&AttributeSet](const UAttributeSet* AS)
+			{
+				return (AS->GetClass() == AttributeSet->GetClass());
+			}
+		);
+
+		if (bAlreadyRegistered)
+		{
+			// Already registered this Attribute Set class!
+			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to register a %s when one has already been registered! Skipping this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSet->GetClass()->GetName()));
+			continue;
+		}
+
+
+		// Register this Attribute Set
+		AttributeSet->Rename(nullptr, GetOwner()); // assign the outer so that we know that it is ours so we can unregister it when needed - I saw Roy do this too in his ArcInventory
+		ASC->AddAttributeSetSubobject(AttributeSet);
+	}
+
+
+	// Mark it Net Dirty after registering any Attribute Sets
+	ASC->ForceReplication();
+}
 
 void UAbilitySystemSetupComponent::InitializeAttributes()
 {
@@ -297,6 +348,7 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 		return false;
 	}
 
+	// Notify our owner
 	OwningAbilitySystemSetupInterface->GiveStartingAbilities();
 
 	// Give non-handle starting Abilities
@@ -327,16 +379,16 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 
 	if (!bASCInputBound)
 	{
-		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UDS_AbilitySystemSetup>();
+		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UDS_AbilitySystemSetup>();
 		if (!IsValid(AbilitySystemSetupDeveloperSettings))
 		{
 			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		}
 
 		ASC->BindAbilityActivationToInputComponent(InputComponent, FGameplayAbilityInputBinds(
-				AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// Name of our confirm input from the project settings
-				AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// Name of our cancel input from the project settings
-				AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// Name of our GAS input enum that gives the names of the rest of our inputs in the project settings
+				AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
+				AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings
+				AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// name of our GAS input enum that gives the names of the rest of our inputs in the project settings
 			)
 		);
 
@@ -358,24 +410,27 @@ int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Attribute Sets from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Attribute Sets and possibly Attribute Set duplicates now (very bad). Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not remove owned Attribute Sets from ASC so it probably has unneeded Attribute Sets and possibly duplicates now (very bad). Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return 0;
 	}
 
 
 	int32 RetVal = 0;
+
 	for (int32 i = ASC->GetSpawnedAttributes().Num() - 1; i >= 0; --i)
 	{
-		if (UAttributeSet* AS = ASC->GetSpawnedAttributes()[i])
+		if (const UAttributeSet* AS = ASC->GetSpawnedAttributes()[i])
 		{
-			if (AS->GetOwningActor() == GetOwner()) // for Attribute Set we check the OwningActor since thats what they use. It's also automatically set by the engine so were good
+			if (AS->GetOwningActor() == GetOwner()) // ensure we were the one who registered this Attribute Set
 			{
+				// Unregister it
 				ASC->GetSpawnedAttributes_Mutable().RemoveAt(i);
 				++RetVal;
 			}
 		}
 	}
 
+	// Mark it Net Dirty
 	ASC->ForceReplication();
 
 	return RetVal;
@@ -390,17 +445,19 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove owned Abilities from ASC before UnPossessed but GetAbilitySystemComponent() returned NULL. ASC probably now has unneeded Abilitie(s) and possibly duplicates. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not remove owned Abilities from ASC so it probably has unneeded Abilities and possibly duplicates now. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return 0;
 	}
 
 
 	int32 RetVal = 0;
+
 	for (int32 i = ASC->GetActivatableAbilities().Num() - 1; i >= 0; --i)
 	{
-		FGameplayAbilitySpec Spec = ASC->GetActivatableAbilities()[i];
-		if (Spec.SourceObject == GetOwner()) // for Abilities we check the SourceObject since thats what they use. SourceObjects are expected to be correct when set on GiveAbility()
+		const FGameplayAbilitySpec& Spec = ASC->GetActivatableAbilities()[i];
+		if (Spec.SourceObject == GetOwner()) // ensure we were the ones who gave this Ability - SourceObjects are expected to correctly assigned when using GiveAbility()
 		{
+			// Remove it
 			ASC->ClearAbility(Spec.Handle);
 			++RetVal;
 		}
@@ -426,26 +483,28 @@ void UAbilitySystemSetupComponent::UnPossessed()
 	// probably act really weird and try doing stuff on the wrong ASC
 
 	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && !IsValid(AIAbilitySystemComponent));
-	if (bAIWithoutASC == false) // if we were a Player with an ASC or we were an AI with an ASC
+	if (!bAIWithoutASC) // if we were a Player with an ASC or we were an AI with an ASC
 	{
 		if (bUnregisterAttributeSetsOnUnpossessed)
 		{
 			UnregisterOwnedAttributeSets();
 		}
+
 		if (bRemoveAbilitiesOnUnpossessed)
 		{
 			RemoveOwnedAbilities();
 			for (int32 i = 0; i < PendingAbilitiesToSync.Num(); ++i)
 			{
-				FGameplayAbilitySpec* Spec = &PendingAbilitiesToSync[i];
-				Spec->NonReplicatedInstances.Empty();
-				Spec->ReplicatedInstances.Empty();
-				Spec->ActiveCount = 0;
-				//Spec->PendingRemove = false; // maybe not actually?
+				FGameplayAbilitySpec& Spec = PendingAbilitiesToSync[i];
+				Spec.NonReplicatedInstances.Empty();
+				Spec.ReplicatedInstances.Empty();
+				Spec.ActiveCount = 0;
+				//Spec.PendingRemove = false; // maybe not actually?
 
 				//GetAbilitySystemComponent()->ClearAbility(Spec->Handle);
 			}
 		}
+
 		if (bRemoveCharacterTagsOnUnpossessed)
 		{
 			RemoveAllCharacterTags();

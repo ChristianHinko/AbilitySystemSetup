@@ -16,6 +16,7 @@ class IAbilitySystemInterface;
 class UGameplayEffect;
 enum class EGameplayEffectReplicationMode : uint8;
 struct FGameplayAbilitySpec;
+class UAttributeSet;
 
 
 
@@ -95,7 +96,7 @@ protected:
 	/**
 	 * Points to the PlayerState's ASC
 	 */
-	UPROPERTY(/*Replicated*/)	// replicated can be helpful for debugging issues
+	UPROPERTY()
 		UASSAbilitySystemComponent* PlayerAbilitySystemComponent;
 	/**
 	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character (so we can give Abilities and stuff).
@@ -156,11 +157,22 @@ public:
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
 #pragma endregion
 
-	/** Default Attributes values on startup. This should be an instant GE with the Modifier Op set to Override so you can choose what the starting Attribute values will be on spawn */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Effects")
+	/**
+	 * Attribute Sets to create and register NOTE: COMPLETELY UNTESTED
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
+		TArray<TSubclassOf<UAttributeSet>> StartupAttributeSets;
+	/**
+	 * Default Attributes values on startup.
+	 * This should be an instant GE with the Modifier Op set to Override so you can choose what the starting Attribute values will be on spawn
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
 		TSubclassOf<UGameplayEffect> DefaultAttributeValuesEffectTSub;
-	/** These Effects are only applied one time on startup (ie. GE_HealthRegen, GE_StaminaRegen) */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Effects")
+
+	/**
+	 * These Effects are only applied one time on startup (ie. GE_HealthRegen, GE_StaminaRegen)
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
 		TArray<TSubclassOf<UGameplayEffect>> EffectsToApplyOnStartup;
 
 protected:
@@ -168,13 +180,13 @@ protected:
 	bool GiveStartingAbilities();
 
 	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Abilities")
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Abilities")
 		TArray<TSubclassOf<UGameplayAbility>> NonHandleStartingAbilities;
 
 
 
 	/** Decide which replication mode you want for the AIAbilitySystemComponent. Should normally be set to Minimal. Only change if you know what your doing */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|AI")
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AI")
 		EGameplayEffectReplicationMode AIAbilitySystemComponentReplicationMode;
 
 
@@ -185,7 +197,9 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bUnregisterAttributeSetsOnUnpossessed : 1;
-	/** Remove all Abilities that were given by us on unpossess */
+	/**
+	 * Remove all Abilities that were given by us on unpossess
+	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveAbilitiesOnUnpossessed : 1;
 	/**
@@ -216,12 +230,21 @@ private:
 		AController* PreviousController;
 
 
+	/** Create Attribute Sets using the StartupAttributeSets array and calling on IAbilitySystemSetupInterface::CreateAttributeSets() */
+	void CreateAttributeSets();
+	/** Register Attribute Sets to the ASC using the StartupAttributeSets array and calling on IAbilitySystemSetupInterface::RegisterAttributeSets() */
+	void RegisterAttributeSets();
 	/** Initialize Attribute values using the DefaultAttributeValuesEffect */
 	void InitializeAttributes();
 	/** Apply all Effects listed in EffectsToApplyOnStartup */
 	void ApplyStartupEffects();
 
+	/** AttributeSets that have been created. Kept track of so that we can unregister them when needed. */
+	TArray<UAttributeSet*> CreatedAttributeSets;
+
+
 	TArray<FGameplayAbilitySpec> PendingAbilitiesToSync;
+
 
 
 	// Internal state bools:
