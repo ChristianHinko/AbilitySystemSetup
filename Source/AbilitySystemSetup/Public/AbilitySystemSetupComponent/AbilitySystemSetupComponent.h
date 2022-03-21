@@ -49,8 +49,8 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbi
  * 			- If you want a Spec Handle for a starting Ability, give it in GiveStartingAbilities() using AbilitySystemSetupInterface.
  * 			
  *		4) Attribute Sets
- * 			- Any Attribute Sets owned by this component's owning Actor will be automatically removed from the ASC on UnPossessed (owner actor is automatically set by the engine). If you want an Attribute Set to persist between characters make sure you manually set its owner to the PlayerState. (still haven't tested with non subobject Attribute Sets)
- * 			- To use Attribute Sets, create them in CreateAttributeSets() using the AbilitySystemSetupInterface and register them with your ASC in RegisterAttributeSets() using the AbilitySystemSetupInterface.
+ * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed. If you want an Attribute Set to persist between characters make sure you manually set its outer to the PlayerState.
+ * 			- To use Attribute Sets, register them with your ASC in IAbilitySystemSetupInterface::RegisterAttributeSets().
  * 			
  *		4) Gameplay Effects
  * 			- To set default Attribute values via Gameplay Effect, set DefaultAttributeValuesEffectTSub in BP to your GE.
@@ -230,8 +230,6 @@ private:
 		AController* PreviousController;
 
 
-	/** Create Attribute Sets using the StartupAttributeSets array and calling on IAbilitySystemSetupInterface::CreateAttributeSets() */
-	void CreateAttributeSets();
 	/** Register Attribute Sets to the ASC using the StartupAttributeSets array and calling on IAbilitySystemSetupInterface::RegisterAttributeSets() */
 	void RegisterAttributeSets();
 	/** Initialize Attribute values using the DefaultAttributeValuesEffect */

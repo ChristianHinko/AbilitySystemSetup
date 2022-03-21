@@ -37,11 +37,6 @@ public:
 
 protected:
 	/**
-	 * Called on the server and client. Override this to create new Attribute Sets using NewObject().
-	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
-	 */
-	virtual void CreateAttributeSets() = 0;
-	/**
 	 * Called on the server and client. Override this to register your created Attribute Sets with the ASC using AddAttributeSetSubobject().
 	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */

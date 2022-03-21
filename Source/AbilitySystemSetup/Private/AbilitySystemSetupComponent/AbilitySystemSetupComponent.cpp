@@ -23,20 +23,6 @@
 UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	PrimaryComponentTick.bCanEverTick = false;
-
-
-
-	// We make the AI always automatically posses us because the AI ASC will be in use before the Player possesses us so we sould have the SetupWithAbilitySystemAIControlled() run so the ASC can be used.
-	// But we're not doing this because its hard to transfer ASC state to another. We don't need this feature right now
-	//AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
-
-	bUnregisterAttributeSetsOnUnpossessed = true; // TODO: make these transfer to next ASC
-	bRemoveAbilitiesOnUnpossessed = true;
-	bRemoveCharacterTagsOnUnpossessed = true;
-
-
 	// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
 	AIAbilitySystemComponentReplicationMode = EGameplayEffectReplicationMode::Minimal;
 
@@ -44,24 +30,59 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	if (IsValid(AIAbilitySystemComponent))
 	{
 		AIAbilitySystemComponent->SetIsReplicated(true);
-		AIAbilitySystemComponent->SetReplicationMode(AIAbilitySystemComponentReplicationMode);
+		AIAbilitySystemComponent->SetReplicationMode(AIAbilitySystemComponentReplicationMode); // TODO: wait this is not going to be the BP value
 	}
 
-	// So we can get our casted Owners
+
+	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
+
+
+	// We make the AI always automatically posses us because the AI ASC will be in use before the Player possesses us so we sould have the SetupWithAbilitySystemAIControlled() run so the ASC can be used.
+	// But we're not doing this because its hard to transfer ASC state to another. We don't need this feature right now
+	//AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	bUnregisterAttributeSetsOnUnpossessed = true; // TODO: make these transfer to next ASC
+	bRemoveAbilitiesOnUnpossessed = true;
+	bRemoveCharacterTagsOnUnpossessed = true;
 }
 void UAbilitySystemSetupComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	OwningPawn = Cast<APawn>(GetOwner()); // TODO: maybe instead of Cast<APawn>() we can do a GetTypedOuter<APawn>() so this can work on plain Actors too
-	OwningAbilitySystemSetupInterface = Cast<IAbilitySystemSetupInterface>(GetOwner()); // TODO: maybe do a UBFL_InterfaceHelpers::GetInterfaceTypedOuter()?
+
+	// Get casted owners
+	OwningPawn = Cast<APawn>(GetOwner()); // NOTE: maybe do a GetTypedOuter() instead?
+	OwningAbilitySystemSetupInterface = Cast<IAbilitySystemSetupInterface>(GetOwner()); // NOTE: maybe do a UBFL_InterfaceHelpers::GetInterfaceTypedOuter() instead?
 	if (!OwningAbilitySystemSetupInterface)
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() MAKE SURE YOU IMPLEMENT THE IAbilitySystemSetupInterface INTERFACE WHEN USING THIS COMPONENT"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
-}
 
+	// Create Attribute Sets using the StartupAttributeSets array
+	for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
+	{
+		// Ensure we have not already created an Attribute Set of this class
+		const bool bAlreadyCreated = CreatedAttributeSets.ContainsByPredicate(
+			[&AttributeSetClass](const UAttributeSet* AS)
+			{
+				return (AS->GetClass() == AttributeSetClass);
+			}
+		);
+
+		if (bAlreadyCreated)
+		{
+			// Already created this Attribute Set!
+			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to create a %s when one has already been created! Skipping this creation."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSetClass->GetName()));
+			continue;
+		}
+
+
+		// Create this new Attribute Set
+		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
+		CreatedAttributeSets.Add(NewAttributeSet);
+	}
+}
 
 
 UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemComponent() const
@@ -106,7 +127,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	{
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			CreateAttributeSets();
 			RegisterAttributeSets();
 		}
 
@@ -168,7 +188,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 	if (!bInitialized)
 	{
-		CreateAttributeSets();
 		RegisterAttributeSets();
 
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, AIAbilitySystemComponent); // at this point the ASC is safe to use
@@ -205,38 +224,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 #pragma endregion
 
 #pragma region ASC Setup Helpers
-
-void UAbilitySystemSetupComponent::CreateAttributeSets()
-{
-	// Notify our owner
-	OwningAbilitySystemSetupInterface->CreateAttributeSets();
-
-	// Create the StartupAttributeSets
-	for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
-	{
-		// Ensure we have not already created an Attribute Set of this class
-		const bool bAlreadyCreated = CreatedAttributeSets.ContainsByPredicate(
-			[&AttributeSetClass](const UAttributeSet* AS)
-			{
-				return (AS->GetClass() == AttributeSetClass);
-			}
-		);
-
-		if (bAlreadyCreated)
-		{
-			// Already created this Attribute Set!
-			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to create a %s when one has already been created! Skipping this creation."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSetClass->GetName()));
-			continue;
-		}
-
-
-		// Create this new Attribute Set
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
-		CreatedAttributeSets.Add(NewAttributeSet);
-	}
-
-}
-
 void UAbilitySystemSetupComponent::RegisterAttributeSets()
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();

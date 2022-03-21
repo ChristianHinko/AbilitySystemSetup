@@ -11,29 +11,6 @@
 /// 
 
 #if 0
-void IAbilitySystemSetupInterface::CreateAttributeSets()
-{
-	//Super::CreateAttributeSets();
-
-
-	if (!IsValid(MyAttributeSet))
-	{
-		MyAttributeSet = NewObject<UAS_MyAttributeSet>(this, TEXT("MyAttributeSet"));
-	}
-	else
-	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(MyAttributeSet->GetName()));
-	}
-
-	if (!IsValid(MyOtherAttributeSet))
-	{
-		MyOtherAttributeSet = NewObject<UAS_MyOtherAttributeSet>(this, TEXT("MyOtherAttributeSet"));
-	}
-	else
-	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(MyOtherAttributeSet->GetName()));
-	}
-}
 void IAbilitySystemSetupInterface::RegisterAttributeSets()
 {
 	//Super::RegisterAttributeSets();
