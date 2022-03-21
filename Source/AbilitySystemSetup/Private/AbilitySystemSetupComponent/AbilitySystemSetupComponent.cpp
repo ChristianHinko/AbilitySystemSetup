@@ -14,6 +14,7 @@
 #include "DS_AbilitySystemSetup.h"
 #include "AbilitySystemSetupComponent/AbilitySystemSetupInterface.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -42,8 +43,8 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	AIAbilitySystemComponent = CreateOptionalDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AIAbilitySystemComponent"));
 	if (IsValid(AIAbilitySystemComponent))
 	{
-		AIAbilitySystemComponent->SetReplicationMode(AIAbilitySystemComponentReplicationMode);
 		AIAbilitySystemComponent->SetIsReplicated(true);
+		AIAbilitySystemComponent->SetReplicationMode(AIAbilitySystemComponentReplicationMode);
 	}
 
 	// So we can get our casted Owners
@@ -211,7 +212,7 @@ void UAbilitySystemSetupComponent::CreateAttributeSets()
 	OwningAbilitySystemSetupInterface->CreateAttributeSets();
 
 	// Create the StartupAttributeSets
-	for (TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
+	for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
 	{
 		// Ensure we have not already created an Attribute Set of this class
 		const bool bAlreadyCreated = CreatedAttributeSets.ContainsByPredicate(
@@ -252,21 +253,12 @@ void UAbilitySystemSetupComponent::RegisterAttributeSets()
 	// Register our CreatedAttributeSets
 	for (UAttributeSet* AttributeSet : CreatedAttributeSets)
 	{
-		// Ensure we have not already registered an Attribute Set of this class
-		const bool bAlreadyRegistered = ASC->GetSpawnedAttributes_Mutable().ContainsByPredicate(
-			[&AttributeSet](const UAttributeSet* AS)
-			{
-				return (AS->GetClass() == AttributeSet->GetClass());
-			}
-		);
-
-		if (bAlreadyRegistered)
+		if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet(ASC, AttributeSet->GetClass()))
 		{
-			// Already registered this Attribute Set class!
+			// Already registered an Attribute Set of this class!
 			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to register a %s when one has already been registered! Skipping this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSet->GetClass()->GetName()));
 			continue;
 		}
-
 
 		// Register this Attribute Set
 		AttributeSet->Rename(nullptr, GetOwner()); // assign the outer so that we know that it is ours so we can unregister it when needed - I saw Roy do this too in his ArcInventory

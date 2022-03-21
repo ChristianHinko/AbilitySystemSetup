@@ -38,17 +38,17 @@ public:
 protected:
 	/**
 	 * Called on the server and client. Override this to create new Attribute Sets using NewObject().
-	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
 	virtual void CreateAttributeSets() = 0;
 	/**
 	 * Called on the server and client. Override this to register your created Attribute Sets with the ASC using AddAttributeSetSubobject().
-	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
 	virtual void RegisterAttributeSets() = 0;
 	/**
 	 * Called on server only. This is the earliest place you can give Abilities. This is meant for giving Abilities and assigning them with Spec Handles.
-	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
 	virtual void GiveStartingAbilities() = 0;
 

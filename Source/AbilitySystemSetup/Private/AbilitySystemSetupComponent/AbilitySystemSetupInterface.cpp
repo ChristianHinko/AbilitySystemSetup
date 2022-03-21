@@ -18,7 +18,7 @@ void IAbilitySystemSetupInterface::CreateAttributeSets()
 
 	if (!IsValid(MyAttributeSet))
 	{
-		MyAttributeSet = NewObject<UAS_MyAttributeSet>(this, UAS_MyAttributeSet::StaticClass(), TEXT("MyAttributeSet"));
+		MyAttributeSet = NewObject<UAS_MyAttributeSet>(this, TEXT("MyAttributeSet"));
 	}
 	else
 	{
@@ -27,7 +27,7 @@ void IAbilitySystemSetupInterface::CreateAttributeSets()
 
 	if (!IsValid(MyOtherAttributeSet))
 	{
-		MyOtherAttributeSet = NewObject<UAS_MyOtherAttributeSet>(this, UAS_MyOtherAttributeSet::StaticClass(), TEXT("MyOtherAttributeSet"));
+		MyOtherAttributeSet = NewObject<UAS_MyOtherAttributeSet>(this, TEXT("MyOtherAttributeSet"));
 	}
 	else
 	{
@@ -39,7 +39,7 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 	//Super::RegisterAttributeSets();
 
 
-	if (IsValid(MyAttributeSet) && GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyAttributeSet) == false)
+	if (IsValid(MyAttributeSet) && UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_MyAttributeSet>(GetAbilitySystemComponent()) == nullptr)
 	{
 		MyAttributeSet->Rename(nullptr, this);
 		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyAttributeSet);
@@ -49,7 +49,7 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyAttributeSet was either NULL or already added to the character's ASC. Character: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 	}
 
-	if (IsValid(MyOtherAttributeSet) && GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyOtherAttributeSet) == false)
+	if (IsValid(MyOtherAttributeSet) && UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_MyOtherAttributeSet>(GetAbilitySystemComponent()) == nullptr)
 	{
 		MyOtherAttributeSet->Rename(nullptr, this);
 		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyOtherAttributeSet);

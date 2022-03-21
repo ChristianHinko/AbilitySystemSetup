@@ -7,6 +7,25 @@
 
 
 
+UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* ASC, const TSubclassOf<UAttributeSet> AttributeSetClass)
+{
+	// Potentially find an Attribute Set of this class
+	UAttributeSet* const * const FoundAttributeSet = ASC->GetSpawnedAttributes().FindByPredicate(
+		[&AttributeSetClass](const UAttributeSet* AS)
+		{
+			return (AS->GetClass() == AttributeSetClass);
+		}
+	);
+
+	if (FoundAttributeSet)
+	{
+		// Found it!
+		return *FoundAttributeSet;
+	}
+
+	return nullptr;
+}
+
 FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeASSFilterHandle(const FASSGameplayTargetDataFilter& SSFilter, AActor* FilterActor)
 {
 	FGameplayTargetDataFilterHandle FilterHandle;
