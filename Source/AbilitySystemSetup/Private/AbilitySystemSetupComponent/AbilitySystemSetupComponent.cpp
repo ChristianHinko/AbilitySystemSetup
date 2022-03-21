@@ -60,27 +60,14 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 	}
 
 	// Create Attribute Sets using the StartupAttributeSets array
-	for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
+	if (GetOwnerRole() == ROLE_Authority)
 	{
-		// Ensure we have not already created an Attribute Set of this class
-		const bool bAlreadyCreated = CreatedAttributeSets.ContainsByPredicate(
-			[&AttributeSetClass](const UAttributeSet* AS)
-			{
-				return (AS->GetClass() == AttributeSetClass);
-			}
-		);
-
-		if (bAlreadyCreated)
+		for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
 		{
-			// Already created this Attribute Set!
-			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to create a %s when one has already been created! Skipping this creation."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSetClass->GetName()));
-			continue;
+			// Create this new Attribute Set
+			UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
+			CreatedAttributeSets.Add(NewAttributeSet);
 		}
-
-
-		// Create this new Attribute Set
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
-		CreatedAttributeSets.Add(NewAttributeSet);
 	}
 }
 
