@@ -16,24 +16,14 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 	//Super::RegisterAttributeSets();
 
 
-	if (IsValid(MyAttributeSet) && UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_MyAttributeSet>(GetAbilitySystemComponent()) == nullptr)
+	if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_Health>(GetAbilitySystemComponent()) == nullptr)
 	{
-		MyAttributeSet->Rename(nullptr, this);
-		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyAttributeSet);
+		HealthAttributeSet->Rename(nullptr, this);
+		GetAbilitySystemComponent()->AddAttributeSetSubobject(HealthAttributeSet);
 	}
 	else
 	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyAttributeSet was either NULL or already added to the character's ASC. Character: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-	}
-
-	if (IsValid(MyOtherAttributeSet) && UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_MyOtherAttributeSet>(GetAbilitySystemComponent()) == nullptr)
-	{
-		MyOtherAttributeSet->Rename(nullptr, this);
-		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyOtherAttributeSet);
-	}
-	else
-	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyOtherAttributeSet was either NULL or already added to the character's ASC. Character: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		UE_LOG(LogTemp, Warning, TEXT("%s() Failed to add HealthAttributeSet - a UAS_Health has already been added to the Character's ASC. Skipped adding this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 }
 
@@ -42,7 +32,9 @@ void IAbilitySystemSetupInterface::GiveStartingAbilities()
 	//Super::GiveStartingAbilities();
 
 
-	MyAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyAbilityTSub, /*GetLevel()*/1, -1, this));
-	MyOtherAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(MyOtherAbilityTSub, /*GetLevel()*/1, -1, this));
+	// NOTE: No need to pass in an InputID since our subclassed ASC sets it in its overrided OnGiveAbility()
+	CharacterJumpAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(CharacterJumpAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterCrouchAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(CharacterCrouchAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterRunAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(CharacterRunAbilityTSub, /*GetLevel()*/1, -1, this));
 }
 #endif

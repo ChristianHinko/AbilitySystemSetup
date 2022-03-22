@@ -23,20 +23,16 @@
 UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
-	AIAbilitySystemComponentReplicationMode = EGameplayEffectReplicationMode::Minimal;
-
+	// Create AIAbilitySystemComponent
 	AIAbilitySystemComponent = CreateOptionalDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AIAbilitySystemComponent"));
 	if (IsValid(AIAbilitySystemComponent))
 	{
 		AIAbilitySystemComponent->SetIsReplicated(true);
-		AIAbilitySystemComponent->SetReplicationMode(AIAbilitySystemComponentReplicationMode); // TODO: wait this is not going to be the BP value
+		AIAbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal); // Minimal mode means that no Gameplay Effects will replicate. They will only live on the Server. Attributes, Gameplay Tags, and Gameplay Cues will still replicate to us. NOTE: Owner Actors can access and change this if needed
 	}
-
 
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
-
 
 	// We make the AI always automatically posses us because the AI ASC will be in use before the Player possesses us so we sould have the SetupWithAbilitySystemAIControlled() run so the ASC can be used.
 	// But we're not doing this because its hard to transfer ASC state to another. We don't need this feature right now
@@ -84,8 +80,7 @@ UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemCompon
 	}
 }
 
-#pragma region Ability System Possess
-
+//BEGIN On Possess setup
 void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState)
 {
 	const IAbilitySystemInterface* AbilitySystemInterface = Cast<const IAbilitySystemInterface>(PlayerState);
@@ -207,10 +202,9 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 	OnAbilitySystemSetUp.Broadcast(PreviousASC, AIAbilitySystemComponent);
 }
+//END On Possess setup
 
-#pragma endregion
-
-#pragma region ASC Setup Helpers
+//BEGIN On Possess helper functions
 void UAbilitySystemSetupComponent::RegisterAttributeSets()
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
@@ -326,10 +320,9 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 
 	return true;
 }
-#pragma endregion
+//END On Possess helper functions
 
-#pragma region Input
-
+//BEGIN Input setup
 void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 {
 	if (!IsValid(InputComponent))
@@ -362,11 +355,56 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 	}
 
 }
+//END Input setup
 
-#pragma endregion
 
+//BEGIN On UnPossess setup
+void UAbilitySystemSetupComponent::UnPossessed()
+{
+	PendingAbilitiesToSync = GetAbilitySystemComponent()->GetActivatableAbilities();
 
-#pragma region Ability System Unpossess
+	// This goes before Super so we can get the Controller before it unpossess and the Pawn's reference becomes null. If it was
+	// null we can't do IsPlayerControlled() and GetAbilitySystemComponent() would return the wrong ASC so the functions that we are calling would
+	// probably act really weird and try doing stuff on the wrong ASC
+
+	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && !IsValid(AIAbilitySystemComponent));
+	if (!bAIWithoutASC) // if we were a Player with an ASC or we were an AI with an ASC
+	{
+		if (bUnregisterAttributeSetsOnUnpossessed)
+		{
+			UnregisterOwnedAttributeSets();
+		}
+
+		if (bRemoveAbilitiesOnUnpossessed)
+		{
+			RemoveOwnedAbilities();
+			for (int32 i = 0; i < PendingAbilitiesToSync.Num(); ++i)
+			{
+				FGameplayAbilitySpec& Spec = PendingAbilitiesToSync[i];
+				Spec.NonReplicatedInstances.Empty();
+				Spec.ReplicatedInstances.Empty();
+				Spec.ActiveCount = 0;
+				//Spec.PendingRemove = false; // maybe not actually?
+
+				//GetAbilitySystemComponent()->ClearAbility(Spec->Handle);
+			}
+		}
+
+		if (bRemoveCharacterTagsOnUnpossessed)
+		{
+			RemoveAllCharacterTags();
+		}
+	}
+
+	// Make sure we set previous ASC right before UnPossessed
+	PreviousASC = GetAbilitySystemComponent();
+
+	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
+}
+//END On UnPossess setup
+
+//BEGIN On UnPossess helper functions
 int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
 {
 	if (GetOwnerRole() < ROLE_Authority)
@@ -439,48 +477,4 @@ int32 UAbilitySystemSetupComponent::RemoveAllCharacterTags() // only called on A
 
 	return -1;
 }
-
-void UAbilitySystemSetupComponent::UnPossessed()
-{
-	PendingAbilitiesToSync = GetAbilitySystemComponent()->GetActivatableAbilities();
-
-	// This goes before Super so we can get the Controller before it unpossess and the Pawn's reference becomes null. If it was
-	// null we can't do IsPlayerControlled() and GetAbilitySystemComponent() would return the wrong ASC so the functions that we are calling would
-	// probably act really weird and try doing stuff on the wrong ASC
-
-	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && !IsValid(AIAbilitySystemComponent));
-	if (!bAIWithoutASC) // if we were a Player with an ASC or we were an AI with an ASC
-	{
-		if (bUnregisterAttributeSetsOnUnpossessed)
-		{
-			UnregisterOwnedAttributeSets();
-		}
-
-		if (bRemoveAbilitiesOnUnpossessed)
-		{
-			RemoveOwnedAbilities();
-			for (int32 i = 0; i < PendingAbilitiesToSync.Num(); ++i)
-			{
-				FGameplayAbilitySpec& Spec = PendingAbilitiesToSync[i];
-				Spec.NonReplicatedInstances.Empty();
-				Spec.ReplicatedInstances.Empty();
-				Spec.ActiveCount = 0;
-				//Spec.PendingRemove = false; // maybe not actually?
-
-				//GetAbilitySystemComponent()->ClearAbility(Spec->Handle);
-			}
-		}
-
-		if (bRemoveCharacterTagsOnUnpossessed)
-		{
-			RemoveAllCharacterTags();
-		}
-	}
-
-	// Make sure we set previous ASC right before UnPossessed
-	PreviousASC = GetAbilitySystemComponent();
-
-	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
-	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
-}
-#pragma endregion
+//END On UnPossess helper functions

@@ -19,10 +19,9 @@ class UAbilitySystemSetupInterface : public UInterface
 /**
  * Is made to be implemented by Actors with the UAbilitySystemSetupComponent.
  * 
- * Contains events for:
- *		- Creating attribute sets for your ASC
- *		- Registering them with your ASC
- *		- Giving starting abilities for your ASC by spec handle
+ * Provides events for:
+ *		- Adding Attribute Sets to the ASC
+ *		- Giving starting Abilities to the ASC
  * 
  * @SEE "AbilitySystemSetupInterface.cpp" for example implementations of these events!
  * 
@@ -37,14 +36,17 @@ public:
 
 protected:
 	/**
-	 * Called on the server and client. Override this to register your created Attribute Sets with the ASC using AddAttributeSetSubobject().
+	 * The earliest place you can add Attribute Sets. Remember to use UObject::Rename() so that we can unregister them on UnPossessed.
+	 * NOTE: Server only event.
+	 * NOTE: You probably do not need this event - just use the UAbilitySystemSetupComponent::StartupAttributeSets.
 	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
-	virtual void RegisterAttributeSets() = 0;
+	virtual void RegisterAttributeSets() { }
 	/**
-	 * Called on server only. This is the earliest place you can give Abilities. This is meant for giving Abilities and assigning them with Spec Handles.
+	 * The earliest place you can give Abilities. This is meant for giving Abilities and assigning Spec Handles to them.
+	 * NOTE: Server only event.
 	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
-	virtual void GiveStartingAbilities() = 0;
+	virtual void GiveStartingAbilities() { }
 
 };

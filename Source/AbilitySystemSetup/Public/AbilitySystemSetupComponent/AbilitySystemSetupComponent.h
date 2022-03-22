@@ -49,8 +49,9 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbi
  * 			- If you want a Spec Handle for a starting Ability, give it in GiveStartingAbilities() using AbilitySystemSetupInterface.
  * 			
  *		4) Attribute Sets
+ *			- Fill out StartupAttributeSets with the Attribute Set classes that you want to be made and registered.
  * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed. If you want an Attribute Set to persist between characters make sure you manually set its outer to the PlayerState.
- * 			- To use Attribute Sets, register them with your ASC in IAbilitySystemSetupInterface::RegisterAttributeSets().
+ * 			- If, for some reason, you need advanced control over this then override IAbilitySystemSetupInterface::RegisterAttributeSets() to add any created Attribute Sets to the ASC.
  * 			
  *		4) Gameplay Effects
  * 			- To set default Attribute values via Gameplay Effect, set DefaultAttributeValuesEffectTSub in BP to your GE.
@@ -144,9 +145,7 @@ protected:
 	APawn* OwningPawn;
 	IAbilitySystemSetupInterface* OwningAbilitySystemSetupInterface;
 
-
 public:
-#pragma region AbilitySystemSetup Delegates
 	/**
 	 * Broadcasted when the Ability System is set up and ready to go
 	 */
@@ -155,10 +154,10 @@ public:
 	 * Broadcasted when the Ability System is set up BUT before startup Effects are applied, before Attributes are initialized, and before starting Abilities are given
 	 */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
-#pragma endregion
+
 
 	/**
-	 * Attribute Sets to create and register NOTE: COMPLETELY UNTESTED
+	 * Attribute Sets to create and register
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
 		TArray<TSubclassOf<UAttributeSet>> StartupAttributeSets;
@@ -184,12 +183,6 @@ protected:
 		TArray<TSubclassOf<UGameplayAbility>> NonHandleStartingAbilities;
 
 
-
-	/** Decide which replication mode you want for the AIAbilitySystemComponent. Should normally be set to Minimal. Only change if you know what your doing */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AI")
-		EGameplayEffectReplicationMode AIAbilitySystemComponentReplicationMode;
-
-
 	/**
 	 * Takes this object's Attribute Set(s) away from the current ASC. This is on by default to prevent the potential problem of the ASC having 2 Attribute Sets of the same class.
 	 * However if the ASC no longer has this object's Attribute Set, Gameplay Effects can no longer modify their Attributes.
@@ -212,14 +205,12 @@ protected:
 		uint8 bRemoveCharacterTagsOnUnpossessed : 1;
 
 
-
 	/** Removes all Attribute Sets that we added to the ASC */
 	int32 UnregisterOwnedAttributeSets();
 	/** Removes all Abilities that we've given to the ASC */
 	int32 RemoveOwnedAbilities();
 	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
 	int32 RemoveAllCharacterTags();
-
 
 private:
 	UPROPERTY()
@@ -237,7 +228,7 @@ private:
 	/** Apply all Effects listed in EffectsToApplyOnStartup */
 	void ApplyStartupEffects();
 
-	/** AttributeSets that have been created. Kept track of so that we can unregister them when needed. */
+	/** AttributeSets that have been created. Kept track of so that we can register and unregister them when needed. */
 	TArray<UAttributeSet*> CreatedAttributeSets;
 
 
