@@ -22,14 +22,15 @@ public:
 	UASSGameplayAbility();
 
 
-	// Every gameplay ability must have this set to something in their constructor so we know what input id to give the ability in ASSAbilitySystemComponent::OnGiveAbility. If the ability doesn't have an input associated with it, it can be left as None.
+	// Every Gameplay Ability must have this assigned to something in their constructor so we know what InputID to give the Ability Spec in ASSAbilitySystemComponent::OnGiveAbility(). If the Ability doesn't have an input associated with it, it can be assigned to NoInput.
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 		uint8 AbilityInputID;
 
-	bool bActivateAbilityOnGive = false;
+	uint8 bActivateOnGiveAbility : 1;
 
-	// Epic's comment: Projects may want to initiate passives or do other "BeginPlay" type of logic here.
+
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 

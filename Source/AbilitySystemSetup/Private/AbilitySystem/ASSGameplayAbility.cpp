@@ -9,7 +9,9 @@
 
 UASSGameplayAbility::UASSGameplayAbility()
 {
-	AbilityInputID = 0;
+	AbilityInputID = 0; // Unset
+	bActivateOnGiveAbility = false;
+
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	bServerRespectsRemoteAbilityCancellation = false;
@@ -19,19 +21,29 @@ UASSGameplayAbility::UASSGameplayAbility()
 
 void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	if (AbilityInputID == 0)
-	{
-		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s()  Ability implementor forgot to set an AbilityInputID in the ability's constructor. Go back and set it so we get ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
-	}
-
 	TryCallOnAvatarSetOnPrimaryInstance
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (bActivateAbilityOnGive && ActorInfo)
+	if (AbilityInputID == 0)
 	{
-		if (ActorInfo->AbilitySystemComponent.Get())
+		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
+	}
+
+	// Epic's comment: Projects may want to initiate passives or do other "BeginPlay" type of logic here.
+}
+void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+
+	if (bActivateOnGiveAbility)
+	{
+		if (ActorInfo)
 		{
-			bool ActivatedAbilitySucessfully = ActorInfo->AbilitySystemComponent.Get()->TryActivateAbility(Spec.Handle);
+			UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+			if (IsValid(ASC))
+			{
+				ASC->TryActivateAbility(Spec.Handle);
+			}
 		}
 	}
 }
@@ -64,12 +76,11 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	
 
 
-#pragma region Copied from Super (Blueprint Support)
+	//BEGIN Copied from Super (for Blueprint support)
 	if (bHasBlueprintActivate)
 	{
 		// A Blueprinted ActivateAbility function must call CommitAbility somewhere in its execution chain.
 		K2_ActivateAbility();
-		return;
 	}
 	else if (bHasBlueprintActivateFromEvent)
 	{
@@ -85,9 +96,8 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 			bool bWasCancelled = true;
 			EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 		}
-		return;
 	}
-#pragma endregion
+	//END Copied from Super (for Blueprint support)
 }
 
 void UASSGameplayAbility::ExternalEndAbility()

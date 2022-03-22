@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
+#include "AbilitySystemComponent.h" // a very common include for Attribute Sets
 
 #include "ASSAttributeSet.generated.h"
 
@@ -28,25 +29,12 @@ public:
 
 
 protected:
-	/** Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes. (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before) */
-	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
+	/**
+	 * Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes. (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before)
+	 */
+	void AdjustAttributeForMaxChange(const FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, const float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
 
-
-	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /**

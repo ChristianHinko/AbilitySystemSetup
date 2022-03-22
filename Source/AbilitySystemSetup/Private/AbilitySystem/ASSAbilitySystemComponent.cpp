@@ -9,10 +9,10 @@
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
 
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)	// Editor only since we only need this for doing input binding safety checks when developing
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DS_AbilitySystemSetup.h"
 #include "GameFramework\InputSettings.h"
-#endif
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
 
 
@@ -33,32 +33,29 @@ void UASSAbilitySystemComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)	// This is an editor only section that enforces good development workflow
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST) // editor only section to enforce good workflow
 	const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UDS_AbilitySystemSetup>();
 	const UInputSettings* InputSettings = UInputSettings::GetInputSettings();
 
 
 
-
-	// Ensure this UENUM exists! (Check to see if the developer implemented his AbilityInputIDdEnum he specified in the plugin settings)
-	UEnum* AbilityInputIDEnum = FindObject<UEnum>(ANY_PACKAGE, *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+	// Ensure this UENUM exists! (Ensure that the game has implemented their AbilityInputID enum that they specified in the plugin settings)
+	const UEnum* AbilityInputIDEnum = FindObject<UEnum>(ANY_PACKAGE, *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 	if (AbilityInputIDEnum)
 	{
-		// Ensure this UEnum has proper enum setup! (Enum "Unset" and enum "NoInput" for first 2)
-
+		// Ensure this UEnum has proper enum setup! (I.e. enum ``Unset`` and enum ``NoInput`` as the first 2)
 		if (AbilityInputIDEnum->GetNameStringByValue(0) != TEXT("Unset") || AbilityInputIDEnum->GetNameStringByIndex(0) != TEXT("Unset"))
 		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your \"%s\" UEnum is missing the \"Unset\" enum. Go to your %s declaration and make sure you have \"Unset\" as the first enum (and make sure the value is 0). This is important for us to be able to detect when a developer forgets to set an Ability's input ID (it's good to give all Abilities an input ID)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your ``%s`` UEnum is missing the ``Unset`` enum. Go to your %s definition and make sure you have ``Unset`` as the first enum (and make sure the value is 0). This is important for us to be able to detect when someone forgets to set an Ability's input ID (it's good to give all Abilities an input ID)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 		}
 		if (AbilityInputIDEnum->GetNameStringByValue(1) != TEXT("NoInput") || AbilityInputIDEnum->GetNameStringByIndex(1) != TEXT("NoInput"))
 		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your \"%s\" UEnum is missing the \"NoInput\" enum. Go to your %s declaration and make sure you have \"NoInput\" as the second enum (and make sure the value is 1). This is important for us to be able to detect when a developer forgets to set an Ability's input ID (it's good to give all Abilities an input ID and this enum allows you to state that an Ability does not use input binding)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your ``%s`` UEnum is missing the ``NoInput`` enum. Go to your %s definition and make sure you have ``NoInput`` as the second enum (and make sure the value is 1). This enum allows you to state that an Ability does not use input binding"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 		}
-
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The UEnum \"%s\" does not exist. Ensure correct spelling for the name of your AbilityInputID Enum and make sure it is a UENUM so we can find it!"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The UEnum ``%s`` does not exist. Ensure correct spelling for the name of your AbilityInputID Enum and make sure it is a UENUM so we can find it!"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 	}
 
 
@@ -70,24 +67,24 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	TArray<FName> ActionNames;
 	InputSettings->GetActionNames(ActionNames);
 
-	const FName ConfirmTargetInputActionName = FName(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName);
-	const FName CancelTargetInputActionName = FName(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName);
+	const FName& ConfirmTargetInputActionName = FName(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName);
+	const FName& CancelTargetInputActionName = FName(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName);
 
 	// Ensure the Confirm and Cancel Target input actions exist! (Check to see if ConfirmTargetInputActionName and CancelTargetInputActionName in the plugin settings are real inputs)
 	if (ActionNames.Contains(ConfirmTargetInputActionName) == false)
 	{
-		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The \"%s\" input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your ConfirmTarget input action!"), *(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName));
+		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your ConfirmTarget input action!"), *(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName));
 	}
 	if (ActionNames.Contains(CancelTargetInputActionName) == false)
 	{
-		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The \"%s\" input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your CancelTarget input action!"), *(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName));
+		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your CancelTarget input action!"), *(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName));
 	}
 
 
 
 	// Ensure the enum matches Action Mappings!
 	{
-		int32 currentEnumIndex = 2; // what this current ActionName's index should be in the AbilityInputID UEnum
+		int32 ExpectedEnumIndex = 2; // what this current ActionName's index should be in the AbilityInputID UEnum
 		for (const FName& ActionName : ActionNames)
 		{
 			if (ActionName == ConfirmTargetInputActionName || ActionName == CancelTargetInputActionName)
@@ -97,23 +94,21 @@ void UASSAbilitySystemComponent::InitializeComponent()
 			}
 
 
-			int32 actualEnumIndex = AbilityInputIDEnum->GetIndexByName(ActionName);
-			if (actualEnumIndex != currentEnumIndex)
+			if (AbilityInputIDEnum->GetIndexByName(ActionName) != ExpectedEnumIndex)
 			{
-				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your %s UEnum is not matched up with your Action Mappings list in DefaultInput.ini - Expected \"%s\" enum at the %s spot in %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()), *FString::FromInt(currentEnumIndex), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your %s UEnum is not matched up with your Action Mappings list in DefaultInput.ini - Expected ``%s`` enum at the %s spot in %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()), *FString::FromInt(ExpectedEnumIndex), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 			}
-			if (AbilityInputIDEnum->GetValueByName(ActionName) != actualEnumIndex)
+			if (AbilityInputIDEnum->GetValueByName(ActionName) != ExpectedEnumIndex)
 			{
-				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("%s::%s has defined a numeric value for itself. These enums should provide no numeric use and are purely to represent Action Mappings. Leave the enum at the default determined value."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()));
+				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("%s::%s has defined a numeric value for itself. These enums should provide no numeric use and are purely to represent Action Mappings. Leave the enum at the default determined value. Even if you did do it this way, the Ability System's input events won't work that way"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()));
 			}
 
 
-			++currentEnumIndex;
+			++ExpectedEnumIndex;
 		}
 	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
-
-#endif
 }
 
 
@@ -122,18 +117,28 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	if (!IsValid(AbilitySpec.SourceObject))
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Fatal, TEXT("%s() SourceObject was not valid when ability was given. Some dev must have forgotten to set it when giving the ability"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemComponentSetup, Fatal, TEXT("%s() SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
+	// NOTE: I want to do this in UGameplayAbility::OnGiveAbility() instead but the given Spec is const there
 	UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(AbilitySpec.Ability);
 	if (IsValid(ASSAbility))
 	{
-		AbilitySpec.InputID = static_cast<int32>(ASSAbility->AbilityInputID);
+		//if (ASSAbility->AbilityInputID != 1)
+		//{
+			// Take the configured InputID from the Ability
+			AbilitySpec.InputID = static_cast<int32>(ASSAbility->AbilityInputID);
+		//}
+		//else
+		//{
+		//	// We are EAbilityInputID::NoInput
+		//	AbilitySpec.InputID = INDEX_NONE;
+		//}
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() no meaningful AbilityInputID for given ability because the UASSGameplayAbility was null"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() no meaningful AbilityInputID for given Ability because the UASSGameplayAbility was null"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 
 
@@ -148,10 +153,14 @@ void UASSAbilitySystemComponent::GiveAbilities(const TArray<FGameplayAbilitySpec
 		return;
 	}
 
-	for (FGameplayAbilitySpec SpecToGive : Abilities)
+	for (const FGameplayAbilitySpec& SpecToGive : Abilities)
 	{
-		if (GetActivatableAbilities().ContainsByPredicate([&SpecToGive](const FGameplayAbilitySpec& Spec)
-			{ return Spec.Ability == SpecToGive.Ability; }) == false)
+		if (GetActivatableAbilities().ContainsByPredicate(
+			[&SpecToGive](const FGameplayAbilitySpec& Spec)
+			{
+				return Spec.Ability == SpecToGive.Ability;
+			}
+		) == false)
 		{
 			GiveAbility(SpecToGive);
 		}
@@ -168,8 +177,12 @@ void UASSAbilitySystemComponent::RecieveAbilitiesFrom(const UAbilitySystemCompon
 
 	for (FGameplayAbilitySpec SpecToGive : Other->GetActivatableAbilities())
 	{
-		if (GetActivatableAbilities().ContainsByPredicate([&SpecToGive](const FGameplayAbilitySpec& Spec)
-			{ return Spec.Ability == SpecToGive.Ability; }) == false)
+		if (GetActivatableAbilities().ContainsByPredicate(
+			[&SpecToGive](const FGameplayAbilitySpec& Spec)
+			{
+				return Spec.Ability == SpecToGive.Ability;
+			}
+		) == false)
 		{
 			//SpecToGive.ActiveCount = 0; // maybe
 			GiveAbility(SpecToGive);
@@ -179,9 +192,6 @@ void UASSAbilitySystemComponent::RecieveAbilitiesFrom(const UAbilitySystemCompon
 
 void UASSAbilitySystemComponent::TargetConfirmByAbility(UGameplayAbility* AbilityToConfirmTargetOn)
 {
-	// this code is taken from TargetConfirm in AbilitySystemComponent_Abilities and
-	// modified to only confirm targeting to the target actor(s?) associated with the AbilityToConfirmTargetOn
-
 	// Callbacks may modify the spawned target actor array so iterate over a copy instead
 	TArray<AGameplayAbilityTargetActor*> LocalTargetActors = SpawnedTargetActors;
 	SpawnedTargetActors.Reset();
@@ -191,9 +201,9 @@ void UASSAbilitySystemComponent::TargetConfirmByAbility(UGameplayAbility* Abilit
 		{
 			if (TargetActor->IsConfirmTargetingAllowed())
 			{
-				if (TargetActor->OwningAbility == AbilityToConfirmTargetOn)						// <-- our added if statement
+				if (TargetActor->OwningAbility == AbilityToConfirmTargetOn) // =@OVERRIDED CODE MARKER@= wrapped in this if statement
 				{
-					// There might not be any cases where this bool is false
+					//TODO: There might not be any cases where this bool is false
 					if (!TargetActor->bDestroyOnConfirmation)
 					{
 						SpawnedTargetActors.Add(TargetActor);
@@ -211,9 +221,6 @@ void UASSAbilitySystemComponent::TargetConfirmByAbility(UGameplayAbility* Abilit
 
 void UASSAbilitySystemComponent::TargetCancelByAbility(UGameplayAbility* AbilityToCancelTargetOn)
 {
-	// this code is taken from TargetCancel in AbilitySystemComponent_Abilities and
-	// modified to re-add the target actors that are not associated with the AbilityToCancelTargetOn
-
 	// Callbacks may modify the spawned target actor array so iterate over a copy instead
 	TArray<AGameplayAbilityTargetActor*> LocalTargetActors = SpawnedTargetActors;
 	SpawnedTargetActors.Reset();
@@ -221,11 +228,11 @@ void UASSAbilitySystemComponent::TargetCancelByAbility(UGameplayAbility* Ability
 	{
 		if (TargetActor)
 		{
-			if (TargetActor->OwningAbility == AbilityToCancelTargetOn)							// <-- our added if statement
+			if (TargetActor->OwningAbility == AbilityToCancelTargetOn) // =@OVERRIDED CODE MARKER@= wrapped in this if statement
 			{
 				TargetActor->CancelTargeting();
 			}
-			else																				// <-- our added else statement
+			else // =@OVERRIDED CODE MARKER@= add this else statement
 			{
 				SpawnedTargetActors.Add(TargetActor);
 			}
@@ -266,7 +273,7 @@ void UASSAbilitySystemComponent::BindAbilityActivationToInputComponent(UInputCom
 	}
 
 	// Bind Confirm/Cancel. Note: these have to come last!
-	if (!bDoNotAutoConfirmAndCancelFromGASBindings) //	Original implemntation didn't have this and forced a binding to confirm / cancel
+	if (!bDoNotAutoConfirmAndCancelFromGASBindings) // =@OVERRIDED CODE MARKER@= wrapped in this if statement because original implemntation didn't have this and forced a binding to confirm / cancel
 	{
 		if (BindInfo.ConfirmTargetCommand.IsEmpty() == false)
 		{
@@ -331,7 +338,6 @@ void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 	{
 		if (Spec.InputID == InputID)
 		{
-			// Confirm and Cancel Target never gets past here. Maybe it's because it hanldes those internally
 			if (Spec.Ability)
 			{
 				Spec.InputPressed = true;
@@ -349,7 +355,7 @@ void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 				}
 				else
 				{
-					if (!bDoNotAutoActivateFromGASBindings) //	Original implemntation only had TryActivateAbility() in this else statement
+					if (bDoNotAutoActivateFromGASBindings) // =@OVERRIDED CODE MARKER@= wrapped in this if statement because original implemntation would just TryActivateAbility() in this else statement
 					{
 						// Ability is not active, so try to activate it
 						TryActivateAbility(Spec.Handle);
@@ -360,11 +366,6 @@ void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 	}
 }
 #pragma endregion
-
-UASSAbilitySystemComponent* UASSAbilitySystemComponent::GetAbilitySystemComponentFromActor(const AActor* Actor, bool LookForComponent)
-{
-	return Cast<UASSAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor, LookForComponent));
-}
 
 void UASSAbilitySystemComponent::GetActiveAbilitiesWithTags(const FGameplayTagContainer& GameplayTagContainer, TArray<UGameplayAbility*>& ActiveAbilities)
 {
@@ -402,15 +403,15 @@ FGameplayAbilitySpecHandle UASSAbilitySystemComponent::FindAbilitySpecHandleFrom
 	return FGameplayAbilitySpecHandle();
 }
 
-void UASSAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+void UASSAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
 {
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Executed, GameplayCueParameters);
 }
-void UASSAbilitySystemComponent::AddGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+void UASSAbilitySystemComponent::AddGameplayCueLocal(const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
 {
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::OnActive, GameplayCueParameters);
 }
-void UASSAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+void UASSAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
 {
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);
 }

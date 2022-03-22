@@ -7,5 +7,9 @@
 
 
 
-// Ex declaration
-//ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_Ex)
+#if 0
+// Ability tags
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_JumpAbility)
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_CrouchAbility)
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_RunAbility)
+#endif

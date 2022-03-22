@@ -8,7 +8,11 @@
 
 
 
-void UASSAttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty)
+////////////////////////////////////////////////////////
+/// UASSAttributeSet
+////////////////////////////////////////////////////////
+
+void UASSAttributeSet::AdjustAttributeForMaxChange(const FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, const float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty)
 {
 	UAbilitySystemComponent* AbilitySystemComponent = GetOwningAbilitySystemComponent();
 	const float CurrentMaxValue = MaxAttribute.GetCurrentValue();
@@ -22,16 +26,10 @@ void UASSAttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& Affec
 	}
 }
 
-void UASSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
-{
-	Super::PostGameplayEffectExecute(Data);
 
-}
-
-
-////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 /// FASSAttributeSetInitter
-////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 void FASSAttributeSetInitter::PreloadAttributeSetData(const TArray<UCurveTable*>& CurveData)
 {
