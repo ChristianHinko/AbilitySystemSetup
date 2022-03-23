@@ -15,7 +15,7 @@ class AASSGameplayAbilityWorldReticle;
 
 
 /**
- * Base target actor class
+ * Base Target Actor class
  */
 UCLASS(Abstract, notplaceable)
 class ABILITYSYSTEMSETUP_API AASSGameplayAbilityTargetActor : public AGameplayAbilityTargetActor
@@ -43,7 +43,9 @@ public:
 		bool bAllowMultipleHitsPerActor;
 
 
-	/** Filter out hit results that do not pass filter and removes multiple hits per actor if needed */
+	/**
+	 * Filter out hit results that do not pass filter and removes multiple hits per actor if needed
+	 */
 	void FilterHitResults(TArray<FHitResult>& OutHitResults, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 	/**
 	 * Filters out one hit result out of a given array. Is meant to be use in FHitResult loops.
@@ -90,10 +92,11 @@ public:
 protected:
 	virtual void PreInitializeComponents() override;
 	virtual void PostInitializeComponents() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	/** This is when the Wait Target Data Task starts using us */
+	// This is when the Wait Target Data Task starts using us
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
-	/** Where we perform our logic for collecting Target Data */
+	// Where we perform our logic for collecting Target Data
 	virtual void ConfirmTargetingAndContinue() override;
 
 	/**
@@ -105,14 +108,11 @@ protected:
 	virtual void CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const;
 
 	
-
+	/** List of custom Reticle actors */
 	TArray<TWeakObjectPtr<AASSGameplayAbilityWorldReticle>> ReticleActors;
 
 	AASSGameplayAbilityWorldReticle* SpawnReticleActor(const FVector& Location, const FRotator& Rotation);
 	virtual void DestroyReticleActors();
-
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 };
 

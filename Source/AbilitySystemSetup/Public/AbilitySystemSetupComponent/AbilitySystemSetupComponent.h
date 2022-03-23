@@ -98,7 +98,7 @@ protected:
 	 * Points to the PlayerState's ASC
 	 */
 	UPROPERTY()
-		UASSAbilitySystemComponent* PlayerAbilitySystemComponent;
+		TWeakObjectPtr<UASSAbilitySystemComponent> PlayerAbilitySystemComponent;
 	/**
 	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character (so we can give Abilities and stuff).
 	 * These Abilities will be transfered from this ASC to the Player's (this allows us to give Abilities early on)
@@ -214,11 +214,11 @@ protected:
 
 private:
 	UPROPERTY()
-		UAbilitySystemComponent* PreviousASC;
+		TWeakObjectPtr<UAbilitySystemComponent> PreviousASC;
 
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
 	UPROPERTY()
-		AController* PreviousController;
+		TWeakObjectPtr<AController> PreviousController;
 
 
 	/** Register Attribute Sets to the ASC using the StartupAttributeSets array and calling on IAbilitySystemSetupInterface::RegisterAttributeSets() */
@@ -229,7 +229,8 @@ private:
 	void ApplyStartupEffects();
 
 	/** AttributeSets that have been created. Kept track of so that we can register and unregister them when needed. */
-	TArray<UAttributeSet*> CreatedAttributeSets;
+	UPROPERTY()
+		TArray<UAttributeSet*> CreatedAttributeSets;
 
 
 	TArray<FGameplayAbilitySpec> PendingAbilitiesToSync;

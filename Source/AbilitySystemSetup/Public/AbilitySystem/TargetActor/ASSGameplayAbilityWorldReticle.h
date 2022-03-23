@@ -10,7 +10,7 @@
 
 
 /**
- * 
+ * Custom World Reticle Parameters
  */
 USTRUCT(BlueprintType)
 struct FASSWorldReticleParameters : public FWorldReticleParameters

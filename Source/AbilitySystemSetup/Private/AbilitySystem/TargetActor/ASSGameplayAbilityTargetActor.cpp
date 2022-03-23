@@ -33,7 +33,6 @@ void AASSGameplayAbilityTargetActor::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 
-
 	Filter = UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(MultiFilter, SourceActor);
 }
 void AASSGameplayAbilityTargetActor::PostInitializeComponents()

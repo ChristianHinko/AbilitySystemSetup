@@ -72,7 +72,7 @@ UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemCompon
 {
 	if (OwningPawn->IsPlayerControlled())
 	{
-		return PlayerAbilitySystemComponent;
+		return PlayerAbilitySystemComponent.Get();
 	}
 	else // AI controlled
 	{
@@ -91,7 +91,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 
 	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent());
-	if (!IsValid(PlayerAbilitySystemComponent))
+	if (!PlayerAbilitySystemComponent.IsValid())
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
@@ -112,7 +112,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 			RegisterAttributeSets();
 		}
 
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, PlayerAbilitySystemComponent); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), PlayerAbilitySystemComponent.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -149,7 +149,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC, PlayerAbilitySystemComponent);
+	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), PlayerAbilitySystemComponent.Get());
 }
 void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 {
@@ -172,7 +172,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	{
 		RegisterAttributeSets();
 
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC, AIAbilitySystemComponent); // at this point the ASC is safe to use
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent); // at this point the ASC is safe to use
 
 		InitializeAttributes();
 		ApplyStartupEffects();
@@ -200,7 +200,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	}
 
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC, AIAbilitySystemComponent);
+	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent);
 }
 //END On Possess setup
 

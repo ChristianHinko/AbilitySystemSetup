@@ -25,7 +25,7 @@ UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer&
 	bDoNotAutoConfirmAndCancelFromGASBindings = true;
 
 
-	/** The linked Anim Instance that this component will play montages in. Use NAME_None for the main anim instance. (Havn't explored this much yet)*/
+	/** The linked Anim Instance that this component will play montages in. Use NAME_None for the main anim instance. (Havn't explored this much yet) */
 	AffectedAnimInstanceTag = NAME_None;
 }
 

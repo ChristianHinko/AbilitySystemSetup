@@ -13,10 +13,10 @@
 
 
 /**
- * Base actor target filter.
+ * Base Target Data Filter.
  * Has ability to only consider Actors that implement the IAbilitySystemInterface.
  * 
- * Note: implementing one of these is actually really confusing to think about sometimes especially because of the bReverseFilter (ACTUALLY just ignore bReverseFilter, just let that be a thing that they do in the Super).
+ * NOTE: implementing one of these is actually really confusing to think about sometimes especially because of the bReverseFilter (ACTUALLY just ignore bReverseFilter, just let that be a thing that they do in the Super).
  * If you are going to make your own FilterPassesForActor(), the strat is to call the Super last and only have your custom filtering return
  * false (don't return true before calling the Super because then you lose the Super's chance to return false).
  * 
@@ -24,8 +24,8 @@
  * Override ASSFilterPassesForActor() instead because FASSGameplayTargetDataFilter marks FilterPassesForActor() as final. The reason for this is 
  * we always need this implementation to run before any child implementations.
  * 
- * Note: Yeah just ignore bReverseFilter it just ruins things. We tried using it and it makes things really annoying.
- * If you really want something like this idk why they don't just "!" the return value.
+ * NOTE: Yeah just ignore bReverseFilter it just ruins things. We tried using it and it makes things really annoying.
+ * If you really want something like this idk why they don't just ``!`` the return value.
  */
 USTRUCT(BlueprintType)
 struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTargetDataFilter
@@ -60,7 +60,7 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 
 
 /**
- * Actor target filter that can filter by an array of actor types
+ * Target Data Filter that can filter by an array of Actor types
  */
 USTRUCT(BlueprintType)
 struct ABILITYSYSTEMSETUP_API FGTDF_MultiFilter : public FASSGameplayTargetDataFilter

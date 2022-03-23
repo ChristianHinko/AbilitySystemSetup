@@ -14,12 +14,16 @@
 void IAbilitySystemSetupInterface::RegisterAttributeSets()
 {
 	//Super::RegisterAttributeSets();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!IsValid(ASC))
+	{
+		return;
+	}
 
-
-	if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_Health>(GetAbilitySystemComponent()) == nullptr)
+	if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_Health>(ASC) == nullptr)
 	{
 		HealthAttributeSet->Rename(nullptr, this);
-		GetAbilitySystemComponent()->AddAttributeSetSubobject(HealthAttributeSet);
+		ASC->AddAttributeSetSubobject(HealthAttributeSet);
 	}
 	else
 	{
@@ -30,11 +34,15 @@ void IAbilitySystemSetupInterface::RegisterAttributeSets()
 void IAbilitySystemSetupInterface::GiveStartingAbilities()
 {
 	//Super::GiveStartingAbilities();
-
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!IsValid(ASC))
+	{
+		return;
+	}
 
 	// NOTE: No need to pass in an InputID since our subclassed ASC sets it in its overrided OnGiveAbility()
-	CharacterJumpAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(CharacterJumpAbilityTSub, /*GetLevel()*/1, -1, this));
-	CharacterCrouchAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(CharacterCrouchAbilityTSub, /*GetLevel()*/1, -1, this));
-	CharacterRunAbilitySpecHandle = GetAbilitySystemComponent()->GiveAbility(FGameplayAbilitySpec(CharacterRunAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterJumpAbilitySpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(CharacterJumpAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterCrouchAbilitySpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(CharacterCrouchAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterRunAbilitySpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(CharacterRunAbilityTSub, /*GetLevel()*/1, -1, this));
 }
 #endif

@@ -8,7 +8,7 @@
 
 #if 0
 /**
- * AbilityInputID enum
+ * AbilityInputID enum =@REVIEW MARKER@=
  * 
  * Enum that makes GAS aware of which Abilities are binded to which input in your project settings. Recommended spot to include this would be in your game's custom PCH (Precompiled Header). This
  * is so that you don't always have to include the file your input enum is in when writing an Ability (since our workflow enforces setting an input enum value in constructor of each Ability).
