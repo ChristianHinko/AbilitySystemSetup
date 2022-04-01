@@ -44,28 +44,28 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbi
  * Having the ASC on the Player State can make unpossession and re-possession a huge pain since given Abilities and added Attribute Sets exist on the Player State rather than the Pawn. So character-
  * specific stats will persist across possessions and respawns.
  * We provide some helpful bools to make unpossession a little better:
- * 		- Use bUnregisterAttributeSetsOnUnpossessed to remove added Attribute Sets
- * 		- Use bRemoveAbilitiesOnUnpossessed to clear given Abilities
+ * 		- Use bRemoveAttributeSetsOnUnPossessed to remove added Attribute Sets
+ * 		- Use bClearAbilitiesOnUnPossessed to clear given Abilities
  * 		- Use bRemoveCharacterTagsOnUnpossessed to remove character tags (not implemented)
  * 
  * 
  * Key Features:
  * 		1) Gameplay Abilities
- * 			- Fill out NonHandleStartingAbilities with the Gameplay Ability classes that you want to be given.
+ * 			- Fill out StartingAbilities with the Gameplay Ability classes that you want to be given.
  * 			- If you want a Spec Handle for a starting Ability, use IAbilitySystemSetupInterface::GiveStartingAbilities() to give the Ability by Spec Handle.
- * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed (assuming bRemoveAbilitiesOnUnpossessed).
+ * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed (assuming bClearAbilitiesOnUnPossessed).
  * 				- If you need an Ability to persist between Characters make sure you set its SourceObject to the Player State (or something persistent) on Give Ability.
  * 
  * 		2) Attribute Sets
- * 			- Fill out StartupAttributeSets with the Attribute Set classes that you want to be created and added.
- * 			- If, for some reason, you need advanced control over this then use IAbilitySystemSetupInterface::RegisterAttributeSets() to add any created Attribute Sets to the ASC.
- * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed (assuming bUnregisterAttributeSetsOnUnpossessed).
+ * 			- Fill out StartingAttributeSets with the Attribute Set classes that you want to be created and added.
+ * 			- If, for some reason, you need advanced control over this then use IAbilitySystemSetupInterface::AddAttributeSets() to add any created Attribute Sets to the ASC.
+ * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed (assuming bRemoveAttributeSetsOnUnPossessed).
  * 				- If you need an Attribute Set to persist between Characters make sure you manually set its outer to the Player State (or something persistent). Even better, create
  * 				the Attribute Set as a default subobject on the Player State class (if possible) and it will automatically be added to the Player's ASC and persist accross possessions.
  * 
  * 		3) Gameplay Effects
- * 			- Fill out DefaultAttributeValuesEffectTSub for using Attribute Set initialization via Gameplay Effect (e.g. GE_InitEggman).
- * 			- Fill out EffectsToApplyOnStartup with any Gameplay Effects that you want to be applied on startup (e.g. GE_HealthRegen or GE_StaminaRegen).
+ * 			- Fill out InitializationEffectTSub for using Attribute Set initialization via Gameplay Effect.
+ * 			- Fill out StartingEffects with any Gameplay Effects that you want to be applied on startup (e.g. GE_HealthRegen or GE_StaminaRegen).
  * 
  * 		4) Gameplay Tags
  * 			- If you need bRemoveCharacterTagsOnUnpossessed, then implement RemoveAllCharacterTags() to remove all character related Tags from the ASC.
@@ -159,22 +159,22 @@ public:
 
 
 	/**
-	 * Attribute Sets to create and register
+	 * Attribute Sets to create and add on startup
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
-		TArray<TSubclassOf<UAttributeSet>> StartupAttributeSets;
+		TArray<TSubclassOf<UAttributeSet>> StartingAttributeSets;
 	/**
-	 * Default Attributes values on startup.
-	 * This should be an instant GE with the Modifier Op set to Override so you can choose what the starting Attribute values will be on spawn
+	 * Initialization effect to give starting values for variables/attributes
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
-		TSubclassOf<UGameplayEffect> DefaultAttributeValuesEffectTSub;
+		TSubclassOf<UGameplayEffect> InitializationEffectTSub;
 
 	/**
-	 * These Effects are only applied one time on startup (ie. GE_HealthRegen, GE_StaminaRegen)
+	 * These Effects are only applied one time on startup and after the InitializationEffectTSub effect
+	 * Example starting effects: GE_HealthRegen, GE_StaminaRegen
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
-		TArray<TSubclassOf<UGameplayEffect>> EffectsToApplyOnStartup;
+		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
 
 protected:
 	/** Called only on server. This is the earliest place you can give an Ability. */
@@ -182,7 +182,7 @@ protected:
 
 	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Abilities")
-		TArray<TSubclassOf<UGameplayAbility>> NonHandleStartingAbilities;
+		TArray<TSubclassOf<UGameplayAbility>> StartingAbilities;
 
 
 	/**
@@ -191,12 +191,12 @@ protected:
 	 * Disabling this would be useful for features such as switching to possessing a drone mid-game. Which case you would obviously want to keep your character's health Attribute Sets and such.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
-		uint8 bUnregisterAttributeSetsOnUnpossessed : 1;
+		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 	/**
 	 * Remove all Abilities that were given by us on unpossess
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
-		uint8 bRemoveAbilitiesOnUnpossessed : 1;
+		uint8 bClearAbilitiesOnUnPossessed : 1;
 	/**
 	 * --- CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING ---
 	 * Removes all Tags relating to this specific character from the PlayerState's ASC
@@ -208,9 +208,9 @@ protected:
 
 
 	/** Removes all Attribute Sets that we added to the ASC */
-	int32 UnregisterOwnedAttributeSets();
+	int32 RemoveOwnedAttributeSets();
 	/** Removes all Abilities that we've given to the ASC */
-	int32 RemoveOwnedAbilities();
+	int32 ClearGivenAbilities();
 	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
 	int32 RemoveAllCharacterTags();
 
@@ -223,14 +223,14 @@ private:
 		TWeakObjectPtr<AController> PreviousController;
 
 
-	/** Register Attribute Sets to the ASC using the StartupAttributeSets array and calling on IAbilitySystemSetupInterface::RegisterAttributeSets() */
-	void RegisterAttributeSets();
-	/** Initialize Attribute values using the DefaultAttributeValuesEffect */
+	/** Add Attribute Sets to the ASC using the StartingAttributeSets array and calling on IAbilitySystemSetupInterface::AddAttributeSets() */
+	void AddAttributeSets();
+	/** Initialize Attribute values using the InitializationEffectTSub */
 	void InitializeAttributes();
-	/** Apply all Effects listed in EffectsToApplyOnStartup */
+	/** Apply all Effects listed in StartingEffects */
 	void ApplyStartupEffects();
 
-	/** AttributeSets that have been created. Kept track of so that we can register and unregister them when needed. */
+	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
 		TArray<UAttributeSet*> CreatedAttributeSets;
 
@@ -241,7 +241,7 @@ private:
 
 	// Internal state bools:
 
-	/** Indicates that we already created Attribute Sets and registered them, initialized the Attributes, and applied the startup Effects */
+	/** Indicates that we already created Attribute Sets and added them, initialized the Attributes, and applied the startup Effects */
 	uint8 bInitialized : 1;
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bASCInputBound : 1;

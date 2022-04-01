@@ -38,8 +38,8 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	// But we're not doing this because its hard to transfer ASC state to another. We don't need this feature right now
 	//AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-	bUnregisterAttributeSetsOnUnpossessed = true; // TODO: make these transfer to next ASC
-	bRemoveAbilitiesOnUnpossessed = true;
+	bRemoveAttributeSetsOnUnPossessed = true; // TODO: make these transfer to next ASC
+	bClearAbilitiesOnUnPossessed = true;
 	bRemoveCharacterTagsOnUnpossessed = true;
 }
 void UAbilitySystemSetupComponent::InitializeComponent()
@@ -55,10 +55,10 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() MAKE SURE YOU IMPLEMENT THE IAbilitySystemSetupInterface INTERFACE WHEN USING THIS COMPONENT"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 
-	// Create Attribute Sets using the StartupAttributeSets array
+	// Create Attribute Sets using the StartingAttributeSets array
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartupAttributeSets)
+		for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartingAttributeSets)
 		{
 			// Create this new Attribute Set
 			UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
@@ -109,7 +109,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	{
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			RegisterAttributeSets();
+			AddAttributeSets();
 		}
 
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), PlayerAbilitySystemComponent.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
@@ -128,8 +128,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 	else // if something is posessing this us a second time
 	{
-		// Just register our already-created Attribute Sets with the ASC
-		RegisterAttributeSets();
+		// Just add our already-created Attribute Sets with the ASC
+		AddAttributeSets();
 
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
@@ -170,7 +170,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 	if (!bInitialized)
 	{
-		RegisterAttributeSets();
+		AddAttributeSets();
 
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent); // at this point the ASC is safe to use
 
@@ -185,8 +185,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	}
 	else // if something is posessing this us a second time
 	{
-		// Just register this our already-created Attribute Sets with the ASC
-		RegisterAttributeSets();
+		// Just add this our already-created Attribute Sets with the ASC
+		AddAttributeSets();
 
 
 		// Transfer Abilities between ASCs
@@ -205,7 +205,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 //END On Possess setup
 
 //BEGIN On Possess helper functions
-void UAbilitySystemSetupComponent::RegisterAttributeSets()
+void UAbilitySystemSetupComponent::AddAttributeSets()
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
@@ -216,25 +216,25 @@ void UAbilitySystemSetupComponent::RegisterAttributeSets()
 
 
 	// Notify our owner
-	OwningAbilitySystemSetupInterface->RegisterAttributeSets();
+	OwningAbilitySystemSetupInterface->AddAttributeSets();
 
-	// Register our CreatedAttributeSets
+	// Add our CreatedAttributeSets
 	for (UAttributeSet* AttributeSet : CreatedAttributeSets)
 	{
 		if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet(ASC, AttributeSet->GetClass()))
 		{
-			// Already registered an Attribute Set of this class!
-			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to register a %s when one has already been registered! Skipping this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSet->GetClass()->GetName()));
+			// Already add an Attribute Set of this class!
+			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to add a %s when one has already been added! Skipping this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSet->GetClass()->GetName()));
 			continue;
 		}
 
-		// Register this Attribute Set
-		AttributeSet->Rename(nullptr, GetOwner()); // assign the outer so that we know that it is ours so we can unregister it when needed - I saw Roy do this too in his ArcInventory
+		// Add this Attribute Set
+		AttributeSet->Rename(nullptr, GetOwner()); // assign the outer so that we know that it is ours so we can remove it when needed - I saw Roy do this too in his ArcInventory
 		ASC->AddAttributeSetSubobject(AttributeSet);
 	}
 
 
-	// Mark it Net Dirty after registering any Attribute Sets
+	// Mark it Net Dirty after adding any Attribute Sets
 	ASC->ForceReplication();
 }
 
@@ -246,9 +246,9 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("GetAbilitySystemComponent() returned null on %s"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	if (!IsValid(DefaultAttributeValuesEffectTSub))
+	if (!IsValid(InitializationEffectTSub))
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Missing DefaultAttributeValuesEffect for %s. Please fill DefaultAttributeValuesEffect in Blueprint."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Missing InitializationEffectTSub for %s. Please fill InitializationEffectTSub in Blueprint."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return;
 	}
 
@@ -262,14 +262,14 @@ void UAbilitySystemSetupComponent::InitializeAttributes()
 	EffectContextHandle.AddInstigator(GetOwner(), GetOwner());
 	EffectContextHandle.AddSourceObject(GetOwner());
 
-	FGameplayEffectSpecHandle NewEffectSpecHandle = ASC->MakeOutgoingSpec(DefaultAttributeValuesEffectTSub, 1/*GetLevel()*/, EffectContextHandle);
+	FGameplayEffectSpecHandle NewEffectSpecHandle = ASC->MakeOutgoingSpec(InitializationEffectTSub, 1/*GetLevel()*/, EffectContextHandle);
 	if (NewEffectSpecHandle.IsValid())
 	{
 		ASC->ApplyGameplayEffectSpecToSelf(*NewEffectSpecHandle.Data.Get());
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to apply the default attributes effect on %s but failed. Maybe check if you filled out your DefaultAttributeValuesEffect correctly in Blueprint"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to apply the default attributes effect on %s but failed. Maybe check if you filled out your InitializationEffectTSub correctly in Blueprint"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 	}
 }
 
@@ -285,9 +285,9 @@ void UAbilitySystemSetupComponent::ApplyStartupEffects()
 	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
 	EffectContextHandle.AddInstigator(GetOwner(), GetOwner());
 	EffectContextHandle.AddSourceObject(GetOwner());
-	for (int32 i = 0; i < EffectsToApplyOnStartup.Num(); ++i)
+	for (int32 i = 0; i < StartingEffects.Num(); ++i)
 	{
-		FGameplayEffectSpecHandle NewEffectSpecHandle = ASC->MakeOutgoingSpec(EffectsToApplyOnStartup[i], 1/*GetLevel()*/, EffectContextHandle);
+		FGameplayEffectSpecHandle NewEffectSpecHandle = ASC->MakeOutgoingSpec(StartingEffects[i], 1/*GetLevel()*/, EffectContextHandle);
 		if (NewEffectSpecHandle.IsValid())
 		{
 			ASC->ApplyGameplayEffectSpecToSelf(*NewEffectSpecHandle.Data.Get());
@@ -312,9 +312,9 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 	OwningAbilitySystemSetupInterface->GiveStartingAbilities();
 
 	// Give non-handle starting Abilities
-	for (int32 i = 0; i < NonHandleStartingAbilities.Num(); ++i)
+	for (int32 i = 0; i < StartingAbilities.Num(); ++i)
 	{
-		FGameplayAbilitySpec Spec(NonHandleStartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner()); // GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
+		FGameplayAbilitySpec Spec(StartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner()); // GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
 		ASC->GiveAbility(Spec);
 	}
 
@@ -370,14 +370,14 @@ void UAbilitySystemSetupComponent::UnPossessed()
 	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && !IsValid(AIAbilitySystemComponent));
 	if (!bAIWithoutASC) // if we were a Player with an ASC or we were an AI with an ASC
 	{
-		if (bUnregisterAttributeSetsOnUnpossessed)
+		if (bRemoveAttributeSetsOnUnPossessed)
 		{
-			UnregisterOwnedAttributeSets();
+			RemoveOwnedAttributeSets();
 		}
 
-		if (bRemoveAbilitiesOnUnpossessed)
+		if (bClearAbilitiesOnUnPossessed)
 		{
-			RemoveOwnedAbilities();
+			ClearGivenAbilities();
 			for (int32 i = 0; i < PendingAbilitiesToTransfer.Num(); ++i)
 			{
 				FGameplayAbilitySpec& Spec = PendingAbilitiesToTransfer[i];
@@ -405,7 +405,7 @@ void UAbilitySystemSetupComponent::UnPossessed()
 //END On UnPossess setup
 
 //BEGIN On UnPossess helper functions
-int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
+int32 UAbilitySystemSetupComponent::RemoveOwnedAttributeSets()
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -425,9 +425,9 @@ int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
 	{
 		if (const UAttributeSet* AS = ASC->GetSpawnedAttributes()[i])
 		{
-			if (AS->GetOwningActor() == GetOwner()) // ensure we were the one who registered this Attribute Set
+			if (AS->GetOwningActor() == GetOwner()) // ensure we were the one who added this Attribute Set
 			{
-				// Unregister it
+				// remove it
 				ASC->GetSpawnedAttributes_Mutable().RemoveAt(i);
 				++RetVal;
 			}
@@ -440,7 +440,7 @@ int32 UAbilitySystemSetupComponent::UnregisterOwnedAttributeSets()
 	return RetVal;
 }
 
-int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
+int32 UAbilitySystemSetupComponent::ClearGivenAbilities()
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -449,7 +449,7 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAbilities()
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not remove owned Abilities from ASC so it probably has unneeded Abilities and possibly duplicates now. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not clear given Abilities from ASC so it probably has unneeded Abilities and possibly duplicates now. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		return 0;
 	}
 

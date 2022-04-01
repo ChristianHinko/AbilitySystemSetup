@@ -36,12 +36,12 @@ public:
 
 protected:
 	/**
-	 * The earliest place you can add Attribute Sets. Remember to use UObject::Rename() so that we can unregister them on UnPossessed.
+	 * The earliest place you can add Attribute Sets. Remember to use UObject::Rename() so that we can remove them on UnPossessed.
 	 * NOTE: Server only event.
-	 * NOTE: You probably do not need this event - just use the UAbilitySystemSetupComponent::StartupAttributeSets.
+	 * NOTE: You probably do not need this event - just use the UAbilitySystemSetupComponent::StartingAttributeSets.
 	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
-	virtual void RegisterAttributeSets() { }
+	virtual void AddAttributeSets() { }
 	/**
 	 * The earliest place you can give Abilities. This is meant for giving Abilities and assigning Spec Handles to them.
 	 * NOTE: Server only event.

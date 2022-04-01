@@ -11,9 +11,9 @@
 /// 
 
 #if 0
-void IAbilitySystemSetupInterface::RegisterAttributeSets()
+void IAbilitySystemSetupInterface::AddAttributeSets()
 {
-	//Super::RegisterAttributeSets();
+	//Super::AddAttributeSets();
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!IsValid(ASC))
 	{
