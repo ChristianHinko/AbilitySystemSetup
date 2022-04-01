@@ -83,7 +83,7 @@ UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemCompon
 //BEGIN On Possess setup
 void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState)
 {
-	const IAbilitySystemInterface* AbilitySystemInterface = Cast<const IAbilitySystemInterface>(PlayerState);
+	const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(PlayerState);
 	if (!AbilitySystemInterface)
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartupEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), ANSI_TO_TCHAR(__FUNCTION__));
@@ -119,7 +119,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 			InitializeAttributes();
 			ApplyStartupEffects();
 
-			// This is the first time our setup is being run. So no matter what (even if bAIToPlayerSyncAbilities), give our starting Abilities.
+			// This is the first time our setup is being run so give our starting Abilities
 			GiveStartingAbilities();
 		}
 
@@ -131,14 +131,14 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 		// Just register our already-created Attribute Sets with the ASC
 		RegisterAttributeSets();
 
-		// Sync Abilities between ASCs
+		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
 		{
 			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
-			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
-			PendingAbilitiesToSync.Empty();
+			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToTransfer);
+			PendingAbilitiesToTransfer.Empty();
 
-			// TODO: we should have a way to sync Tags and active Effects and Abilities to across ACSs but this sounds really hard
+			// TODO: we should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
 		}
 	}
 
@@ -177,7 +177,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		InitializeAttributes();
 		ApplyStartupEffects();
 
-		// This is the first time our setup is being run. So no matter what (even if bPlayerToAISyncAbilities), give our starting Abilities
+		// This is the first time our setup is being run so give our starting Abilities
 		GiveStartingAbilities();
 
 
@@ -189,13 +189,13 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		RegisterAttributeSets();
 
 
-		// Sync Abilities between ASCs
+		// Transfer Abilities between ASCs
 		{
 			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
-			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToSync);
-			PendingAbilitiesToSync.Empty();
+			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToTransfer);
+			PendingAbilitiesToTransfer.Empty();
 
-			// TODO: We should have a way to sync Tags and active Effects and Abilities to across ACSs but this sounds really hard
+			// TODO: We should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
 		}
 	}
 
@@ -361,7 +361,7 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 //BEGIN On UnPossess setup
 void UAbilitySystemSetupComponent::UnPossessed()
 {
-	PendingAbilitiesToSync = GetAbilitySystemComponent()->GetActivatableAbilities();
+	PendingAbilitiesToTransfer = GetAbilitySystemComponent()->GetActivatableAbilities();
 
 	// This goes before Super so we can get the Controller before it unpossess and the Pawn's reference becomes null. If it was
 	// null we can't do IsPlayerControlled() and GetAbilitySystemComponent() would return the wrong ASC so the functions that we are calling would
@@ -378,9 +378,9 @@ void UAbilitySystemSetupComponent::UnPossessed()
 		if (bRemoveAbilitiesOnUnpossessed)
 		{
 			RemoveOwnedAbilities();
-			for (int32 i = 0; i < PendingAbilitiesToSync.Num(); ++i)
+			for (int32 i = 0; i < PendingAbilitiesToTransfer.Num(); ++i)
 			{
-				FGameplayAbilitySpec& Spec = PendingAbilitiesToSync[i];
+				FGameplayAbilitySpec& Spec = PendingAbilitiesToTransfer[i];
 				Spec.NonReplicatedInstances.Empty();
 				Spec.ReplicatedInstances.Empty();
 				Spec.ActiveCount = 0;

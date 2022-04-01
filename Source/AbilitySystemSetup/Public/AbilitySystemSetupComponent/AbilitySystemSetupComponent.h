@@ -24,66 +24,55 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbi
 
 
 /**
- * For Avatar Actors that may be possessed by different Owner Actors.
+ * Provides the minimal and necessary setup for Ability System Components.
+ * Provides a nice setup for ASCs where the Avatar Actor differs from the Owner Actor (this was the primary motivation behind this component).
+ * Provides setup functions for unpossession and re-possession the Avatar Actor.
  * 
- * This was designed to be as flexable as possible for things regarding unpossesion/reposession of the Pawn. Having the ASC on the Player State (or just not on the Pawn in general) can make unpossesion and repossession a huge pain since
- * given Abilities and Attribute Sets exist on the Player State's ASC (because the pawn doesn't have one unless it's an AI).
- * To make this less painful, some useful bools were implemented:
- *		- bUnregisterAttributeSetsOnUnpossessed
- *		- bRemoveAbilitiesOnUnpossessed
- *		- bRemoveCharacterTagsOnUnpossessed
- *		
+ * For Player controlled pawns, this currently expects your ASC to be on your PlayerState. We do however plan on also supporting the ASC being on the Pawn for games where that is needed. We have a method for achieving this (just make use of the AIAbilitySystemComponent for that situation).
+ * The Player State's ASC is kept track of by the PlayerAbilitySystemComponent pointer.
  * 
- * Some tips:
- * 		1) On UnPossessed of this Pawn (a lot of times also means that we are about to be possessed by another Controller)
- * 			- Removes given Abilities
- *			- Unregisters Attribute Sets
- *			
- * 		2) Levels
- *			- Not supported yet (we just haven't had a need for them yet)
- * 			- Always passed in as 1 for now. GetLevel() is commented out at all places where the level is passed in.
- *			- TODO: Maybe call on the AbilitySystemSetupInterface to get this info
- * 			
- * 		3) Abilities
- * 			- Any Abilities added with its SourceObject being this component's owning Actor will be automatically removed from the ASC on UnPossessed. If you want an Ability to persist between characters make sure you manually set its SourceObject to the PlayerState. (This may be kind of an annoying solution)
- * 			- If you want a Spec Handle for a starting Ability, give it in GiveStartingAbilities() using AbilitySystemSetupInterface.
- * 			
- *		4) Attribute Sets
- *			- Fill out StartupAttributeSets with the Attribute Set classes that you want to be made and registered.
- * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed. If you want an Attribute Set to persist between characters make sure you manually set its outer to the PlayerState.
- * 			- If, for some reason, you need advanced control over this then override IAbilitySystemSetupInterface::RegisterAttributeSets() to add any created Attribute Sets to the ASC.
- * 			
- *		4) Gameplay Effects
- * 			- To set default Attribute values via Gameplay Effect, set DefaultAttributeValuesEffectTSub in BP to your GE.
- * 			- Gameplay Effects that you want applied initially (BeginPlay-type of GEs) can be done by filling out the EffectsToApplyOnStartup array in BP. (ie. GE_HealthRegen or GE_StaminaRegen)
- * 			
- *		5) Gameplay Tags		=@REVIEW MARKER@=
- * 			- Right now I have a setup for it calling RemoveAllCharacterTags() to remove any character Tags from the Player's ASC on Unpossess if bRemoveCharacterTagsOnUnpossessed is set to true, but the function is NOT implemented.
- * 					There is no way of determining what Tags to take off of the Player's ASC when unpossessing/destroying this character which is why it is not implemented. If we can figure out a way to give an owner to
- * 					specific Tags without putting them on the actually actor, then this should be easily possible. You could implement it by removing all Tags from the ASC that has a parent of "Character" so we know all
- * 					the "Character" Tags will get removed on unpossess, but that removes some flexability for organization with Gameplay Tags. Havn't thought of a better way though. If you really feel you need this feature
- * 					implemented somehow, it might be better to just make a new GAS setup with the ASC on the character class.
- * 			- Was struggling on comming up with a good system to determine what Tags to remove on Unpossess. We could try removing any Tags that has "Character" as one of the parents in the Tag, but then this limits us
- * 					us into only using Tags with the parent of "Character" for character related stuff (ie. we wouldn't be able to throw a generic "Actor.IsOnFire" Tag onto the character because then on Unpossess it wouldn't get removed).
- * 					Another thing to think about is how we will remove these Tags. This leads us into having to make a simple and efficient way to add/remove Tags through code for all machines. Will we use a GE? This will take care of
- * 					replicating it to all machines, but then you have to have a predefined GE asset that does it. But we would like to have the game figure out at runtime what Tags to remove. Reliable RPCs using LooseGameplayTags is an
- * 					option but not prefered, (not very efficient).
- * 					if that Tag is on our ASC, it wouldn't be removed.
- *			
- * 		6) AIAbilitySystemComponent
- * 			- Subclasses can disable this feature by calling DoNotCreateDefaultSubobject() through the constructor using the ObjectInitializer.
- *			- TODO: wait how do we do this because now we are an Actor Component
- *			
+ * This component is flexible enough to be used on any Actor that needs a setup with Ability System.
+ * There are 2 different scenerios where you need a setup with the Ability System:
+ * 		1) The Actor is being player controlled (a Pawn)
+ * 			- PlayerAbilitySystemComponent will be used (exists outside of this component)
+ * 			- In this case, we need to make our Pawn the Avatar Actor of the Player's ASC.
+ * 		2) The Actor is NOT player controlled (a wall, tree, or even an AI controlled Pawn)
+ * 			- AIAbilitySystemComponent will be used (exists on this component)
+ * 			- In this case, we need to make our Pawn both the Avatar Actor and Owner Actor of his ASC.
  * 
- * Some problems to avoid:
- * 		1) Keeping your Attribute Sets registered on UnPossessed (via bUnregisterAttributeSetsOnUnpossessed = false) will give you problems if your newly registered Attribute Set (from a new possession) is the same Class as the old Attribute Set (or both old and new Attribute Sets have a same Attribute from a shared parent).
- *			- To avoid this, have a different Attribute Set for each Character (avoid inheritance from parent Attribute Sets). - I know this sucks but you don't really have to do this if your game doesn't need advanced Pawn possession features.
- * 			
- *		2) If you unpossess a Pawn and unregister his Attribute Sets (without being possessed by someone else), his Attributes are no longer associated with an ASC.
- * 			- Do not apply Effects to Pawns that have unregistered Attribute Sets (it will crash).
- * 				-(Possible future solution: have the AIAbilitySystemComponent take over when a Player unpossesses a character and unregisters its Attributes and register those Attribute Sets with the AI ASC)
- *					-(Possible work around: have an AI controller possess the unpossessed character which will call SetUpWithAbilitySystem for the AIAbilitySystemComponent and register those Attribute with the AI ASC)
- *			
+ * 
+ * Having the ASC on the Player State can make unpossession and re-possession a huge pain since given Abilities and added Attribute Sets exist on the Player State rather than the Pawn. So character-
+ * specific stats will persist across possessions and respawns.
+ * We provide some helpful bools to make unpossession a little better:
+ * 		- Use bUnregisterAttributeSetsOnUnpossessed to remove added Attribute Sets
+ * 		- Use bRemoveAbilitiesOnUnpossessed to clear given Abilities
+ * 		- Use bRemoveCharacterTagsOnUnpossessed to remove character tags (not implemented)
+ * 
+ * 
+ * Key Features:
+ * 		1) Gameplay Abilities
+ * 			- Fill out NonHandleStartingAbilities with the Gameplay Ability classes that you want to be given.
+ * 			- If you want a Spec Handle for a starting Ability, use IAbilitySystemSetupInterface::GiveStartingAbilities() to give the Ability by Spec Handle.
+ * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed (assuming bRemoveAbilitiesOnUnpossessed).
+ * 				- If you need an Ability to persist between Characters make sure you set its SourceObject to the Player State (or something persistent) on Give Ability.
+ * 
+ * 		2) Attribute Sets
+ * 			- Fill out StartupAttributeSets with the Attribute Set classes that you want to be created and added.
+ * 			- If, for some reason, you need advanced control over this then use IAbilitySystemSetupInterface::RegisterAttributeSets() to add any created Attribute Sets to the ASC.
+ * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed (assuming bUnregisterAttributeSetsOnUnpossessed).
+ * 				- If you need an Attribute Set to persist between Characters make sure you manually set its outer to the Player State (or something persistent). Even better, create
+ * 				the Attribute Set as a default subobject on the Player State class (if possible) and it will automatically be added to the Player's ASC and persist accross possessions.
+ * 
+ * 		3) Gameplay Effects
+ * 			- Fill out DefaultAttributeValuesEffectTSub for using Attribute Set initialization via Gameplay Effect (e.g. GE_InitEggman).
+ * 			- Fill out EffectsToApplyOnStartup with any Gameplay Effects that you want to be applied on startup (e.g. GE_HealthRegen or GE_StaminaRegen).
+ * 
+ * 		4) Gameplay Tags
+ * 			- If you need bRemoveCharacterTagsOnUnpossessed, then implement RemoveAllCharacterTags() to remove all character related Tags from the ASC.
+ * 				- An example of how your game might implement this is by removing all Tags with the "Character", "Pawn", and "Actor" parent Tags (this sounds like a pain).
+ * 				- Also we haven't needed to use this yet so we don't know the best way to remove these Tags. The only way I can think to do this is by dynamically
+ * 				defining a Gameplay Effect in the RemoveAllCharacterTags() function and applying it.
+ * 			- NOTE: This should be a last resort solution. If you really need this much functionality, then maybe just put the ASC on the Character.
  * 
  */
 UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
@@ -101,7 +90,11 @@ protected:
 		TWeakObjectPtr<UASSAbilitySystemComponent> PlayerAbilitySystemComponent;
 	/**
 	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character (so we can give Abilities and stuff).
-	 * These Abilities will be transfered from this ASC to the Player's (this allows us to give Abilities early on)
+	 * These Abilities will be transfered from this ASC to the Player's (this allows us to give Abilities early on).
+	 * TODO: Maybe rename this to ActorAbilitySystemComponent or AvatarAbilitySystemComponent to make it more generic.
+	 * 
+	 * This can be disabled by calling DoNotCreateDefaultSubobject() in the constructor using the ObjectInitializer. NOTE: You would have to subclass this component to do this.
+	 * TODO: We should have the Owning Actor inject his ASC here (and make this a weak pointer) instead of us making it for them.
 	 */
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystemSetup")
 		UASSAbilitySystemComponent* AIAbilitySystemComponent;
@@ -118,10 +111,19 @@ public:
 	 */
 	UASSAbilitySystemComponent* GetAbilitySystemComponent() const;
 
-	/** Hooks up the Avatar Actor to the ASC when it's a Player Controller */
+
+
+	// TODO: Try to mix both of these setup functions into one SetUpWithAbilitySystem() function. Also try to get rid of us depending on the Player State.
+	/**
+	 * Sets the Avatar Actor with the ASC when it is Player controlled
+	 */
 	void SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState);
-	/** Hooks up the Avatar Actor to the ASC when it's an AI Controller */
+	/**
+	 * Sets the Avatar Actor with the ASC when it is AI controlled
+	 */
 	void SetupWithAbilitySystemAIControlled();
+
+
 
 	UASSAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent; }
 
@@ -233,7 +235,7 @@ private:
 		TArray<UAttributeSet*> CreatedAttributeSets;
 
 
-	TArray<FGameplayAbilitySpec> PendingAbilitiesToSync;
+	TArray<FGameplayAbilitySpec> PendingAbilitiesToTransfer;
 
 
 
