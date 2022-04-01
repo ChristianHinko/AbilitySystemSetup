@@ -153,7 +153,7 @@ public:
 	 */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
 	/**
-	 * Broadcasted when the Ability System is set up BUT before startup Effects are applied, before Attributes are initialized, and before starting Abilities are given
+	 * Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given
 	 */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
 
@@ -228,7 +228,7 @@ private:
 	/** Initialize Attribute values using the InitializationEffectTSub */
 	void InitializeAttributes();
 	/** Apply all Effects listed in StartingEffects */
-	void ApplyStartupEffects();
+	void ApplyStartingEffects();
 
 	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
@@ -241,7 +241,7 @@ private:
 
 	// Internal state bools:
 
-	/** Indicates that we already created Attribute Sets and added them, initialized the Attributes, and applied the startup Effects */
+	/** Indicates that we already created Attribute Sets and added them, initialized the Attributes, and applied the starting Effects */
 	uint8 bInitialized : 1;
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bASCInputBound : 1;
