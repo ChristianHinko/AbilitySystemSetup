@@ -28,9 +28,6 @@ public:
 
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
-	/** Gives abilities that an other given ASC has */
-	void RecieveAbilitiesFrom(const UAbilitySystemComponent* Other);
-
 	/**
 	 * This code is taken from UAbilitySystemComponent::TargetConfirm() and modified to only confirm targeting on
 	 * the Target Actors associated with the given AbilityToConfirmTargetOn.

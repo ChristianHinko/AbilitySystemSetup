@@ -134,7 +134,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
 			UASSAbilitySystemBlueprintLibrary::GiveAbilities(PlayerAbilitySystemComponent.Get(), PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 
@@ -191,7 +190,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 
 		// Transfer Abilities between ASCs
 		{
-			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
 			UASSAbilitySystemBlueprintLibrary::GiveAbilities(PlayerAbilitySystemComponent.Get(), PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 

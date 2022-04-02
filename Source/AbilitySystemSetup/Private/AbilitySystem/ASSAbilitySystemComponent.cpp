@@ -145,29 +145,6 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	Super::OnGiveAbility(AbilitySpec);
 }
 
-void UASSAbilitySystemComponent::RecieveAbilitiesFrom(const UAbilitySystemComponent* Other)
-{
-	if (IsOwnerActorAuthoritative() == false)
-	{
-		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-
-	for (FGameplayAbilitySpec SpecToGive : Other->GetActivatableAbilities())
-	{
-		if (GetActivatableAbilities().ContainsByPredicate(
-			[&SpecToGive](const FGameplayAbilitySpec& Spec)
-			{
-				return Spec.Ability == SpecToGive.Ability;
-			}
-		) == false)
-		{
-			//SpecToGive.ActiveCount = 0; // maybe
-			GiveAbility(SpecToGive);
-		}
-	}
-}
-
 void UASSAbilitySystemComponent::TargetConfirmByAbility(UGameplayAbility* AbilityToConfirmTargetOn)
 {
 	// Callbacks may modify the spawned target actor array so iterate over a copy instead
