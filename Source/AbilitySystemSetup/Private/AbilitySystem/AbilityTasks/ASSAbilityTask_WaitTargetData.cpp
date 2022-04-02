@@ -11,7 +11,7 @@
 
 UASSAbilityTask_WaitTargetData* UASSAbilityTask_WaitTargetData::ASSWaitTargetDataUsingActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor)
 {
-	UASSAbilityTask_WaitTargetData* MyObj = NewAbilityTask<UASSAbilityTask_WaitTargetData>(OwningAbility, TaskInstanceName);		//Register for task list here, providing a given FName as a key
+	UASSAbilityTask_WaitTargetData* MyObj = NewAbilityTask<UASSAbilityTask_WaitTargetData>(OwningAbility, TaskInstanceName);
 	MyObj->TargetClass = nullptr;
 	MyObj->TargetActor = InTargetActor;
 	MyObj->ConfirmationType = ConfirmationType;
@@ -64,7 +64,7 @@ void UASSAbilityTask_WaitTargetData::Activate()
 
 void UASSAbilityTask_WaitTargetData::OnDestroy(bool AbilityEnded)
 {
-	if (TargetActor)
+	if (IsValid(TargetActor))
 	{
 		if (TargetActor->bDestroyOnConfirmation)
 		{
@@ -74,15 +74,15 @@ void UASSAbilityTask_WaitTargetData::OnDestroy(bool AbilityEnded)
 		{
 			// Instead of destroying it, just deactivate it:
 
-
-			if (AASSGameplayAbilityTargetActor* ASSTargetActor = Cast<AASSGameplayAbilityTargetActor>(TargetActor))
+			AASSGameplayAbilityTargetActor* ASSTargetActor = Cast<AASSGameplayAbilityTargetActor>(TargetActor);
+			if (IsValid(ASSTargetActor))
 			{
 				// Tell the Target Actor he is being deactivated
 				ASSTargetActor->StopTargeting();
 			}
 			else
 			{
-				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call stop targeting but we couldn't because of this"), *FString(__FUNCTION__));
+				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call StopTargeting() but we couldn't because of this"), ANSI_TO_TCHAR(__FUNCTION__));
 			}
 
 			// Clear added callbacks
@@ -94,13 +94,7 @@ void UASSAbilityTask_WaitTargetData::OnDestroy(bool AbilityEnded)
 			TargetActor->GenericDelegateBoundASC = nullptr;
 		}
 	}
-	
-	if (Super::StaticClass() == UAbilityTask_WaitTargetData::StaticClass())
-	{
-		UAbilityTask_WaitTargetData::Super::OnDestroy(AbilityEnded);	// skip UAbilityTask_WaitTargetData's call on OnDestroy()
-	}
-	else
-	{
-		Super::OnDestroy(AbilityEnded);
-	}
+
+	// Skip UAbilityTask_WaitTargetData's OnDestroy() implementation
+	Super::Super::OnDestroy(AbilityEnded);
 }

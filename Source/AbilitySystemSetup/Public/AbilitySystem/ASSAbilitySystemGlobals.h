@@ -18,10 +18,12 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySystemGlobals : public UAbilitySystemGlo
 	GENERATED_BODY()
 
 public:
-	UASSAbilitySystemGlobals();
+	UASSAbilitySystemGlobals(const FObjectInitializer& ObjectInitializer);
 
 
 	virtual FGameplayAbilityActorInfo* AllocAbilityActorInfo() const override;
 	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
+
+	//virtual void AllocAttributeSetInitter() override;
 
 };

@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "AbilitySystem/ASSGameplayAbilityWorldReticle.h"
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
+#include "AbilitySystem/TargetActor/ASSGameplayAbilityWorldReticle.h"
 
 #include "ASSGameplayAbilityTargetActor.generated.h"
 
@@ -15,7 +15,7 @@ class AASSGameplayAbilityWorldReticle;
 
 
 /**
- * Base target actor class
+ * Base Target Actor class
  */
 UCLASS(Abstract, notplaceable)
 class ABILITYSYSTEMSETUP_API AASSGameplayAbilityTargetActor : public AGameplayAbilityTargetActor
@@ -43,18 +43,20 @@ public:
 		bool bAllowMultipleHitsPerActor;
 
 
-	/** Filter out hit results that do not pass filter and removes multiple hits per actor if needed */
+	/**
+	 * Filter out hit results that do not pass filter and removes multiple hits per actor if needed
+	 */
 	void FilterHitResults(TArray<FHitResult>& OutHitResults, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 	/**
 	 * Filters out one hit result out of a given array. Is meant to be use in FHitResult loops.
 	 * Returns true if hit was filtered.
 	 */
-	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 indexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 	/**
 	 * Returns true if hit does not pass the filter.
 	 * Does NOT remove the hit from the given HitResults.
 	 */	
-	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 indexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 
 
 	/**
@@ -63,13 +65,13 @@ public:
 	virtual void StopTargeting();
 
 
-	/** Max range of this target actor (not required for all target actors)		(We made this virual so we can just return GunAttributeSet->GetMaxRange() that way we don't have to bind to that attribute's delegate)*/
-	virtual float GetMaxRange() const;
+	/** Max range of this target actor (not required for all target actors) */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
+		float MaxRange;
 
 	/** Trace channel for this target actor (not required for all target actors) */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
 		TEnumAsByte<ECollisionChannel> TraceChannel;
-
 
 	/** If true, sets StartLocation to the AimPoint determined in CalculateAimDirection() */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
@@ -84,16 +86,17 @@ public:
 	/** Outputs a direction to use rather than a trace endpoint */
 	void DirWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceDir) const;
 
-	static bool ClipCameraRayToAbilityRange(FVector CameraLocation, FVector CameraDirection, FVector AbilityCenter, float AbilityRange, FVector& ClippedPosition);
+	static bool ClipCameraRayToAbilityRange(const FVector& CameraLocation, const FVector& CameraDirection, const FVector& AbilityCenter, const float AbilityRange, FVector& OutClippedPosition);
 
 
 protected:
 	virtual void PreInitializeComponents() override;
 	virtual void PostInitializeComponents() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	/** This is when the Wait Target Data Task starts using us */
+	// This is when the Wait Target Data Task starts using us
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
-	/** Where we perform our logic for collecting Target Data */
+	// Where we perform our logic for collecting Target Data
 	virtual void ConfirmTargetingAndContinue() override;
 
 	/**
@@ -105,14 +108,11 @@ protected:
 	virtual void CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const;
 
 	
-
+	/** List of custom Reticle actors */
 	TArray<TWeakObjectPtr<AASSGameplayAbilityWorldReticle>> ReticleActors;
 
-	AASSGameplayAbilityWorldReticle* SpawnReticleActor(FVector Location, FRotator Rotation);
+	AASSGameplayAbilityWorldReticle* SpawnReticleActor(const FVector& Location, const FRotator& Rotation);
 	virtual void DestroyReticleActors();
-
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 };
 

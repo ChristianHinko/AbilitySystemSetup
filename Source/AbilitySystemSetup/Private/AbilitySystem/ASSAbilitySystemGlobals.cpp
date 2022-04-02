@@ -3,12 +3,14 @@
 
 #include "AbilitySystem/ASSAbilitySystemGlobals.h"
 
-#include "AbilitySystem/ASSGameplayAbilityTypes.h"
-#include "AbilitySystem/ASSGameplayEffectTypes.h"
+#include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
+#include "AbilitySystem/Types/ASSGameplayEffectTypes.h"
+#include "AbilitySystem/ASSAttributeSet.h"
 
 
 
-UASSAbilitySystemGlobals::UASSAbilitySystemGlobals()
+UASSAbilitySystemGlobals::UASSAbilitySystemGlobals(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
@@ -22,3 +24,8 @@ FGameplayEffectContext* UASSAbilitySystemGlobals::AllocGameplayEffectContext() c
 {
 	return new FASSGameplayEffectContext();
 }
+
+//void UASSAbilitySystemGlobals::AllocAttributeSetInitter()
+//{
+//	GlobalAttributeSetInitter = TSharedPtr<FAttributeSetInitter>(new FASSAttributeSetInitter());
+//}

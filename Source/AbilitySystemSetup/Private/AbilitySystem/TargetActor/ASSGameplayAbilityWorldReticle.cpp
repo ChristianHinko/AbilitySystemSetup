@@ -1,11 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/ASSGameplayAbilityWorldReticle.h"
+#include "AbilitySystem/TargetActor/ASSGameplayAbilityWorldReticle.h"
 
 
 
-AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle()
+AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

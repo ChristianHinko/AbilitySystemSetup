@@ -14,6 +14,4 @@ DEFINE_LOG_CATEGORY(LogGameplayAbilityTargetActorSetup)
 DEFINE_LOG_CATEGORY(LogAbilitySystemSetup)
 
 
-
-
 DEFINE_LOG_CATEGORY(LogAbilitySystemInputEnumMappingsSafetyChecks)

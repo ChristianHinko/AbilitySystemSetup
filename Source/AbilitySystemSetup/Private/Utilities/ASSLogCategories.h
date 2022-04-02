@@ -15,6 +15,4 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGameplayAbilityTargetActorSetup, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetup, Log, All)
 
 
-
-
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemInputEnumMappingsSafetyChecks, Log, All)

@@ -11,59 +11,38 @@
 /// 
 
 #if 0
-void IAbilitySystemSetupInterface::CreateAttributeSets()
+void IAbilitySystemSetupInterface::AddAttributeSets()
 {
-	//Super::CreateAttributeSets();
-
-
-	if (!MyAttributeSet)
+	//Super::AddAttributeSets();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!IsValid(ASC))
 	{
-		MyAttributeSet = NewObject<UAS_MyAttributeSet>(this, UAS_MyAttributeSet::StaticClass(), TEXT("MyAttributeSet"));
+		return;
+	}
+
+	if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet<UAS_Health>(ASC) == nullptr)
+	{
+		HealthAttributeSet->Rename(nullptr, this);
+		ASC->AddAttributeSetSubobject(HealthAttributeSet);
 	}
 	else
 	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), *FString(__FUNCTION__), *(MyAttributeSet->GetName()));
-	}
-
-	if (!MyOtherAttributeSet)
-	{
-		MyOtherAttributeSet = NewObject<UAS_MyOtherAttributeSet>(this, UAS_MyOtherAttributeSet::StaticClass(), TEXT("MyOtherAttributeSet"));
-	}
-	else
-	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() %s was already valid when trying to create the attribute set; did nothing"), *FString(__FUNCTION__), *(MyOtherAttributeSet->GetName()));
-	}
-}
-void IAbilitySystemSetupInterface::RegisterAttributeSets()
-{
-	//Super::RegisterAttributeSets();
-
-
-	if (MyAttributeSet && !GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyAttributeSet))
-	{
-		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyAttributeSet);
-	}
-	else
-	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyAttributeSet was either NULL or already added to the character's ASC. Character: %s"), *FString(__FUNCTION__), *GetName());
-	}
-
-	if (MyOtherAttributeSet && !GetAbilitySystemComponent()->GetSpawnedAttributes().Contains(MyOtherAttributeSet))
-	{
-		GetAbilitySystemComponent()->AddAttributeSetSubobject(MyOtherAttributeSet);
-	}
-	else
-	{
-		UE_CLOG((GetLocalRole() == ROLE_Authority), LogTemp, Warning, TEXT("%s() MyOtherAttributeSet was either NULL or already added to the character's ASC. Character: %s"), *FString(__FUNCTION__), *GetName());
+		UE_LOG(LogTemp, Warning, TEXT("%s() Failed to add HealthAttributeSet - a UAS_Health has already been added to the Character's ASC. Skipped adding this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 }
 
-void IAbilitySystemSetupInterface::GrantStartingAbilities()
+void IAbilitySystemSetupInterface::GiveStartingAbilities()
 {
-	//Super::GrantStartingAbilities();
+	//Super::GiveStartingAbilities();
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (!IsValid(ASC))
+	{
+		return;
+	}
 
-
-	MyAbilitySpecHandle = GetAbilitySystemComponent()->GrantAbility(MyAbilityTSub, this/*, GetLevel()*/);
-	MyOtherAbilitySpecHandle = GetAbilitySystemComponent()->GrantAbility(MyOtherAbilityTSub, this/*, GetLevel()*/);
+	// NOTE: No need to pass in an InputID since our subclassed ASC sets it in its overrided OnGiveAbility()
+	CharacterJumpAbilitySpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(CharacterJumpAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterCrouchAbilitySpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(CharacterCrouchAbilityTSub, /*GetLevel()*/1, -1, this));
+	CharacterRunAbilitySpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(CharacterRunAbilityTSub, /*GetLevel()*/1, -1, this));
 }
 #endif

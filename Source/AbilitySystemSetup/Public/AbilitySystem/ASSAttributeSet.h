@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
+#include "AbilitySystemComponent.h" // a very common include for Attribute Sets
 
 #include "ASSAttributeSet.generated.h"
 
@@ -26,21 +27,31 @@ class ABILITYSYSTEMSETUP_API UASSAttributeSet : public UAttributeSet
 
 public:
 
-	/**
-	 * For any attributes that have non-hard-set default values, set their default values in here rather than in the constructor.
-	 * This event is called whenever a default attributes effect has been applied.
-	 * 
-	 * @SEE UASSAttributeSet's constructor for example constructor and example implementation of this event
-	 */
-	virtual void SetSoftAttributeDefaults() { };
 
 protected:
-	/** Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes. (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before) */
-	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
+	/**
+	 * Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes. (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before)
+	 */
+	void AdjustAttributeForMaxChange(const FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, const float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
 
-	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
+};
 
-	UFUNCTION(Reliable, Client)
-		void ClientSetSoftAttributeDefaults();
-	void ClientSetSoftAttributeDefaults_Implementation();
+
+/**
+ * Our custom FAttributeSetInitter.
+ * 
+ * Not implemented. Optional struct some games may find useful.
+ * 
+ * Possible reasons to use an FAttributeSetInitter
+ *  - Curve tables defining descrete attribute values for each ASC level (this would use FAttributeSetInitterDiscreteLevels)
+ *	- We can maybe use this for Curves with infinite scaling as you level up
+ */
+struct ABILITYSYSTEMSETUP_API FASSAttributeSetInitter : public FAttributeSetInitter
+{
+public:
+	virtual void PreloadAttributeSetData(const TArray<UCurveTable*>& CurveData) override;
+	virtual void InitAttributeSetDefaults(UAbilitySystemComponent* AbilitySystemComponent, FName GroupName, int32 Level, bool bInitialInit) const override;
+	virtual void ApplyAttributeDefault(UAbilitySystemComponent* AbilitySystemComponent, FGameplayAttribute& InAttribute, FName GroupName, int32 Level) const override;
+	virtual TArray<float> GetAttributeSetValues(UClass* AttributeSetClass, FProperty* AttributeProperty, FName GroupName) const override;
+
 };

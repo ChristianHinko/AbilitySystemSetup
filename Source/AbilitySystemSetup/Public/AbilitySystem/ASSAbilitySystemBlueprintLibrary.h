@@ -19,11 +19,44 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySystemBlueprintLibrary : public UAbility
 	GENERATED_BODY()
 	
 public:
-	/** Create a handle for filtering target data, filling out all fields */
+	/**
+	 * Get an Attribute Set by class off of the given ASC
+	 */
+	UFUNCTION(Category = "AttributeSet")
+		static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* ASC, const TSubclassOf<UAttributeSet> AttributeSetClass);
+	/**
+	 * Get an Attribute Set by class off of the given ASC
+	 */
+	template <typename T>
+	static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* ASC);
+	/**
+	 * Get an Attribute Set by class off of the given ASC.
+	 * Returns the desired Attribute Set in its type.
+	 */
+	template <typename T>
+	static T* GetAttributeSetCasted(const UAbilitySystemComponent* ASC);
+
+	/**
+	 * Create a handle for filtering target data, filling out all fields
+	 */
 	UFUNCTION(BlueprintPure, Category = "Filter")
 		static FGameplayTargetDataFilterHandle MakeASSFilterHandle(const FASSGameplayTargetDataFilter& SSFilter, AActor* FilterActor);
-	/** Create a handle for filtering target data, filling out all fields */
+	/**
+	 * Create a handle for filtering target data, filling out all fields
+	 */
 	UFUNCTION(BlueprintPure, Category = "Filter")
 		static FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FGTDF_MultiFilter& SSFilter, AActor* FilterActor);
 
 };
+
+
+template <typename T>
+UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* ASC)
+{
+	return GetAttributeSet(ASC, T::StaticClass());
+}
+template <typename T>
+T* UASSAbilitySystemBlueprintLibrary::GetAttributeSetCasted(const UAbilitySystemComponent* ASC)
+{
+	return Cast<T>(GetAttributeSet<T>(ASC));
+}

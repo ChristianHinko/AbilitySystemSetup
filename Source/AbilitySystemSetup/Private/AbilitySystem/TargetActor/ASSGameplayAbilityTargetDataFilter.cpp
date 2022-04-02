@@ -28,7 +28,7 @@ bool FASSGameplayTargetDataFilter::FilterPassesForActor(const AActor* ActorToBeF
 
 		if (IsValid(AbilitySystem->GetAbilitySystemComponent()) == false)
 		{
-			UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s(): %s's GetAbilitySystemComponent() returned NULL. Returned false - we shouldn't let null Ability System Components pass the filter"), *FString(__FUNCTION__), *(ActorToBeFiltered->GetName()));
+			UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s(): %s's GetAbilitySystemComponent() returned NULL. Returned false - we shouldn't let null Ability System Components pass the filter"), ANSI_TO_TCHAR(__FUNCTION__), *(ActorToBeFiltered->GetName()));
 			return false; // we don't check bReverseFilter here because bOnlyAcceptAbilitySystemInterfaces shouldn't be affected by the bReverseFilter
 		}
 	}

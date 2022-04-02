@@ -26,7 +26,7 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayAbilityActorInfo : public FGameplayAbi
 
 
     FASSGameplayAbilityActorInfo();
-    virtual ~FASSGameplayAbilityActorInfo()
+    virtual ~FASSGameplayAbilityActorInfo() override
     {
 
     }

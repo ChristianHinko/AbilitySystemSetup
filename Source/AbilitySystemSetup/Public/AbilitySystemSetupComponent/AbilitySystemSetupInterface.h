@@ -19,10 +19,9 @@ class UAbilitySystemSetupInterface : public UInterface
 /**
  * Is made to be implemented by Actors with the UAbilitySystemSetupComponent.
  * 
- * Contains events for:
- *		- Creating attribute sets for your ASC
- *		- Registering them with your ASC
- *		- Granting starting abilities for your ASC by spec handle
+ * Provides events for:
+ *		- Adding Attribute Sets to the ASC
+ *		- Giving starting Abilities to the ASC
  * 
  * @SEE "AbilitySystemSetupInterface.cpp" for example implementations of these events!
  * 
@@ -33,23 +32,21 @@ class ABILITYSYSTEMSETUP_API IAbilitySystemSetupInterface
 
 	friend class UAbilitySystemSetupComponent;
 public:
-	virtual UAbilitySystemSetupComponent* GetAbilitySystemSetup() const = 0;
+	virtual UAbilitySystemSetupComponent* GetAbilitySystemSetupComponent() const = 0;
 
 protected:
 	/**
-	 * Called on the server and client. Override this to create new Attribute Sets using NewObject().
-	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
+	 * The earliest place you can add Attribute Sets. Remember to use UObject::Rename() so that we can remove them on UnPossessed.
+	 * NOTE: Server only event.
+	 * NOTE: You probably do not need this event - just use the UAbilitySystemSetupComponent::StartingAttributeSets.
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
-	virtual void CreateAttributeSets() = 0;
+	virtual void AddAttributeSets() { }
 	/**
-	 * Called on the server and client. Override this to register your created Attribute Sets with the ASC using AddAttributeSetSubobject().
-	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
+	 * The earliest place you can give Abilities. This is meant for giving Abilities and assigning Spec Handles to them.
+	 * NOTE: Server only event.
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
 	 */
-	virtual void RegisterAttributeSets() = 0;
-	/**
-	 * Called on server only. This is the earliest place you can grant Abilities. This is meant for granting Abilities and assigning them with Spec Handles.
-	 * Note: See example implementation of this event in "AbilitySystemSetupInterface.cpp"
-	 */
-	virtual void GrantStartingAbilities() = 0;
+	virtual void GiveStartingAbilities() { }
 
 };
