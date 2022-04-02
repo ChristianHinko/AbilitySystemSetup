@@ -11,7 +11,6 @@
 class IAbilitySystemSetupInterface;
 class UGameplayAbility;
 class UAbilitySystemComponent;
-class UASSAbilitySystemComponent;
 class IAbilitySystemInterface;
 class UGameplayEffect;
 enum class EGameplayEffectReplicationMode : uint8;
@@ -87,7 +86,7 @@ protected:
 	 * Points to the PlayerState's ASC
 	 */
 	UPROPERTY()
-		TWeakObjectPtr<UASSAbilitySystemComponent> PlayerAbilitySystemComponent;
+		TWeakObjectPtr<UAbilitySystemComponent> PlayerAbilitySystemComponent;
 	/**
 	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character (so we can give Abilities and stuff).
 	 * These Abilities will be transfered from this ASC to the Player's (this allows us to give Abilities early on).
@@ -97,7 +96,7 @@ protected:
 	 * TODO: We should have the Owning Actor inject his ASC here (and make this a weak pointer) instead of us making it for them.
 	 */
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystemSetup")
-		UASSAbilitySystemComponent* AIAbilitySystemComponent;
+		UAbilitySystemComponent* AIAbilitySystemComponent;
 
 public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
@@ -109,7 +108,7 @@ public:
 	 * 
 	 * Return this in your IAbilitySystemInterface::GetAbilitySystemComponent() implementation.
 	 */
-	UASSAbilitySystemComponent* GetAbilitySystemComponent() const;
+	UAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 
 
@@ -125,7 +124,7 @@ public:
 
 
 
-	UASSAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent; }
+	UAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent; }
 
 
 	/**

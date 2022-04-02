@@ -26,6 +26,33 @@ UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbility
 	return nullptr;
 }
 
+void UASSAbilitySystemBlueprintLibrary::GiveAbilities(UAbilitySystemComponent* ASC, const TArray<FGameplayAbilitySpec>& Abilities)
+{
+	if (::IsValid(ASC) == false)	// :: uses global scope instead to avoid using the UAbilitySystemBlueprintLibrary::IsValid()
+	{
+		UE_LOG(LogGameplayAbilitySetup, Warning, TEXT("%s() ASC was not valid when trying to give list of abilities. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
+	if (ASC->IsOwnerActorAuthoritative() == false)
+	{
+		UE_LOG(LogGameplayAbilitySetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
+
+	for (const FGameplayAbilitySpec& SpecToGive : Abilities)
+	{
+		if (ASC->GetActivatableAbilities().ContainsByPredicate(
+			[&SpecToGive](const FGameplayAbilitySpec& Spec)
+			{
+				return Spec.Ability == SpecToGive.Ability;
+			}
+		) == false)
+		{
+			ASC->GiveAbility(SpecToGive);
+		}
+	}
+}
+
 FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeASSFilterHandle(const FASSGameplayTargetDataFilter& SSFilter, AActor* FilterActor)
 {
 	FGameplayTargetDataFilterHandle FilterHandle;

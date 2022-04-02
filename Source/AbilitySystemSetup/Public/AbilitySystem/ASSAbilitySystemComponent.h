@@ -28,8 +28,6 @@ public:
 
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
-	void GiveAbilities(const TArray<FGameplayAbilitySpec>& Abilities);
-
 	/** Gives abilities that an other given ASC has */
 	void RecieveAbilitiesFrom(const UAbilitySystemComponent* Other);
 

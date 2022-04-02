@@ -145,28 +145,6 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	Super::OnGiveAbility(AbilitySpec);
 }
 
-void UASSAbilitySystemComponent::GiveAbilities(const TArray<FGameplayAbilitySpec>& Abilities)
-{
-	if (IsOwnerActorAuthoritative() == false)
-	{
-		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-
-	for (const FGameplayAbilitySpec& SpecToGive : Abilities)
-	{
-		if (GetActivatableAbilities().ContainsByPredicate(
-			[&SpecToGive](const FGameplayAbilitySpec& Spec)
-			{
-				return Spec.Ability == SpecToGive.Ability;
-			}
-		) == false)
-		{
-			GiveAbility(SpecToGive);
-		}
-	}
-}
-
 void UASSAbilitySystemComponent::RecieveAbilitiesFrom(const UAbilitySystemComponent* Other)
 {
 	if (IsOwnerActorAuthoritative() == false)

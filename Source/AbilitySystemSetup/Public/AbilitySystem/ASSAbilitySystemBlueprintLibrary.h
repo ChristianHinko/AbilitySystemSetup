@@ -36,6 +36,9 @@ public:
 	template <typename T>
 	static T* GetAttributeSetCasted(const UAbilitySystemComponent* ASC);
 
+	static void GiveAbilities(UAbilitySystemComponent* ASCToAddTo, const TArray<FGameplayAbilitySpec>& Abilities);
+
+
 	/**
 	 * Create a handle for filtering target data, filling out all fields
 	 */

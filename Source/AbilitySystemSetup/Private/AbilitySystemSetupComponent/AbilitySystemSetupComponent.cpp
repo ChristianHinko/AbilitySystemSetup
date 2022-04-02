@@ -68,7 +68,7 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 }
 
 
-UASSAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemComponent() const
+UAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemComponent() const
 {
 	if (OwningPawn->IsPlayerControlled())
 	{
@@ -90,10 +90,10 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 		return;
 	}
 
-	PlayerAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent());
+	PlayerAbilitySystemComponent = AbilitySystemInterface->GetAbilitySystemComponent();
 	if (!PlayerAbilitySystemComponent.IsValid())
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL! Ensure you are using UASSAbilitySystemComponent"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL!"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
@@ -135,7 +135,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 		if (GetOwnerRole() == ROLE_Authority)
 		{
 			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
-			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToTransfer);
+			UASSAbilitySystemBlueprintLibrary::GiveAbilities(PlayerAbilitySystemComponent.Get(), PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 
 			// TODO: we should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
@@ -192,7 +192,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		// Transfer Abilities between ASCs
 		{
 			//PlayerAbilitySystemComponent->RecieveAbilitiesFrom(PreviousASC);
-			PlayerAbilitySystemComponent->GiveAbilities(PendingAbilitiesToTransfer);
+			UASSAbilitySystemBlueprintLibrary::GiveAbilities(PlayerAbilitySystemComponent.Get(), PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 
 			// TODO: We should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
