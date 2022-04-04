@@ -89,15 +89,13 @@ protected:
 		TWeakObjectPtr<UAbilitySystemComponent> PlayerAbilitySystemComponent;
 	/**
 	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character.
+	 * Should be injected in by the owner Actor. PreInitializeComponents() is a good place to do this.
+	 * 
 	 * TODO: Maybe rename this to ActorAbilitySystemComponent or AvatarAbilitySystemComponent to make it more generic.
-	 *
-	 * Injected in by the owner of this subobject
 	 */
-	 // TODO: Curently AIAbilitySystemComponent is stale when injected so we got to figure that out
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> AIAbilitySystemComponent;
 	
-
 public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
 
