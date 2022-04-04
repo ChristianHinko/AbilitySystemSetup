@@ -88,15 +88,15 @@ protected:
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> PlayerAbilitySystemComponent;
 	/**
-	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character (so we can give Abilities and stuff).
-	 * These Abilities will be transfered from this ASC to the Player's (this allows us to give Abilities early on).
+	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character.
 	 * TODO: Maybe rename this to ActorAbilitySystemComponent or AvatarAbilitySystemComponent to make it more generic.
-	 * 
-	 * This can be disabled by calling DoNotCreateDefaultSubobject() in the constructor using the ObjectInitializer. NOTE: You would have to subclass this component to do this.
-	 * TODO: We should have the Owning Actor inject his ASC here (and make this a weak pointer) instead of us making it for them.
+	 *
+	 * Injected in by the owner of this subobject
 	 */
-	UPROPERTY(VisibleAnywhere, Category = "AbilitySystemSetup")
-		UAbilitySystemComponent* AIAbilitySystemComponent;
+	 // TODO: Curently AIAbilitySystemComponent is stale when injected so we got to figure that out
+	UPROPERTY()
+		TWeakObjectPtr<UAbilitySystemComponent> AIAbilitySystemComponent;
+	
 
 public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
@@ -124,7 +124,8 @@ public:
 
 
 
-	UAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent; }
+	UAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent.Get(); }
+	void SetAIAbilitySystemComponent(UAbilitySystemComponent* ASC) { AIAbilitySystemComponent = ASC; }
 
 
 	/**

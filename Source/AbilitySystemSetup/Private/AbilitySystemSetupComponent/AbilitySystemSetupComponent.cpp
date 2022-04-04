@@ -23,22 +23,10 @@
 UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	// Create AIAbilitySystemComponent
-	AIAbilitySystemComponent = CreateOptionalDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AIAbilitySystemComponent"));
-	if (IsValid(AIAbilitySystemComponent))
-	{
-		AIAbilitySystemComponent->SetIsReplicated(true);
-		AIAbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal); // Minimal mode means that no Gameplay Effects will replicate. They will only live on the Server. Attributes, Gameplay Tags, and Gameplay Cues will still replicate to us. NOTE: Owner Actors can access and change this if needed
-	}
-
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 
-	// We make the AI always automatically posses us because the AI ASC will be in use before the Player possesses us so we sould have the SetupWithAbilitySystemAIControlled() run so the ASC can be used.
-	// But we're not doing this because its hard to transfer ASC state to another. We don't need this feature right now
-	//AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
-	bRemoveAttributeSetsOnUnPossessed = true; // TODO: make these transfer to next ASC
+	bRemoveAttributeSetsOnUnPossessed = true;
 	bClearAbilitiesOnUnPossessed = true;
 	bRemoveCharacterTagsOnUnpossessed = true;
 }
@@ -76,7 +64,7 @@ UAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemComponent
 	}
 	else // AI controlled
 	{
-		return AIAbilitySystemComponent;
+		return AIAbilitySystemComponent.Get();
 	}
 }
 
@@ -156,7 +144,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	{
 		return;
 	}
-	if (!IsValid(AIAbilitySystemComponent))
+	if (!AIAbilitySystemComponent.IsValid())
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). AIAbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
@@ -171,7 +159,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	{
 		AddAttributeSets();
 
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent); // at this point the ASC is safe to use
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent.Get()); // at this point the ASC is safe to use
 
 		InitializeAttributes();
 		ApplyStartingEffects();
@@ -198,7 +186,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 	}
 
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent);
+	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), AIAbilitySystemComponent.Get());
 }
 //END On Possess setup
 
@@ -365,7 +353,7 @@ void UAbilitySystemSetupComponent::UnPossessed()
 	// null we can't do IsPlayerControlled() and GetAbilitySystemComponent() would return the wrong ASC so the functions that we are calling would
 	// probably act really weird and try doing stuff on the wrong ASC
 
-	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && !IsValid(AIAbilitySystemComponent));
+	const bool bAIWithoutASC = (OwningPawn->IsPlayerControlled() == false && AIAbilitySystemComponent.IsValid() == false);
 	if (!bAIWithoutASC) // if we were a Player with an ASC or we were an AI with an ASC
 	{
 		if (bRemoveAttributeSetsOnUnPossessed)
