@@ -8,10 +8,8 @@
 #include "AbilitySystemSetupComponent.generated.h"
 
 
-class IAbilitySystemSetupInterface;
 class UGameplayAbility;
 class UAbilitySystemComponent;
-class IAbilitySystemInterface;
 class UGameplayEffect;
 enum class EGameplayEffectReplicationMode : uint8;
 struct FGameplayAbilitySpec;
@@ -20,6 +18,7 @@ class UAttributeSet;
 
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbilitySystemComponent* const/*, PreviousASC*/, UAbilitySystemComponent* const/*, NewASC*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent*);
 
 
 /**
@@ -51,13 +50,13 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbi
  * Key Features:
  * 		1) Gameplay Abilities
  * 			- Fill out StartingAbilities with the Gameplay Ability classes that you want to be given.
- * 			- If you want a Spec Handle for a starting Ability, use IAbilitySystemSetupInterface::GiveStartingAbilities() to give the Ability by Spec Handle.
+ * 			- If you want a Spec Handle for a starting Ability, use the OnGiveStartingAbilities delegate to give the Ability by Spec Handle.
  * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed (assuming bClearAbilitiesOnUnPossessed).
  * 				- If you need an Ability to persist between Characters make sure you set its SourceObject to the Player State (or something persistent) on Give Ability.
  * 
  * 		2) Attribute Sets
  * 			- Fill out StartingAttributeSets with the Attribute Set classes that you want to be created and added.
- * 			- If, for some reason, you need advanced control over this then use IAbilitySystemSetupInterface::AddAttributeSets() to add any created Attribute Sets to the ASC.
+ * 			- If, for some reason, you need advanced control over this then use the OnAddStartingAttributeSets delegate to add any created Attribute Sets to the ASC.
  * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed (assuming bRemoveAttributeSetsOnUnPossessed).
  * 				- If you need an Attribute Set to persist between Characters make sure you manually set its outer to the Player State (or something persistent). Even better, create
  * 				the Attribute Set as a default subobject on the Player State class (if possible) and it will automatically be added to the Player's ASC and persist accross possessions.
@@ -86,8 +85,6 @@ public:
 	/**
 	 * Gets the active Ability System Component.
 	 * That is, the Player's ASC if Player controlled or the AI's ASC if AI controlled.
-	 * 
-	 * Return this in your IAbilitySystemInterface::GetAbilitySystemComponent() implementation.
 	 */
 	UAbilitySystemComponent* GetCurrentASC() const { return CurrentASC.Get(); }
 
@@ -112,7 +109,6 @@ protected:
 	virtual void InitializeComponent() override;
 
 	APawn* OwningPawn;
-	IAbilitySystemSetupInterface* OwningAbilitySystemSetupInterface;
 
 public:
 	/**
@@ -123,6 +119,20 @@ public:
 	 * Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given
 	 */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
+	/**
+	 * Server only event for giving starting Attribute Sets via C++.
+	 * NOTE: Remember to use UObject::Rename() so that we can remove them on UnPossessed.
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp".
+	 */
+	FAbilitySystemSetupDelegate OnAddStartingAttributeSets;
+	/**
+	 * Server only event for giving starting abilities via C++.
+	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp".
+	 */
+	FAbilitySystemSetupDelegate OnGiveStartingAbilities;
+
+
+
 
 
 	/**
@@ -195,7 +205,7 @@ private:
 
 	/** Makes the input events work for GAS */
 	void BindASCInput(UInputComponent* InputComponent);
-	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and calling on IAbilitySystemSetupInterface::AddAttributeSets() */
+	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
 	void AddStartingAttributeSets();
 	/** Initialize Attribute values using the InitializationEffectTSub */
 	void InitializeAttributes();

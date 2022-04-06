@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystemSetupComponent/AbilitySystemSetupComponent.h"
+#include "Subobjects/AbilitySystemSetupComponent.h"
 
 #include "Net/UnrealNetwork.h"
 #include "AbilitySystemInterface.h"
@@ -11,7 +11,6 @@
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "DS_AbilitySystemSetup.h"
-#include "AbilitySystemSetupComponent/AbilitySystemSetupInterface.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
 
@@ -36,11 +35,6 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 
 	// Get casted owners
 	OwningPawn = Cast<APawn>(GetOwner()); // NOTE: maybe do a GetTypedOuter() instead?
-	OwningAbilitySystemSetupInterface = Cast<IAbilitySystemSetupInterface>(GetOwner()); // NOTE: maybe do a UBFL_InterfaceHelpers::GetInterfaceTypedOuter() instead?
-	if (!OwningAbilitySystemSetupInterface)
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() MAKE SURE YOU IMPLEMENT THE IAbilitySystemSetupInterface INTERFACE WHEN USING THIS COMPONENT"), ANSI_TO_TCHAR(__FUNCTION__));
-	}
 
 	// Create Attribute Sets using the StartingAttributeSets array
 	if (GetOwnerRole() == ROLE_Authority)
@@ -131,8 +125,8 @@ void UAbilitySystemSetupComponent::AddStartingAttributeSets()
 	}
 
 
-	// Notify our owner
-	OwningAbilitySystemSetupInterface->AddAttributeSets();
+	// Allow a chance for owner to give starting Attribute Sets through C++
+	OnAddStartingAttributeSets.Broadcast(ASC);
 
 	// Add our CreatedAttributeSets
 	for (UAttributeSet* AttributeSet : CreatedAttributeSets)
@@ -224,8 +218,8 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 		return false;
 	}
 
-	// Notify our owner
-	OwningAbilitySystemSetupInterface->GiveStartingAbilities();
+	// Allow a chance for owner to give starting abilities through C++
+	OnGiveStartingAbilities.Broadcast(ASC);
 
 	// Give non-handle starting Abilities
 	for (int32 i = 0; i < StartingAbilities.Num(); ++i)
