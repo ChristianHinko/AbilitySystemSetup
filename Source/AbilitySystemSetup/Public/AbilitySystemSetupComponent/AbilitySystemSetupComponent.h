@@ -78,23 +78,6 @@ UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
 class ABILITYSYSTEMSETUP_API UAbilitySystemSetupComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
-protected:
-	// Only one of these ASC will be active at a time:
-
-	/**
-	 * Points to the PlayerState's ASC
-	 */
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> PlayerAbilitySystemComponent;
-	/**
-	 * This is used if an AIController is posessing. However, it is also used as a placeholder ASC when before the Player possesses this Character.
-	 * Should be injected in by the owner Actor. PreInitializeComponents() is a good place to do this.
-	 * 
-	 * TODO: Maybe rename this to ActorAbilitySystemComponent or AvatarAbilitySystemComponent to make it more generic.
-	 */
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> AIAbilitySystemComponent;
 	
 public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
@@ -106,8 +89,7 @@ public:
 	 * 
 	 * Return this in your IAbilitySystemInterface::GetAbilitySystemComponent() implementation.
 	 */
-	UAbilitySystemComponent* GetAbilitySystemComponent() const;
-
+	UAbilitySystemComponent* GetCurrentASC() const { return CurrentASC.Get(); }
 
 
 	// TODO: Try to mix both of these setup functions into one SetUpWithAbilitySystem() function. Also try to get rid of us depending on the Player State.
@@ -118,12 +100,7 @@ public:
 	/**
 	 * Sets the Avatar Actor with the ASC when it is AI controlled
 	 */
-	void SetupWithAbilitySystemAIControlled();
-
-
-
-	UAbilitySystemComponent* GetAIAbilitySystemComponent() const { return AIAbilitySystemComponent.Get(); }
-	void SetAIAbilitySystemComponent(UAbilitySystemComponent* ASC) { AIAbilitySystemComponent = ASC; }
+	void SetupWithAbilitySystemAIControlled(UAbilitySystemComponent* AIASC);
 
 
 	/**
@@ -213,6 +190,8 @@ protected:
 	int32 RemoveAllCharacterTags();
 
 private:
+	UPROPERTY()
+		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> PreviousASC;
 
