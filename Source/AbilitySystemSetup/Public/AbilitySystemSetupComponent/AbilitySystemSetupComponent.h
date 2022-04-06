@@ -101,10 +101,6 @@ public:
 	 * Call this at the end of your Pawn's SetupPlayerInputComponent() event
 	 */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
-	/**
-	 * Makes the input events work for GAS
-	 */
-	void BindASCInput(UInputComponent* InputComponent);
 
 	/**
 	 * On OwningPawn becomes UnPossessed.
@@ -196,6 +192,9 @@ private:
 		TWeakObjectPtr<AController> PreviousController;
 
 
+
+	/** Makes the input events work for GAS */
+	void BindASCInput(UInputComponent* InputComponent);
 	/** Add Attribute Sets to the ASC using the StartingAttributeSets array and calling on IAbilitySystemSetupInterface::AddAttributeSets() */
 	void AddAttributeSets();
 	/** Initialize Attribute values using the InitializationEffectTSub */
