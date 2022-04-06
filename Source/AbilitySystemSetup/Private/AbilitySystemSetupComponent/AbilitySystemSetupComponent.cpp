@@ -7,7 +7,6 @@
 #include "AbilitySystemInterface.h"
 #include "Abilities/GameplayAbility.h"
 #include "GameFramework/PlayerController.h"
-#include "GameFramework/PlayerState.h"
 #include "Components/InputComponent.h"
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
@@ -69,16 +68,9 @@ UAbilitySystemComponent* UAbilitySystemSetupComponent::GetAbilitySystemComponent
 }
 
 //BEGIN On Possess setup
-void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState)
+void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbilitySystemComponent* PlayerASC)
 {
-	const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(PlayerState);
-	if (!AbilitySystemInterface)
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). The Player State does not implement IAbilitySystemInterface (Cast failed)"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-
-	PlayerAbilitySystemComponent = AbilitySystemInterface->GetAbilitySystemComponent();
+	PlayerAbilitySystemComponent = PlayerASC;
 	if (!PlayerAbilitySystemComponent.IsValid())
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). PlayerAbilitySystemComponent was NULL!"), ANSI_TO_TCHAR(__FUNCTION__));
@@ -86,9 +78,8 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(APlaye
 	}
 
 
-
 	// This must be done on both client and server
-	PlayerAbilitySystemComponent->InitAbilityActorInfo(PlayerState, GetOwner());
+	PlayerAbilitySystemComponent->InitAbilityActorInfo(PlayerAbilitySystemComponent->GetOwnerActor(), GetOwner());
 
 	// Bind Player input to the AbilitySystemComponent. Also called in SetupPlayerInputComponent() because of a potential race condition
 	BindASCInput(OwningPawn->InputComponent);
@@ -149,7 +140,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled()
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). AIAbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-
 
 
 	// From my understanding, only needs to be done on server since no Player is controlling it

@@ -114,7 +114,7 @@ public:
 	/**
 	 * Sets the Avatar Actor with the ASC when it is Player controlled
 	 */
-	void SetupWithAbilitySystemPlayerControlled(APlayerState* PlayerState);
+	void SetupWithAbilitySystemPlayerControlled(UAbilitySystemComponent* PlayerASC);
 	/**
 	 * Sets the Avatar Actor with the ASC when it is AI controlled
 	 */
