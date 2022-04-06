@@ -195,8 +195,8 @@ private:
 
 	/** Makes the input events work for GAS */
 	void BindASCInput(UInputComponent* InputComponent);
-	/** Add Attribute Sets to the ASC using the StartingAttributeSets array and calling on IAbilitySystemSetupInterface::AddAttributeSets() */
-	void AddAttributeSets();
+	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and calling on IAbilitySystemSetupInterface::AddAttributeSets() */
+	void AddStartingAttributeSets();
 	/** Initialize Attribute values using the InitializationEffectTSub */
 	void InitializeAttributes();
 	/** Apply all Effects listed in StartingEffects */

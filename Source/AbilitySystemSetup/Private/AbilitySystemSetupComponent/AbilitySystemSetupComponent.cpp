@@ -83,7 +83,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 	{
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			AddAttributeSets();
+			AddStartingAttributeSets();
 		}
 
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), ASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
@@ -103,7 +103,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 	else // we aren't a first time possession
 	{
 		// Just add our already-created Attribute Sets with the ASC
-		AddAttributeSets();
+		AddStartingAttributeSets();
 
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
@@ -121,7 +121,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 //END On Possess setup
 
 //BEGIN On Possess helper functions
-void UAbilitySystemSetupComponent::AddAttributeSets()
+void UAbilitySystemSetupComponent::AddStartingAttributeSets()
 {
 	UAbilitySystemComponent* ASC = CurrentASC.Get();
 	if (!IsValid(ASC))
