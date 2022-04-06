@@ -56,21 +56,28 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 
 
 //BEGIN On Possess setup
-void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbilitySystemComponent* PlayerASC)
+void UAbilitySystemSetupComponent::SetUpWithAbilitySystem(UAbilitySystemComponent* ASC)
 {
-	CurrentASC = PlayerASC;
-	if (!IsValid(PlayerASC))
+	CurrentASC = ASC;
+	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). PlayerASC was NULL!"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
 
 	// This must be done on both client and server
-	PlayerASC->InitAbilityActorInfo(PlayerASC->GetOwnerActor(), GetOwner());
+	ASC->InitAbilityActorInfo(ASC->GetOwnerActor(), GetOwner());
 
-	// Bind Player input to the AbilitySystemComponent. Also called in SetupPlayerInputComponent() because of a potential race condition
-	BindASCInput(OwningPawn->InputComponent);
+
+	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
+	{ 
+		// Bind Player input to the AbilitySystemComponent.
+		// Called from both SetupPlayerInputComponent() and SetUpWithAbilitySystem() because of a potential race condition where the Player Controller might
+		// call ClientRestart() which calls SetupPlayerInputComponent() before the Player State is repped to the client so the Player State would be null in SetupPlayerInputComponent().
+		// Conversely, the Player State might be repped before the Player Controller calls ClientRestart() so the Actor's Input Component would be null in OnRep_PlayerState().
+		BindASCInput(OwningPawn->InputComponent);
+	}
 
 	if (!bInitialized)
 	{
@@ -79,7 +86,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbili
 			AddAttributeSets();
 		}
 
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), PlayerASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), ASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -93,7 +100,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbili
 
 		bInitialized = true;
 	}
-	else // if something is posessing this us a second time
+	else // we aren't a first time possession
 	{
 		// Just add our already-created Attribute Sets with the ASC
 		AddAttributeSets();
@@ -101,7 +108,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbili
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			UASSAbilitySystemBlueprintLibrary::GiveAbilities(PlayerASC, PendingAbilitiesToTransfer);
+			UASSAbilitySystemBlueprintLibrary::GiveAbilities(ASC, PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 
 			// TODO: we should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
@@ -109,57 +116,7 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbili
 	}
 
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), PlayerASC);
-}
-void UAbilitySystemSetupComponent::SetupWithAbilitySystemAIControlled(UAbilitySystemComponent* AIASC)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		return;
-	}
-
-	CurrentASC = AIASC;
-	if (!IsValid(AIASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with AI GAS setup on (failed to InitAbilityActorInfo, AddExistingAttributeSets, InitializeAttributes, ApplyStartingEffects, and GiveStartingAbilities). AIASC was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-
-
-	AIASC->InitAbilityActorInfo(GetOwner(), GetOwner());
-
-	if (!bInitialized)
-	{
-		AddAttributeSets();
-
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), AIASC); // at this point the ASC is safe to use
-
-		InitializeAttributes();
-		ApplyStartingEffects();
-
-		// This is the first time our setup is being run so give our starting Abilities
-		GiveStartingAbilities();
-
-
-		bInitialized = true;
-	}
-	else // if something is posessing this us a second time
-	{
-		// Just add this our already-created Attribute Sets with the ASC
-		AddAttributeSets();
-
-
-		// Transfer Abilities between ASCs
-		{
-			UASSAbilitySystemBlueprintLibrary::GiveAbilities(AIASC, PendingAbilitiesToTransfer);
-			PendingAbilitiesToTransfer.Empty();
-
-			// TODO: We should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
-		}
-	}
-
-
-	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), AIASC);
+	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), ASC);
 }
 //END On Possess setup
 
@@ -282,6 +239,11 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 //END On Possess helper functions
 
 //BEGIN Input setup
+void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	// Called in SetupPlayerInputComponent() because of a potential race condition.
+	BindASCInput(PlayerInputComponent);
+}
 void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 {
 	if (!IsValid(InputComponent))

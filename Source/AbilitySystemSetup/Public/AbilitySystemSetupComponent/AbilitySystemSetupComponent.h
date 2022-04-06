@@ -92,21 +92,17 @@ public:
 	UAbilitySystemComponent* GetCurrentASC() const { return CurrentASC.Get(); }
 
 
-	// TODO: Try to mix both of these setup functions into one SetUpWithAbilitySystem() function. Also try to get rid of us depending on the Player State.
 	/**
-	 * Sets the Avatar Actor with the ASC when it is Player controlled
+	 * Sets the Avatar Actor with the ASC
 	 */
-	void SetupWithAbilitySystemPlayerControlled(UAbilitySystemComponent* PlayerASC);
-	/**
-	 * Sets the Avatar Actor with the ASC when it is AI controlled
-	 */
-	void SetupWithAbilitySystemAIControlled(UAbilitySystemComponent* AIASC);
-
+	void SetUpWithAbilitySystem(UAbilitySystemComponent* ASC);
 
 	/**
-	 * Called from both SetupPlayerInputComponent() and OnRep_PlayerState() because of a potential race condition where the Player Controller might
-	 * call ClientRestart() which calls SetupPlayerInputComponent() before the Player State is repped to the client so the Player State would be null in SetupPlayerInputComponent().
-	 * Conversely, the Player State might be repped before the Player Controller calls ClientRestart() so the Actor's Input Component would be null in OnRep_PlayerState().
+	 * Call this at the end of your Pawn's SetupPlayerInputComponent() event
+	 */
+	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
+	/**
+	 * Makes the input events work for GAS
 	 */
 	void BindASCInput(UInputComponent* InputComponent);
 
