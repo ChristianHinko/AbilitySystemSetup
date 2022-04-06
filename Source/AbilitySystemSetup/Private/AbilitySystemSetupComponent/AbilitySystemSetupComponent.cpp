@@ -56,7 +56,7 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 
 
 //BEGIN On Possess setup
-void UAbilitySystemSetupComponent::SetUpWithAbilitySystem(UAbilitySystemComponent* ASC)
+void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemComponent* ASC)
 {
 	CurrentASC = ASC;
 	if (!IsValid(ASC))
@@ -73,7 +73,7 @@ void UAbilitySystemSetupComponent::SetUpWithAbilitySystem(UAbilitySystemComponen
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
 	{ 
 		// Bind Player input to the AbilitySystemComponent.
-		// Called from both SetupPlayerInputComponent() and SetUpWithAbilitySystem() because of a potential race condition where the Player Controller might
+		// Called from both SetupPlayerInputComponent() and SetUpAbilitySystemComponent() because of a potential race condition where the Player Controller might
 		// call ClientRestart() which calls SetupPlayerInputComponent() before the Player State is repped to the client so the Player State would be null in SetupPlayerInputComponent().
 		// Conversely, the Player State might be repped before the Player Controller calls ClientRestart() so the Actor's Input Component would be null in OnRep_PlayerState().
 		BindASCInput(OwningPawn->InputComponent);

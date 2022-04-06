@@ -30,7 +30,7 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbi
  * For Player controlled pawns, this currently expects your ASC to be on your PlayerState. We do however plan on also supporting the ASC being on the Pawn for games where that is needed. We have a method for achieving this (just make use of the AIAbilitySystemComponent for that situation).
  * The Player State's ASC is kept track of by the PlayerAbilitySystemComponent pointer.
  * 
- * This component is flexible enough to be used on any Actor that needs a setup with Ability System.
+ * This component is flexible enough to be used on any Actor that has an Ability System Component.
  * There are 2 different scenerios where you need a setup with the Ability System:
  * 		1) The Actor is being player controlled (a Pawn)
  * 			- PlayerAbilitySystemComponent will be used (exists outside of this component)
@@ -95,7 +95,7 @@ public:
 	/**
 	 * Sets the Avatar Actor with the ASC
 	 */
-	void SetUpWithAbilitySystem(UAbilitySystemComponent* ASC);
+	void SetUpAbilitySystemComponent(UAbilitySystemComponent* ASC);
 
 	/**
 	 * Call this at the end of your Pawn's SetupPlayerInputComponent() event
