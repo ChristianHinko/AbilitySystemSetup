@@ -120,12 +120,6 @@ void UAbilitySystemSetupComponent::SetupWithAbilitySystemPlayerControlled(UAbili
 		}
 	}
 
-	// Refresh ASC Actor Info for clients. Server will be refreshed by its AIController/PlayerController when it possesses a new Actor.
-	if (OwningPawn->IsLocallyControlled()) // CLIENT
-	{
-		PlayerAbilitySystemComponent->RefreshAbilityActorInfo();
-	}
-
 
 	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), PlayerAbilitySystemComponent.Get());
 }
