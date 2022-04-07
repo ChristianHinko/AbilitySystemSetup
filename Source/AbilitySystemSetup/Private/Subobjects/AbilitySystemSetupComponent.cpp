@@ -210,6 +210,25 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 }
 //END On Possess helper functions
 
+void UAbilitySystemSetupComponent::HandleClientControllerChanged()
+{
+	if (CurrentASC.IsValid() == false)
+	{
+		// In the case of ASC being on the PlayerState, this is expected to hit on the client for initial possessions (Controller gets replicated before PlayerState)
+		return;
+	}
+	if (CurrentASC->GetAvatarActor() != GetOwner())
+	{
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
+	ensure(CurrentASC->AbilityActorInfo->OwnerActor == CurrentASC->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
+
+
+
+	CurrentASC->RefreshAbilityActorInfo();		// update ActorInfo's Controller
+}
+
 //BEGIN Input setup
 void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -286,7 +305,7 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 		}
 		else
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried uninitializing the ASC when our owning actor was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried uninitializing the ASC when the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
 		}
 	}
 
@@ -295,13 +314,6 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
 	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
-}
-void UAbilitySystemSetupComponent::HandleControllerChanged()
-{
-	if (CurrentASC.IsValid())
-	{
-		CurrentASC.Get()->RefreshAbilityActorInfo();		// update ActorInfo's Controller
-	}
 }
 //END On UnPossess setup
 

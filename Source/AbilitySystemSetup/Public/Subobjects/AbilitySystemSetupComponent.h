@@ -22,6 +22,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
 
 
 /**
+ * NOTE: Actor with this component must be the avatar actor.
+ * 
+ * 
+ * 
  * Provides the minimal and necessary setup for Ability System Components.
  * Provides a nice setup for ASCs where the Avatar Actor differs from the Owner Actor (this was the primary motivation behind this component).
  * Provides setup functions for unpossession and re-possession the Avatar Actor.
@@ -97,7 +101,7 @@ public:
 	/** Should be called by the owning pawn ( BEFORE Super::UnPossessed() ) to remove itself as the avatar of the ability system. */
 	void UninitializeAbilitySystemComponent();
 	/** Should be called by the owning pawn when the pawn's controller changes */
-	void HandleControllerChanged();
+	void HandleClientControllerChanged();
 	/** Call this at the end of your Pawn's SetupPlayerInputComponent() event */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
