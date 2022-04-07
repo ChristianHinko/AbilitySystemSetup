@@ -80,78 +80,68 @@ class ABILITYSYSTEMSETUP_API UAbilitySystemSetupComponent : public UActorCompone
 public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
 
+	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Abilities")
+		TArray<TSubclassOf<UGameplayAbility>> StartingAbilities;
+	/** Attribute Sets to create and add on startup */
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
+		TArray<TSubclassOf<UAttributeSet>> StartingAttributeSets;
+	/** These Effects are only applied one time on startup (example starting effects: GE_InitCharacter, GE_HealthRegen) */
+	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
+		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
 
-	/**
-	 * Gets the active Ability System Component.
-	 * That is, the Player's ASC if Player controlled or the AI's ASC if AI controlled.
-	 */
-	UAbilitySystemComponent* GetCurrentASC() const { return CurrentASC.Get(); }
 
 
-	/**
-	 * Sets the Avatar Actor with the ASC
-	 */
+
+	/** Sets the Avatar Actor with the ASC */
 	void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor);
-	/**
-	 * Should be called by the owning pawn ( BEFORE Super::UnPossessed() ) to remove itself as the avatar of the ability system.
-	 */
+	/** Should be called by the owning pawn ( BEFORE Super::UnPossessed() ) to remove itself as the avatar of the ability system. */
 	void UninitializeAbilitySystemComponent();
-	// Should be called by the owning pawn when the pawn's controller changes
+	/** Should be called by the owning pawn when the pawn's controller changes */
 	void HandleControllerChanged();
-
-	/**
-	 * Call this at the end of your Pawn's SetupPlayerInputComponent() event
-	 */
+	/** Call this at the end of your Pawn's SetupPlayerInputComponent() event */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
 
-protected:
-	virtual void InitializeComponent() override;
 
-	APawn* OwningPawn;
 
-public:
-	/**
-	 * Broadcasted when the Ability System is set up and ready to go
-	 */
+
+	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
-	/**
-	 * Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given
-	 */
+	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
 	/**
 	 * Server only event for giving starting Attribute Sets via C++.
-	 * NOTE: Remember to use UObject::Rename() so that we can remove them on UnPossessed.
-	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp".
+	 * NOTE: See example implementation of this event in "P_AbilitySystemSetupPawn.cpp".
 	 */
 	FAbilitySystemSetupDelegate OnAddStartingAttributeSets;
 	/**
 	 * Server only event for giving starting abilities via C++.
-	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp".
+	 * NOTE: See example implementation of this event in "P_AbilitySystemSetupPawn.cpp".
 	 */
 	FAbilitySystemSetupDelegate OnGiveStartingAbilities;
 
-
-
-	/**
-	 * Attribute Sets to create and add on startup
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
-		TArray<TSubclassOf<UAttributeSet>> StartingAttributeSets;
-	/**
-	 * These Effects are only applied one time on startup
-	 * Example starting effects: GE_InitCharacter, GE_HealthRegen
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
-		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
-
 protected:
+	virtual void InitializeComponent() override;
+
+private:
+
 	/** Called only on server. This is the earliest place you can give an Ability. */
 	bool GiveStartingAbilities();
+	/** Makes the input events work for GAS */
+	void BindAbilitySystemInput(UInputComponent* InputComponent);
+	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
+	void AddStartingAttributeSets();
+	/** Apply all Effects listed in StartingEffects */
+	void ApplyStartingEffects();
 
-	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Abilities")
-		TArray<TSubclassOf<UGameplayAbility>> StartingAbilities;
+	/** Removes all Attribute Sets that we added to the ASC */
+	int32 RemoveOwnedAttributeSets();
+	/** Removes all Abilities that we've given to the ASC */
+	int32 ClearGivenAbilities();
+	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
+	int32 RemoveAllCharacterTags();
+
 
 
 	/**
@@ -176,45 +166,24 @@ protected:
 		uint8 bRemoveCharacterTagsOnUnpossessed : 1;
 
 
-	/** Removes all Attribute Sets that we added to the ASC */
-	int32 RemoveOwnedAttributeSets();
-	/** Removes all Abilities that we've given to the ASC */
-	int32 ClearGivenAbilities();
-	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
-	int32 RemoveAllCharacterTags();
-
-private:
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> PreviousASC;
-
-	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
-	UPROPERTY()
-		TWeakObjectPtr<AController> PreviousController;
 
 
-
-	/** Makes the input events work for GAS */
-	void BindAbilitySystemInput(UInputComponent* InputComponent);
-	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
-	void AddStartingAttributeSets();
-	/** Apply all Effects listed in StartingEffects */
-	void ApplyStartingEffects();
-
-	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
-	UPROPERTY()
-		TArray<UAttributeSet*> CreatedAttributeSets;
-
-
-	TArray<FGameplayAbilitySpec> PendingAbilitiesToTransfer;
-
-
-
-	// Internal state bools:
-
+	/**				Internal members			 */
+	/** In most cases, our AvatarActor */
+	APawn* OwningPawn;
 	/** Indicates that we have not applied the StartingEffects nor given the StartingAbilities yet */
 	uint8 bFirstInitialization : 1;
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
+	UPROPERTY()
+		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
+	UPROPERTY()
+		TWeakObjectPtr<UAbilitySystemComponent> PreviousASC;
+	/** This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own */
+	UPROPERTY()
+		TWeakObjectPtr<AController> PreviousController;
+	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
+	UPROPERTY()
+		TArray<UAttributeSet*> CreatedAttributeSets;
+	TArray<FGameplayAbilitySpec> PendingAbilitiesToTransfer;
 };
