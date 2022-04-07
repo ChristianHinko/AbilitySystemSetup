@@ -131,8 +131,6 @@ public:
 
 
 
-
-
 	/**
 	 * Attribute Sets to create and add on startup
 	 */
@@ -196,7 +194,7 @@ private:
 
 
 	/** Makes the input events work for GAS */
-	void BindASCInput(UInputComponent* InputComponent);
+	void BindAbilitySystemInput(UInputComponent* InputComponent);
 	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
 	void AddStartingAttributeSets();
 	/** Apply all Effects listed in StartingEffects */
@@ -213,8 +211,8 @@ private:
 
 	// Internal state bools:
 
-	/** Indicates that we already created Attribute Sets and added them, initialized the Attributes, and applied the starting Effects */
-	uint8 bInitialized : 1;
+	/** Indicates that we have not applied the StartingEffects nor given the StartingAbilities yet */
+	uint8 bFirstInitialization : 1;
 	/** Shows that we already have input binded with the Ability System */
-	uint8 bASCInputBound : 1;
+	uint8 bAbilitySystemInputBinded : 1;
 };
