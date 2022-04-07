@@ -225,7 +225,6 @@ void UAbilitySystemSetupComponent::HandleClientControllerChanged()
 	ensure(CurrentASC->AbilityActorInfo->OwnerActor == CurrentASC->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
 
 
-
 	CurrentASC->RefreshAbilityActorInfo();		// update ActorInfo's Controller
 }
 
@@ -291,16 +290,19 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 				CurrentASC->ClearActorInfo();
 			}
 
-			ClearGivenAbilities();
-
-			if (bRemoveAttributeSetsOnUnPossessed)
+			if (GetOwnerRole() == ROLE_Authority)
 			{
-				RemoveOwnedAttributeSets();
-			}
+				ClearGivenAbilities();
 
-			if (bRemoveCharacterTagsOnUnpossessed)
-			{
-				RemoveAllCharacterTags();
+				if (bRemoveAttributeSetsOnUnPossessed)
+				{
+					RemoveOwnedAttributeSets();
+				}
+
+				if (bRemoveCharacterTagsOnUnpossessed)
+				{
+					RemoveAllCharacterTags();
+				}
 			}
 		}
 		else
