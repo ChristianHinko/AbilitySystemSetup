@@ -27,7 +27,6 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	bFirstInitialization = true;
 
 	bRemoveAttributeSetsOnUnPossessed = true;
-	bClearAbilitiesOnUnPossessed = true;
 	bRemoveCharacterTagsOnUnpossessed = true;
 }
 void UAbilitySystemSetupComponent::InitializeComponent()
@@ -92,8 +91,6 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	
 	
 	
-	
-	
 	CurrentASC = InASC;
 	CurrentASC->InitAbilityActorInfo(InOwnerActor, NewAvatarToUse);
 
@@ -123,19 +120,6 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		}
 
 		bFirstInitialization = false;
-	}
-	else
-	{
-		// We are initializing a second time
-		
-		// Transfer Abilities between ASCs
-		if (GetOwnerRole() == ROLE_Authority)
-		{
-			UASSAbilitySystemBlueprintLibrary::GiveAbilities(CurrentASC.Get(), PendingAbilitiesToTransfer);
-			PendingAbilitiesToTransfer.Empty();
-
-			// TODO: we should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
-		}
 	}
 
 
@@ -272,32 +256,37 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 {
 	if (CurrentASC.IsValid())
 	{
-		PendingAbilitiesToTransfer = CurrentASC->GetActivatableAbilities();
-
-
-		if (bRemoveAttributeSetsOnUnPossessed)
+		if (CurrentASC->GetAvatarActor() == GetOwner())
 		{
-			RemoveOwnedAttributeSets();
-		}
+			CurrentASC->CancelAbilities(nullptr, nullptr);
+			CurrentASC->RemoveAllGameplayCues();
 
-		if (bClearAbilitiesOnUnPossessed)
-		{
-			ClearGivenAbilities();
-			for (int32 i = 0; i < PendingAbilitiesToTransfer.Num(); ++i)
+			if (IsValid(CurrentASC->GetOwnerActor()))
 			{
-				FGameplayAbilitySpec& Spec = PendingAbilitiesToTransfer[i];
-				Spec.NonReplicatedInstances.Empty();
-				Spec.ReplicatedInstances.Empty();
-				Spec.ActiveCount = 0;
-				//Spec.PendingRemove = false; // maybe not actually?
+				// Clear our avatar actor from it (this will re-init other actor info as well)
+				CurrentASC->SetAvatarActor(nullptr);
+			}
+			else
+			{
+				// Clear ALL actor info because don't even have an owner actor for some reason
+				CurrentASC->ClearActorInfo();
+			}
 
-				//AbilitySystemComponent->ClearAbility(Spec->Handle);
+			ClearGivenAbilities();
+
+			if (bRemoveAttributeSetsOnUnPossessed)
+			{
+				RemoveOwnedAttributeSets();
+			}
+
+			if (bRemoveCharacterTagsOnUnpossessed)
+			{
+				RemoveAllCharacterTags();
 			}
 		}
-
-		if (bRemoveCharacterTagsOnUnpossessed)
+		else
 		{
-			RemoveAllCharacterTags();
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried uninitializing the ASC when our owning actor was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
 		}
 	}
 

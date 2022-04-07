@@ -43,7 +43,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * specific stats will persist across possessions and respawns.
  * We provide some helpful bools to make unpossession a little better:
  * 		- Use bRemoveAttributeSetsOnUnPossessed to remove added Attribute Sets
- * 		- Use bClearAbilitiesOnUnPossessed to clear given Abilities
  * 		- Use bRemoveCharacterTagsOnUnpossessed to remove character tags (not implemented)
  * 
  * 
@@ -51,7 +50,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * 		1) Gameplay Abilities
  * 			- Fill out StartingAbilities with the Gameplay Ability classes that you want to be given.
  * 			- If you want a Spec Handle for a starting Ability, use the OnGiveStartingAbilities delegate to give the Ability by Spec Handle.
- * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed (assuming bClearAbilitiesOnUnPossessed).
+ * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed.
  * 				- If you need an Ability to persist between Characters make sure you set its SourceObject to the Player State (or something persistent) on Give Ability.
  * 
  * 		2) Attribute Sets
@@ -111,20 +110,19 @@ protected:
 	APawn* OwningPawn;
 
 public:
-	/**
-	 * Broadcasted when the Ability System is set up and ready to go
-	 */
+	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
-	/**
-	 * Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given
-	 */
+
+	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
+
 	/**
 	 * Server only event for giving starting Attribute Sets via C++.
 	 * NOTE: Remember to use UObject::Rename() so that we can remove them on UnPossessed.
 	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp".
 	 */
 	FAbilitySystemSetupDelegate OnAddStartingAttributeSets;
+
 	/**
 	 * Server only event for giving starting abilities via C++.
 	 * NOTE: See example implementation of this event in "AbilitySystemSetupInterface.cpp".
@@ -138,6 +136,7 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
 		TArray<TSubclassOf<UAttributeSet>> StartingAttributeSets;
+
 	/**
 	 * These Effects are only applied one time on startup
 	 * Example starting effects: GE_InitCharacter, GE_HealthRegen
@@ -161,11 +160,7 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
-	/**
-	 * Remove all Abilities that were given by us on unpossess
-	 */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
-		uint8 bClearAbilitiesOnUnPossessed : 1;
+
 	/**
 	 * --- CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING ---
 	 * Removes all Tags relating to this specific character from the PlayerState's ASC
@@ -178,8 +173,10 @@ protected:
 
 	/** Removes all Attribute Sets that we added to the ASC */
 	int32 RemoveOwnedAttributeSets();
+
 	/** Removes all Abilities that we've given to the ASC */
 	int32 ClearGivenAbilities();
+
 	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
 	int32 RemoveAllCharacterTags();
 
@@ -194,20 +191,19 @@ private:
 		TWeakObjectPtr<AController> PreviousController;
 
 
-
-	/** Makes the input events work for GAS */
-	void BindAbilitySystemInput(UInputComponent* InputComponent);
-	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
-	void AddStartingAttributeSets();
-	/** Apply all Effects listed in StartingEffects */
-	void ApplyStartingEffects();
-
 	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
 		TArray<UAttributeSet*> CreatedAttributeSets;
 
 
-	TArray<FGameplayAbilitySpec> PendingAbilitiesToTransfer;
+	/** Makes the input events work for GAS */
+	void BindAbilitySystemInput(UInputComponent* InputComponent);
+
+	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
+	void AddStartingAttributeSets();
+
+	/** Apply all Effects listed in StartingEffects */
+	void ApplyStartingEffects();
 
 
 
