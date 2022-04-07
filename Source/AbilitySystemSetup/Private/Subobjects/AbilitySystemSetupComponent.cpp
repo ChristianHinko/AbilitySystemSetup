@@ -56,7 +56,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 {
 	if (!IsValid(InASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	if (CurrentASC == InASC)
@@ -64,16 +64,38 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() called again after already being initialized - no need to proceed"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-
-	// Edge case where they forgot to uninitialize the ASC
+	// Resolve edge case: You forgot to uninitialize the ASC before initializing a new one
 	if (CurrentASC.IsValid())
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
 		UninitializeAbilitySystemComponent();
 	}
 
+	AActor* CurrentAvatar = InASC->GetAvatarActor();	// the passed in ASC's old avatar
+	AActor* NewAvatarToUse = GetOwner();				// new avatar for the passed in ASC
+	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC [%s] on actor [%s] owner [%s], current [%s] "), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(InASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(InOwnerActor), *GetNameSafe(CurrentAvatar));
+	
+	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated
+	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
+	{
+		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous AbilitySystemSetupComponent (the setup component of the old avatar actor)
+		{
+			if (PreviousAbilitySystemSetupComponent->CurrentASC == InASC)
+			{
+				// Our old avatar actor forgot to uninitialize the ASC    OR    our old avatar actor hasn't been destroyed by replication yet during respawn
+				// We will uninitialize the ASC from the old avatar before initializing it with this new avatar
+				UE_CLOG(GetOwnerRole() == ROLE_Authority, LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));	// only on the Authority because we can be certain there is something wrong if the server gets here (regardless this log should catch our attention and get us to fix it)
+				PreviousAbilitySystemSetupComponent->UninitializeAbilitySystemComponent();		// kick out the old avatar from the ASC
+			}
+		}
+	}
+	
+	
+	
+	
+	
 	CurrentASC = InASC;
-	CurrentASC->InitAbilityActorInfo(InOwnerActor, GetOwner());
+	CurrentASC->InitAbilityActorInfo(InOwnerActor, NewAvatarToUse);
 
 
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
