@@ -98,11 +98,11 @@ public:
 
 	/** Sets the Avatar Actor with the ASC */
 	void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor);
-	/** Should be called by the owning pawn ( BEFORE Super::UnPossessed() ) to remove itself as the avatar of the ability system. */
+	/** Clears the Avatar Actor from the ASC */
 	void UninitializeAbilitySystemComponent();
-	/** Should be called by the owning pawn when the pawn's controller changes */
-	void HandleClientControllerChanged();
-	/** Call this at the end of your Pawn's SetupPlayerInputComponent() event */
+	/** Called by the owning pawn when the Pawn's Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller() */
+	void HandleControllerChanged();
+	/** Called at the end of your Pawn's SetupPlayerInputComponent() event */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
 
@@ -127,10 +127,10 @@ protected:
 	virtual void InitializeComponent() override;
 
 private:
-	/** Called only on server. This is the earliest place you can give an Ability. */
-	bool GiveStartingAbilities();
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
+	/** Give all Abilities listed in StartingAbilities. */
+	bool GiveStartingAbilities();
 	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
 	void AddStartingAttributeSets();
 	/** Apply all Effects listed in StartingEffects */

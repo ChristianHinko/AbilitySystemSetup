@@ -50,7 +50,6 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 }
 
 
-//BEGIN On Possess setup
 void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor)
 {
 	if (!IsValid(InASC))
@@ -125,9 +124,73 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 
 	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), CurrentASC.Get());
 }
-//END On Possess setup
+void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
+{
+	if (CurrentASC.IsValid())
+	{
+		if (CurrentASC->GetAvatarActor() == GetOwner())
+		{
+			CurrentASC->CancelAbilities(nullptr, nullptr);
+			CurrentASC->RemoveAllGameplayCues();
 
-//BEGIN On Possess helper functions
+			if (IsValid(CurrentASC->GetOwnerActor()))
+			{
+				// Clear our avatar actor from it (this will re-init other actor info as well)
+				CurrentASC->SetAvatarActor(nullptr);
+			}
+			else
+			{
+				// Clear ALL actor info because don't even have an owner actor for some reason
+				CurrentASC->ClearActorInfo();
+			}
+
+			if (GetOwnerRole() == ROLE_Authority)
+			{
+				ClearGivenAbilities();
+
+				if (bRemoveAttributeSetsOnUnPossessed)
+				{
+					RemoveOwnedAttributeSets();
+				}
+
+				if (bRemoveCharacterTagsOnUnpossessed)
+				{
+					RemoveAllCharacterTags();
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried uninitializing the ASC when the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+		}
+	}
+
+	PreviousASC = CurrentASC.Get();
+	CurrentASC = nullptr;
+
+	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
+}
+
+void UAbilitySystemSetupComponent::HandleControllerChanged()
+{
+	if (CurrentASC.IsValid() == false)
+	{
+		// In the case of ASC being on the PlayerState, this is expected to hit on the client for initial possessions (Controller gets replicated before PlayerState)
+		return;
+	}
+	if (CurrentASC->GetAvatarActor() != GetOwner())
+	{
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
+	ensure(CurrentASC->AbilityActorInfo->OwnerActor == CurrentASC->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
+
+
+	CurrentASC->RefreshAbilityActorInfo();		// update ActorInfo's Controller
+}
+
+//BEGIN InitializeAbilitySystemComponent() helper functions
 void UAbilitySystemSetupComponent::AddStartingAttributeSets()
 {
 	UAbilitySystemComponent* ASC = CurrentASC.Get();
@@ -208,25 +271,7 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 
 	return true;
 }
-//END On Possess helper functions
-
-void UAbilitySystemSetupComponent::HandleClientControllerChanged()
-{
-	if (CurrentASC.IsValid() == false)
-	{
-		// In the case of ASC being on the PlayerState, this is expected to hit on the client for initial possessions (Controller gets replicated before PlayerState)
-		return;
-	}
-	if (CurrentASC->GetAvatarActor() != GetOwner())
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-	ensure(CurrentASC->AbilityActorInfo->OwnerActor == CurrentASC->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
-
-
-	CurrentASC->RefreshAbilityActorInfo();		// update ActorInfo's Controller
-}
+//END InitializeAbilitySystemComponent() helper functions
 
 //BEGIN Input setup
 void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -268,58 +313,7 @@ void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* Input
 }
 //END Input setup
 
-
-//BEGIN On UnPossess setup
-void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
-{
-	if (CurrentASC.IsValid())
-	{
-		if (CurrentASC->GetAvatarActor() == GetOwner())
-		{
-			CurrentASC->CancelAbilities(nullptr, nullptr);
-			CurrentASC->RemoveAllGameplayCues();
-
-			if (IsValid(CurrentASC->GetOwnerActor()))
-			{
-				// Clear our avatar actor from it (this will re-init other actor info as well)
-				CurrentASC->SetAvatarActor(nullptr);
-			}
-			else
-			{
-				// Clear ALL actor info because don't even have an owner actor for some reason
-				CurrentASC->ClearActorInfo();
-			}
-
-			if (GetOwnerRole() == ROLE_Authority)
-			{
-				ClearGivenAbilities();
-
-				if (bRemoveAttributeSetsOnUnPossessed)
-				{
-					RemoveOwnedAttributeSets();
-				}
-
-				if (bRemoveCharacterTagsOnUnpossessed)
-				{
-					RemoveAllCharacterTags();
-				}
-			}
-		}
-		else
-		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried uninitializing the ASC when the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
-		}
-	}
-
-	PreviousASC = CurrentASC.Get();
-	CurrentASC = nullptr;
-
-	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
-	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
-}
-//END On UnPossess setup
-
-//BEGIN On UnPossess helper functions
+//BEGIN UninitializeAbilitySystemComponent() helper functions
 int32 UAbilitySystemSetupComponent::RemoveOwnedAttributeSets()
 {
 	if (GetOwnerRole() < ROLE_Authority)
@@ -392,4 +386,4 @@ int32 UAbilitySystemSetupComponent::RemoveAllCharacterTags() // only called on A
 
 	return -1;
 }
-//END On UnPossess helper functions
+//END UninitializeAbilitySystemComponent() helper functions
