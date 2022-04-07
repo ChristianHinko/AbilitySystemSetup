@@ -91,18 +91,17 @@ public:
 	/**
 	 * Sets the Avatar Actor with the ASC
 	 */
-	void SetUpAbilitySystemComponent(UAbilitySystemComponent* ASC);
+	void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor);
+	/**
+	 * Should be called by the owning pawn ( BEFORE Super::UnPossessed() ) to remove itself as the avatar of the ability system.
+	 */
+	void UninitializeAbilitySystemComponent();
 
 	/**
 	 * Call this at the end of your Pawn's SetupPlayerInputComponent() event
 	 */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
-	/**
-	 * On OwningPawn becomes UnPossessed.
-	 * NOTE: Call this BEFORE Super::UnPossessed()!
-	 */
-	virtual void UnPossessed();
 
 protected:
 	virtual void InitializeComponent() override;

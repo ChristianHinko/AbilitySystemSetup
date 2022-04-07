@@ -50,10 +50,10 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 
 
 //BEGIN On Possess setup
-void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemComponent* ASC)
+void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor)
 {
-	CurrentASC = ASC;
-	if (!IsValid(ASC))
+	CurrentASC = InASC;
+	if (!IsValid(InASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
@@ -61,7 +61,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 
 
 	// This must be done on both client and server
-	ASC->InitAbilityActorInfo(ASC->GetOwnerActor(), GetOwner());
+	InASC->InitAbilityActorInfo(InOwnerActor, GetOwner());
 
 
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
@@ -80,7 +80,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 			AddStartingAttributeSets();
 		}
 
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), ASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), InASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -101,7 +101,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			UASSAbilitySystemBlueprintLibrary::GiveAbilities(ASC, PendingAbilitiesToTransfer);
+			UASSAbilitySystemBlueprintLibrary::GiveAbilities(InASC, PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 
 			// TODO: we should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
@@ -109,7 +109,7 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 	}
 
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), ASC);
+	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), InASC);
 }
 //END On Possess setup
 
@@ -238,7 +238,7 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 
 
 //BEGIN On UnPossess setup
-void UAbilitySystemSetupComponent::UnPossessed()
+void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 {
 	if (CurrentASC.IsValid())
 	{
