@@ -54,21 +54,26 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 //BEGIN On Possess setup
 void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor)
 {
-	CurrentASC = InASC;
 	if (!IsValid(InASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-
 	if (CurrentASC == InASC)
 	{
-		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() Called twice in a row for the same ASC - ignoring this and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() called again after already being initialized - no need to proceed"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
-	// Init our Actor Info
-	InASC->InitAbilityActorInfo(InOwnerActor, GetOwner());
+	// Edge case where they forgot to uninitialize the ASC
+	if (CurrentASC.IsValid())
+	{
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
+		UninitializeAbilitySystemComponent();
+	}
+
+	CurrentASC = InASC;
+	CurrentASC->InitAbilityActorInfo(InOwnerActor, GetOwner());
 
 
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
@@ -87,7 +92,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 
 	if (bFirstInitialization)
 	{
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), InASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
+		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), CurrentASC.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -104,7 +109,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			UASSAbilitySystemBlueprintLibrary::GiveAbilities(InASC, PendingAbilitiesToTransfer);
+			UASSAbilitySystemBlueprintLibrary::GiveAbilities(CurrentASC.Get(), PendingAbilitiesToTransfer);
 			PendingAbilitiesToTransfer.Empty();
 
 			// TODO: we should have a way to transfer Tags and active Effects and Abilities to across ACSs but this sounds really hard
@@ -112,7 +117,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	}
 
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), InASC);
+	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), CurrentASC.Get());
 }
 //END On Possess setup
 
@@ -274,8 +279,8 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 		}
 	}
 
-	// Make sure we set previous ASC right before UnPossessed
 	PreviousASC = CurrentASC.Get();
+	CurrentASC = nullptr;
 
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
 	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
