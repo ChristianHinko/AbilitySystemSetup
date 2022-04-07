@@ -24,6 +24,8 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 
+	bFirstInitialization = true;
+
 	bRemoveAttributeSetsOnUnPossessed = true;
 	bClearAbilitiesOnUnPossessed = true;
 	bRemoveCharacterTagsOnUnpossessed = true;
@@ -59,8 +61,13 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		return;
 	}
 
+	if (CurrentASC == InASC)
+	{
+		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() Called twice in a row for the same ASC - ignoring this and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
 
-	// This must be done on both client and server
+	// Init our Actor Info
 	InASC->InitAbilityActorInfo(InOwnerActor, GetOwner());
 
 
@@ -70,34 +77,30 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		// Called from both SetupPlayerInputComponent() and SetUpAbilitySystemComponent() because of a potential race condition where the Player Controller might
 		// call ClientRestart() which calls SetupPlayerInputComponent() before the Player State is repped to the client so the Player State would be null in SetupPlayerInputComponent().
 		// Conversely, the Player State might be repped before the Player Controller calls ClientRestart() so the Actor's Input Component would be null in OnRep_PlayerState().
-		BindASCInput(OwningPawn->InputComponent);
+		BindAbilitySystemInput(OwningPawn->InputComponent);
 	}
 
-	if (!bInitialized)
+	if (GetOwnerRole() == ROLE_Authority)
 	{
-		if (GetOwnerRole() == ROLE_Authority)
-		{
-			AddStartingAttributeSets();
-		}
+		AddStartingAttributeSets();
+	}
 
+	if (bFirstInitialization)
+	{
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), InASC); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
 			ApplyStartingEffects();
-
-			// This is the first time our setup is being run so give our starting Abilities
 			GiveStartingAbilities();
 		}
 
-
-		bInitialized = true;
+		bFirstInitialization = false;
 	}
-	else // we aren't a first time possession
+	else
 	{
-		// Just add our already-created Attribute Sets with the ASC
-		AddStartingAttributeSets();
-
+		// We are initializing a second time
+		
 		// Transfer Abilities between ASCs
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -200,9 +203,9 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Called in SetupPlayerInputComponent() because of a potential race condition.
-	BindASCInput(PlayerInputComponent);
+	BindAbilitySystemInput(PlayerInputComponent);
 }
-void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
+void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* InputComponent)
 {
 	if (!IsValid(InputComponent))
 	{
@@ -215,7 +218,7 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 		return;
 	}
 
-	if (!bASCInputBound)
+	if (!bAbilitySystemInputBinded)
 	{
 		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UDS_AbilitySystemSetup>();
 		if (!IsValid(AbilitySystemSetupDeveloperSettings))
@@ -230,7 +233,7 @@ void UAbilitySystemSetupComponent::BindASCInput(UInputComponent* InputComponent)
 			)
 		);
 
-		bASCInputBound = true; // only run this function only once
+		bAbilitySystemInputBinded = true; // only run this function only once
 	}
 
 }
