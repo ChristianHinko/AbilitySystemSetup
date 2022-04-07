@@ -84,7 +84,6 @@ void UAbilitySystemSetupComponent::SetUpAbilitySystemComponent(UAbilitySystemCom
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
-			InitializeAttributes();
 			ApplyStartingEffects();
 
 			// This is the first time our setup is being run so give our starting Abilities
@@ -146,41 +145,6 @@ void UAbilitySystemSetupComponent::AddStartingAttributeSets()
 
 	// Mark it Net Dirty after adding any Attribute Sets
 	ASC->ForceReplication();
-}
-
-void UAbilitySystemSetupComponent::InitializeAttributes()
-{
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("AbilitySystemComponent was NULL on %s"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-	if (!IsValid(InitializationEffectTSub))
-	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Missing InitializationEffectTSub for %s. Please fill InitializationEffectTSub in Blueprint."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-		return;
-	}
-
-
-	// Init Attribute Set defaults NOTE: we don't use the FAttributeSetInitter system but we are calling this here if we ever wanted to TODO: commented out because	UAbilitySystemGlobals::AllocAttributeSetInitter() never ends up getting called
-	//UAbilitySystemGlobals::Get().GetAttributeSetInitter()->InitAttributeSetDefaults(ASC, FName(TEXT("Default"))/*GetCharacterName()*/, 1/*GetLevel()*/, true);
-
-
-	// Apply default Attribute values Effects
-	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
-	EffectContextHandle.AddInstigator(GetOwner(), GetOwner());
-	EffectContextHandle.AddSourceObject(GetOwner());
-
-	FGameplayEffectSpecHandle NewEffectSpecHandle = ASC->MakeOutgoingSpec(InitializationEffectTSub, 1/*GetLevel()*/, EffectContextHandle);
-	if (NewEffectSpecHandle.IsValid())
-	{
-		ASC->ApplyGameplayEffectSpecToSelf(*NewEffectSpecHandle.Data.Get());
-	}
-	else
-	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to apply the default attributes effect on %s but failed. Maybe check if you filled out your InitializationEffectTSub correctly in Blueprint"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-	}
 }
 
 void UAbilitySystemSetupComponent::ApplyStartingEffects()

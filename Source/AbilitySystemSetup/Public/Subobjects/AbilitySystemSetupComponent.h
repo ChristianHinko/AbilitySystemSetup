@@ -62,8 +62,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * 				the Attribute Set as a default subobject on the Player State class (if possible) and it will automatically be added to the Player's ASC and persist accross possessions.
  * 
  * 		3) Gameplay Effects
- * 			- Fill out InitializationEffectTSub for using Attribute Set initialization via Gameplay Effect.
- * 			- Fill out StartingEffects with any Gameplay Effects that you want to be applied on startup (e.g. GE_HealthRegen or GE_StaminaRegen).
+ * 			- Fill out StartingEffects with any Gameplay Effects that you want to be applied on startup (e.g. GE_InitCharacter, GE_HealthRegen).
  * 
  * 		4) Gameplay Tags
  * 			- If you need bRemoveCharacterTagsOnUnpossessed, then implement RemoveAllCharacterTags() to remove all character related Tags from the ASC.
@@ -141,14 +140,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
 		TArray<TSubclassOf<UAttributeSet>> StartingAttributeSets;
 	/**
-	 * Initialization effect to give starting values for variables/attributes
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
-		TSubclassOf<UGameplayEffect> InitializationEffectTSub;
-
-	/**
-	 * These Effects are only applied one time on startup and after the InitializationEffectTSub effect
-	 * Example starting effects: GE_HealthRegen, GE_StaminaRegen
+	 * These Effects are only applied one time on startup
+	 * Example starting effects: GE_InitCharacter, GE_HealthRegen
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
 		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
@@ -207,8 +200,6 @@ private:
 	void BindASCInput(UInputComponent* InputComponent);
 	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
 	void AddStartingAttributeSets();
-	/** Initialize Attribute values using the InitializationEffectTSub */
-	void InitializeAttributes();
 	/** Apply all Effects listed in StartingEffects */
 	void ApplyStartingEffects();
 
