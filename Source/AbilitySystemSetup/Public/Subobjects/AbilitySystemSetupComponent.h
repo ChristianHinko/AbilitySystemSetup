@@ -96,6 +96,8 @@ public:
 	 * Should be called by the owning pawn ( BEFORE Super::UnPossessed() ) to remove itself as the avatar of the ability system.
 	 */
 	void UninitializeAbilitySystemComponent();
+	// Should be called by the owning pawn when the pawn's controller changes
+	void HandleControllerChanged();
 
 	/**
 	 * Call this at the end of your Pawn's SetupPlayerInputComponent() event

@@ -277,6 +277,13 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
 	PreviousController = OwningPawn->GetController();	// we make sure we set our Previous Controller right before we UnPossessed so this is the most reliable Previous Controller
 }
+void UAbilitySystemSetupComponent::HandleControllerChanged()
+{
+	if (CurrentASC.IsValid())
+	{
+		CurrentASC.Get()->RefreshAbilityActorInfo();		// update ActorInfo's Controller
+	}
+}
 //END On UnPossess setup
 
 //BEGIN On UnPossess helper functions
