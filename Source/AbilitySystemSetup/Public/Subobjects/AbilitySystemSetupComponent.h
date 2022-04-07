@@ -43,7 +43,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * specific stats will persist across possessions and respawns.
  * We provide some helpful bools to make unpossession a little better:
  * 		- Use bRemoveAttributeSetsOnUnPossessed to remove added Attribute Sets
- * 		- Use bClearAbilitiesOnUnPossessed to clear given Abilities
  * 		- Use bRemoveCharacterTagsOnUnpossessed to remove character tags (not implemented)
  * 
  * 
@@ -51,7 +50,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * 		1) Gameplay Abilities
  * 			- Fill out StartingAbilities with the Gameplay Ability classes that you want to be given.
  * 			- If you want a Spec Handle for a starting Ability, use the OnGiveStartingAbilities delegate to give the Ability by Spec Handle.
- * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed (assuming bClearAbilitiesOnUnPossessed).
+ * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed.
  * 				- If you need an Ability to persist between Characters make sure you set its SourceObject to the Player State (or something persistent) on Give Ability.
  * 
  * 		2) Attribute Sets
@@ -105,7 +104,6 @@ public:
 
 
 
-
 	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
 	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given */
@@ -125,7 +123,6 @@ protected:
 	virtual void InitializeComponent() override;
 
 private:
-
 	/** Called only on server. This is the earliest place you can give an Ability. */
 	bool GiveStartingAbilities();
 	/** Makes the input events work for GAS */
@@ -151,11 +148,7 @@ private:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
-	/**
-	 * Remove all Abilities that were given by us on unpossess
-	 */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
-		uint8 bClearAbilitiesOnUnPossessed : 1;
+
 	/**
 	 * --- CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING ---
 	 * Removes all Tags relating to this specific character from the PlayerState's ASC
@@ -164,8 +157,6 @@ private:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveCharacterTagsOnUnpossessed : 1;
-
-
 
 
 	/**				Internal members			 */
@@ -185,5 +176,4 @@ private:
 	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
 		TArray<UAttributeSet*> CreatedAttributeSets;
-	TArray<FGameplayAbilitySpec> PendingAbilitiesToTransfer;
 };
