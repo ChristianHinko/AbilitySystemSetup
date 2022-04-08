@@ -310,7 +310,7 @@ void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 				}
 				else
 				{
-					if (bDoNotAutoActivateFromGASBindings) // =@OVERRIDED CODE MARKER@= wrapped in this if statement because original implemntation would just TryActivateAbility() in this else statement
+					if (!bDoNotAutoActivateFromGASBindings) // =@OVERRIDED CODE MARKER@= wrapped in this if statement because original implemntation would just TryActivateAbility() in this else statement
 					{
 						// Ability is not active, so try to activate it
 						TryActivateAbility(Spec.Handle);
