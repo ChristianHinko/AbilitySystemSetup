@@ -101,7 +101,7 @@ public:
 		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 
 
-
+	// Public functions for owner to call..........
 	/** Sets the Avatar Actor with the ASC */
 	void InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	/** Clears the Avatar Actor from the ASC */
@@ -110,6 +110,7 @@ public:
 	void HandleControllerChanged();
 	/** Called at the end of your Pawn's SetupPlayerInputComponent() event */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
+
 
 
 
