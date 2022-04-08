@@ -24,7 +24,7 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 
-	bFirstInitialize = true;
+	bFirstInitialization = true;
 
 	bRemoveAttributeSetsOnUnPossessed = true;
 }
@@ -107,7 +107,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		AddStartingAttributeSets();
 	}
 
-	if (bFirstInitialize)
+	if (bFirstInitialization)
 	{
 		OnAbilitySystemSetUpPreInitializedDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
@@ -116,7 +116,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 			ApplyStartingEffects();
 		}
 
-		bFirstInitialize = false;
+		bFirstInitialization = false;
 	}
 
 	if (GetOwnerRole() == ROLE_Authority)

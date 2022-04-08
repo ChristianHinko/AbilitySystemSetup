@@ -161,7 +161,7 @@ private:
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
 	/** Indicates that we have not applied the StartingEffects yet */
-	uint8 bFirstInitialize : 1;
+	uint8 bFirstInitialization : 1;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
 	UPROPERTY()
