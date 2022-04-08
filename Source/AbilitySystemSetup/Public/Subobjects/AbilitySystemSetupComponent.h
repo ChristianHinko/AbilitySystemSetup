@@ -107,25 +107,25 @@ public:
 
 
 	/** Broadcasted when the Ability System is set up and ready to go */
-	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
-	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given */
-	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
+	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpDelegate;
+	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied and before starting Abilities are given */
+	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitializedDelegate;
 	
 	/**
 	 * Server only event for giving starting Attribute Sets via C++.
 	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
-	FAbilitySystemSetupDelegate OnAddStartingAttributeSets;
+	FAbilitySystemSetupDelegate AddStartingAttributeSetsDelegate;
 	/**
 	 * Server only event for giving starting abilities via C++.
 	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
-	FAbilitySystemSetupDelegate OnGiveStartingAbilities;
+	FAbilitySystemSetupDelegate GiveStartingAbilitiesDelegate;
 	/**
 	 * Server only event for removing all AvatarActor-related Tags.
 	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
-	FAbilitySystemSetupDelegate OnRemoveAvatarRelatedTags;
+	FAbilitySystemSetupDelegate RemoveAvatarRelatedTagsDelegate;
 
 protected:
 	virtual void InitializeComponent() override;
@@ -151,7 +151,7 @@ private:
 	 * However if the ASC no longer has this object's Attribute Set, Gameplay Effects can no longer modify their Attributes.
 	 * Disabling this would be useful for features such as switching to possessing a drone mid-game. Which case you would obviously want to keep your character's health Attribute Sets and such.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
+	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|AttributeSets")
 		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 
 

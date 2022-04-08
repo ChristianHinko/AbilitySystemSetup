@@ -109,7 +109,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 
 	if (bFirstInitialize)
 	{
-		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), CurrentASC.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
+		OnAbilitySystemSetUpPreInitializedDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
@@ -124,7 +124,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		GiveStartingAbilities();
 	}
 
-	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), CurrentASC.Get());
+	OnAbilitySystemSetUpDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get());
 }
 void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 {
@@ -156,7 +156,7 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 				}
 
 				// Give the game an opportunity to remove all Character related tags
-				OnRemoveAvatarRelatedTags.Broadcast(CurrentASC.Get());
+				RemoveAvatarRelatedTagsDelegate.Broadcast(CurrentASC.Get());
 			}
 		}
 		else
@@ -240,7 +240,7 @@ void UAbilitySystemSetupComponent::AddStartingAttributeSets()
 
 
 	// Allow a chance for owner to give starting Attribute Sets through C++
-	OnAddStartingAttributeSets.Broadcast(ASC);
+	AddStartingAttributeSetsDelegate.Broadcast(ASC);
 
 	// Add our CreatedAttributeSets
 	for (UAttributeSet* AttributeSet : CreatedAttributeSets)
@@ -298,7 +298,7 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 	}
 
 	// Allow a chance for owner to give starting abilities through C++
-	OnGiveStartingAbilities.Broadcast(ASC);
+	GiveStartingAbilitiesDelegate.Broadcast(ASC);
 
 	// Give non-handle starting Abilities
 	for (int32 i = 0; i < StartingAbilities.Num(); ++i)
