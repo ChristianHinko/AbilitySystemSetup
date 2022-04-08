@@ -33,6 +33,13 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	TArray<UActorComponent*> AbilitySystemSetupComponents;
+	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
+	ensureAlwaysMsgf((AbilitySystemSetupComponents.Num() == 1), TEXT("Only one AbilitySystemSetupComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
+#endif
+
+
 	// Get casted owners
 	OwningPawn = Cast<APawn>(GetOwner()); // NOTE: maybe do a GetTypedOuter() instead?
 
