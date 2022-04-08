@@ -47,7 +47,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * specific stats will persist across possessions and respawns.
  * We provide some helpful bools to make unpossession a little better:
  * 		- Use bRemoveAttributeSetsOnUnPossessed to remove added Attribute Sets
- * 		- Use bRemoveCharacterTagsOnUnpossessed to remove character tags (not implemented)
  * 
  * 
  * Key Features:
@@ -68,10 +67,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * 			- Fill out StartingEffects with any Gameplay Effects that you want to be applied on startup (e.g. GE_InitCharacter, GE_HealthRegen).
  * 
  * 		4) Gameplay Tags
- * 			- If you need bRemoveCharacterTagsOnUnpossessed, then implement RemoveAllCharacterTags() to remove all character related Tags from the ASC.
- * 				- An example of how your game might implement this is by removing all Tags with the "Character", "Pawn", and "Actor" parent Tags (this sounds like a pain).
+ * 			- Use to OnRemoveAvatarRelatedTags delegate to remove all Character-related Tags from the ASC.
+ * 				- An example of how your game might implement this is by removing all Tags with the "Character", "Pawn", or "Actor" parent Tags (this sounds like a pain).
  * 				- Also we haven't needed to use this yet so we don't know the best way to remove these Tags. The only way I can think to do this is by dynamically
- * 				defining a Gameplay Effect in the RemoveAllCharacterTags() function and applying it.
+ * 				defining a Gameplay Effect and applying it.
  * 			- NOTE: This should be a last resort solution. If you really need this much functionality, then maybe just put the ASC on the Character.
  * 
  */
@@ -82,6 +81,7 @@ class ABILITYSYSTEMSETUP_API UAbilitySystemSetupComponent : public UActorCompone
 	
 public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
+
 
 	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Abilities")
@@ -95,9 +95,8 @@ public:
 
 
 
-
 	/** Sets the Avatar Actor with the ASC */
-	void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor);
+	void InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	/** Clears the Avatar Actor from the ASC */
 	void UninitializeAbilitySystemComponent();
 	/** Called by the owning pawn when the Pawn's Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller() */
@@ -107,21 +106,26 @@ public:
 
 
 
-
 	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUp;
 	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied, before Attributes are initialized, and before starting Abilities are given */
 	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitialized;
+	
 	/**
 	 * Server only event for giving starting Attribute Sets via C++.
-	 * NOTE: See example implementation of this event in "P_AbilitySystemSetupPawn.cpp".
+	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
 	FAbilitySystemSetupDelegate OnAddStartingAttributeSets;
 	/**
 	 * Server only event for giving starting abilities via C++.
-	 * NOTE: See example implementation of this event in "P_AbilitySystemSetupPawn.cpp".
+	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
 	FAbilitySystemSetupDelegate OnGiveStartingAbilities;
+	/**
+	 * Server only event for removing all AvatarActor-related Tags.
+	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
+	 */
+	FAbilitySystemSetupDelegate OnRemoveAvatarRelatedTags;
 
 protected:
 	virtual void InitializeComponent() override;
@@ -129,20 +133,17 @@ protected:
 private:
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
-	/** Give all Abilities listed in StartingAbilities. */
-	bool GiveStartingAbilities();
 	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
 	void AddStartingAttributeSets();
 	/** Apply all Effects listed in StartingEffects */
 	void ApplyStartingEffects();
+	/** Give all Abilities listed in StartingAbilities. */
+	bool GiveStartingAbilities();
 
-	/** Removes all Attribute Sets that we added to the ASC */
-	int32 RemoveOwnedAttributeSets();
 	/** Removes all Abilities that we've given to the ASC */
 	int32 ClearGivenAbilities();
-	/** NOT IMPLEMENTED YET! Removes all Tags relating to this specific character from the PlayerState's ASC */
-	int32 RemoveAllCharacterTags();
-
+	/** Removes all Attribute Sets that we added to the ASC */
+	int32 RemoveOwnedAttributeSets();
 
 
 	/**
@@ -153,31 +154,22 @@ private:
 	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
 		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 
-	/**
-	 * --- CURRENTLY DOES NOTHING. IMPLEMENT RemoveAllCharacterTags() FOR THIS TO DO SOMETHING ---
-	 * Removes all Tags relating to this specific character from the PlayerState's ASC
-	 * Remove all Tags related to the character, that way when we possess a new character,
-	 * the old Tags don't interfere with the new character.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|Config")
-		uint8 bRemoveCharacterTagsOnUnpossessed : 1;
 
-
-	/**				Internal members			 */
+	//			Internal members:
 	/** In most cases, our AvatarActor */
 	APawn* OwningPawn;
-	/** Indicates that we have not applied the StartingEffects nor given the StartingAbilities yet */
-	uint8 bFirstInitialization : 1;
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
+	/** Indicates that we have not applied the StartingEffects yet */
+	uint8 bFirstInitialize : 1;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> PreviousASC;
-	/** This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own */
-	UPROPERTY()
-		TWeakObjectPtr<AController> PreviousController;
 	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
 		TArray<UAttributeSet*> CreatedAttributeSets;
+	// This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
+	UPROPERTY()
+		TWeakObjectPtr<AController> PreviousController;
 };

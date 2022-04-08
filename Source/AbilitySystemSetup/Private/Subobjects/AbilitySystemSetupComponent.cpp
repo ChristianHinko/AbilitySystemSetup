@@ -24,10 +24,9 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
 
-	bFirstInitialization = true;
+	bFirstInitialize = true;
 
 	bRemoveAttributeSetsOnUnPossessed = true;
-	bRemoveCharacterTagsOnUnpossessed = true;
 }
 void UAbilitySystemSetupComponent::InitializeComponent()
 {
@@ -50,14 +49,14 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 }
 
 
-void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC, AActor* InOwnerActor)
+void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC)
 {
-	if (!IsValid(InASC))
+	if (!IsValid(ASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	if (CurrentASC == InASC)
+	if (CurrentASC == ASC)
 	{
 		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() called again after already being initialized - no need to proceed"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
@@ -69,16 +68,16 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		UninitializeAbilitySystemComponent();
 	}
 
-	AActor* CurrentAvatar = InASC->GetAvatarActor();	// the passed in ASC's old avatar
+	AActor* CurrentAvatar = ASC->GetAvatarActor();	// the passed in ASC's old avatar
 	AActor* NewAvatarToUse = GetOwner();				// new avatar for the passed in ASC
-	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC [%s] on actor [%s] owner [%s], current [%s] "), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(InASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(InOwnerActor), *GetNameSafe(CurrentAvatar));
+	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC [%s] on actor [%s] owner [%s], current [%s] "), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(ASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
 	
 	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated
 	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
 	{
 		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous AbilitySystemSetupComponent (the setup component of the old avatar actor)
 		{
-			if (PreviousAbilitySystemSetupComponent->CurrentASC == InASC)
+			if (PreviousAbilitySystemSetupComponent->CurrentASC == ASC)
 			{
 				// Our old avatar actor forgot to uninitialize the ASC    OR    our old avatar actor hasn't been destroyed by replication yet during respawn
 				// We will uninitialize the ASC from the old avatar before initializing it with this new avatar
@@ -90,8 +89,8 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	
 	
 	
-	CurrentASC = InASC;
-	CurrentASC->InitAbilityActorInfo(InOwnerActor, NewAvatarToUse);
+	CurrentASC = ASC;
+	CurrentASC->InitAbilityActorInfo(ASC->GetOwnerActor(), NewAvatarToUse);
 
 
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
@@ -108,19 +107,22 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		AddStartingAttributeSets();
 	}
 
-	if (bFirstInitialization)
+	if (bFirstInitialize)
 	{
 		OnAbilitySystemSetUpPreInitialized.Broadcast(PreviousASC.Get(), CurrentASC.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
 
 		if (GetOwnerRole() == ROLE_Authority)
 		{
 			ApplyStartingEffects();
-			GiveStartingAbilities();
 		}
 
-		bFirstInitialization = false;
+		bFirstInitialize = false;
 	}
 
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		GiveStartingAbilities();
+	}
 
 	OnAbilitySystemSetUp.Broadcast(PreviousASC.Get(), CurrentASC.Get());
 }
@@ -153,10 +155,8 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 					RemoveOwnedAttributeSets();
 				}
 
-				if (bRemoveCharacterTagsOnUnpossessed)
-				{
-					RemoveAllCharacterTags();
-				}
+				// Give the game an opportunity to remove all Character related tags
+				OnRemoveAvatarRelatedTags.Broadcast(CurrentASC.Get());
 			}
 		}
 		else
@@ -188,6 +188,44 @@ void UAbilitySystemSetupComponent::HandleControllerChanged()
 
 
 	CurrentASC->RefreshAbilityActorInfo();		// update ActorInfo's Controller
+}
+
+void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	// Called in SetupPlayerInputComponent() because of a potential race condition.
+	BindAbilitySystemInput(PlayerInputComponent);
+}
+void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* InputComponent)
+{
+	if (!IsValid(InputComponent))
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = CurrentASC.Get();
+	if (!IsValid(ASC))
+	{
+		return;
+	}
+
+	if (!bAbilitySystemInputBinded)
+	{
+		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UDS_AbilitySystemSetup>();
+		if (!IsValid(AbilitySystemSetupDeveloperSettings))
+		{
+			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		}
+
+		ASC->BindAbilityActivationToInputComponent(InputComponent, FGameplayAbilityInputBinds(
+			AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
+			AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings
+			AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// name of our GAS input enum that gives the names of the rest of our inputs in the project settings
+		)
+		);
+
+		bAbilitySystemInputBinded = true; // only run this function only once
+	}
+
 }
 
 //BEGIN InitializeAbilitySystemComponent() helper functions
@@ -265,7 +303,7 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 	// Give non-handle starting Abilities
 	for (int32 i = 0; i < StartingAbilities.Num(); ++i)
 	{
-		FGameplayAbilitySpec Spec(StartingAbilities[i], /*, GetLevel()*/1, -1, GetOwner()); // GetLevel() doesn't exist in this template. Will need to implement one if you want a level system
+		FGameplayAbilitySpec Spec = FGameplayAbilitySpec(StartingAbilities[i], /*, GetLevel()*/1, INDEX_NONE, GetOwner());
 		ASC->GiveAbility(Spec);
 	}
 
@@ -273,47 +311,37 @@ bool UAbilitySystemSetupComponent::GiveStartingAbilities()
 }
 //END InitializeAbilitySystemComponent() helper functions
 
-//BEGIN Input setup
-void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+//BEGIN UninitializeAbilitySystemComponent() helper functions
+int32 UAbilitySystemSetupComponent::ClearGivenAbilities()
 {
-	// Called in SetupPlayerInputComponent() because of a potential race condition.
-	BindAbilitySystemInput(PlayerInputComponent);
-}
-void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* InputComponent)
-{
-	if (!IsValid(InputComponent))
+	if (GetOwnerRole() < ROLE_Authority)
 	{
-		return;
+		return 0;
 	}
-
 	UAbilitySystemComponent* ASC = CurrentASC.Get();
 	if (!IsValid(ASC))
 	{
-		return;
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not clear given Abilities from ASC so it probably has unneeded Abilities and possibly duplicates now. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+		return 0;
 	}
 
-	if (!bAbilitySystemInputBinded)
+
+	int32 RetVal = 0;
+
+	for (int32 i = ASC->GetActivatableAbilities().Num() - 1; i >= 0; --i)
 	{
-		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UDS_AbilitySystemSetup>();
-		if (!IsValid(AbilitySystemSetupDeveloperSettings))
+		const FGameplayAbilitySpec& Spec = ASC->GetActivatableAbilities()[i];
+		if (Spec.SourceObject == GetOwner()) // ensure we were the ones who gave this Ability - SourceObjects are expected to correctly assigned when using GiveAbility()
 		{
-			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+			// Remove it
+			ASC->ClearAbility(Spec.Handle);
+			++RetVal;
 		}
-
-		ASC->BindAbilityActivationToInputComponent(InputComponent, FGameplayAbilityInputBinds(
-				AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
-				AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings
-				AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// name of our GAS input enum that gives the names of the rest of our inputs in the project settings
-			)
-		);
-
-		bAbilitySystemInputBinded = true; // only run this function only once
 	}
 
+	return RetVal;
 }
-//END Input setup
 
-//BEGIN UninitializeAbilitySystemComponent() helper functions
 int32 UAbilitySystemSetupComponent::RemoveOwnedAttributeSets()
 {
 	if (GetOwnerRole() < ROLE_Authority)
@@ -347,43 +375,5 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAttributeSets()
 	ASC->ForceReplication();
 
 	return RetVal;
-}
-
-int32 UAbilitySystemSetupComponent::ClearGivenAbilities()
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		return 0;
-	}
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not clear given Abilities from ASC so it probably has unneeded Abilities and possibly duplicates now. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-		return 0;
-	}
-
-
-	int32 RetVal = 0;
-
-	for (int32 i = ASC->GetActivatableAbilities().Num() - 1; i >= 0; --i)
-	{
-		const FGameplayAbilitySpec& Spec = ASC->GetActivatableAbilities()[i];
-		if (Spec.SourceObject == GetOwner()) // ensure we were the ones who gave this Ability - SourceObjects are expected to correctly assigned when using GiveAbility()
-		{
-			// Remove it
-			ASC->ClearAbility(Spec.Handle);
-			++RetVal;
-		}
-	}
-
-	return RetVal;
-}
-
-int32 UAbilitySystemSetupComponent::RemoveAllCharacterTags() // only called on Authority
-{
-	// Needs implementation. Below I was trying to find a way to get all Tags containing a parent of Character.
-	//int32 AmountFound = AbilitySystemComponent->GetTagCount(FGameplayTag::RequestGameplayTag("Character"));
-
-	return -1;
 }
 //END UninitializeAbilitySystemComponent() helper functions
