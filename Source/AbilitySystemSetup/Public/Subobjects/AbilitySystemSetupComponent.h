@@ -92,6 +92,13 @@ public:
 	/** These Effects are only applied one time on startup (example starting effects: GE_InitCharacter, GE_HealthRegen) */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
 		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
+	/**
+	 * Takes this object's Attribute Set(s) away from the current ASC. This is on by default to prevent the potential problem of the ASC having 2 Attribute Sets of the same class.
+	 * However if the ASC no longer has this object's Attribute Set, Gameplay Effects can no longer modify their Attributes.
+	 * Disabling this would be useful for features such as switching to possessing a drone mid-game. Which case you would obviously want to keep your character's health Attribute Sets and such.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|AttributeSets")
+		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 
 
 
@@ -146,13 +153,6 @@ private:
 	int32 RemoveOwnedAttributeSets();
 
 
-	/**
-	 * Takes this object's Attribute Set(s) away from the current ASC. This is on by default to prevent the potential problem of the ASC having 2 Attribute Sets of the same class.
-	 * However if the ASC no longer has this object's Attribute Set, Gameplay Effects can no longer modify their Attributes.
-	 * Disabling this would be useful for features such as switching to possessing a drone mid-game. Which case you would obviously want to keep your character's health Attribute Sets and such.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|AttributeSets")
-		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 
 
 	//			Internal members:
