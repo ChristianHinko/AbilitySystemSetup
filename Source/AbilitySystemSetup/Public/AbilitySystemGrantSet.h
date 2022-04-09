@@ -20,6 +20,7 @@ struct FActiveGameplayEffectHandle;
  * FAbilitySystemGrantHandles
  * 
  * Keeps track of what has been granted by the UAbilitySystemGrantSet.
+ * Provides removal of granted handles.
  */
 USTRUCT()
 struct ABILITYSYSTEMSETUP_API FAbilitySystemGrantHandles
@@ -31,15 +32,20 @@ public:
 	FAbilitySystemGrantHandles();
 
 
-	void RemoveFromAbilitySystemComponent(UAbilitySystemComponent* ASC);
+	/** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
+	void RemoveFromAbilitySystemComponent();
+
+	/** Transfer granted Attribute Sets, Effects, and Abilities to a new Ability System Component (e.g. possessing a new Avatar Actor during gameplay) */
+	void TransferTo(UAbilitySystemComponent* NewASC);
 
 protected:
 	UPROPERTY()
-		TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
+		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY()
+		TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
+	UPROPERTY()
 		TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
-
 	UPROPERTY()
 		TArray<UAttributeSet*> GrantedAttributeSets;
 
