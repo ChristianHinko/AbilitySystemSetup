@@ -17,18 +17,18 @@ struct FActiveGameplayEffectHandle;
 
 
 /**
- * UAbilitySystemGrantHandles
+ * FAbilitySystemGrantHandles
  * 
- * Keeps track of what has been granted by the Ability Set.
+ * Keeps track of what has been granted by the UAbilitySystemGrantSet.
  */
-UCLASS(BlueprintType)
-class ABILITYSYSTEMSETUP_API UAbilitySystemGrantHandles : public UObject
+USTRUCT()
+struct ABILITYSYSTEMSETUP_API FAbilitySystemGrantHandles
 {
 	GENERATED_BODY()
 
 	friend class UAbilitySystemGrantSet;
 public:
-	UAbilitySystemGrantHandles(const FObjectInitializer& ObjectInitializer);
+	FAbilitySystemGrantHandles();
 
 
 	void RemoveFromAbilitySystemComponent(UAbilitySystemComponent* ASC);
@@ -51,7 +51,7 @@ protected:
  * 
  * Non-mutable "ability set" for granting Gameplay Abilities, Gameplay Effects, and Attribute Sets.
  */
-UCLASS(BlueprintType, Blueprintable, Const)
+UCLASS(Blueprintable, Const)
 class ABILITYSYSTEMSETUP_API UAbilitySystemGrantSet : public UObject
 {
 	GENERATED_BODY()
@@ -60,8 +60,8 @@ public:
 	UAbilitySystemGrantSet(const FObjectInitializer& ObjectInitializer);
 
 
-	/** Grants the Ability Set to the specified Ability System Component and outputs their handles that can be used later for removal. */
-	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, UAbilitySystemGrantHandles*& OutGrantHandles) const;
+	/** Grants the grant set to the specified Ability System Component and outputs their handles that can be used later for removal. */
+	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySystemGrantHandles& OutGrantHandles) const;
 
 protected:
 	/** Abilities to give on grant NOTE: These Abilities are assigned EAbilityInputID::None and a level of 1 */

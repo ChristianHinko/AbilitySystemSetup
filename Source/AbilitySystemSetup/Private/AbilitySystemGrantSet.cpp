@@ -9,25 +9,24 @@
 
 
 //////////////////////////////////
-/// UAbilitySystemGrantHandles
+/// FAbilitySystemGrantHandles
 //////////////////////////////////
 
-UAbilitySystemGrantHandles::UAbilitySystemGrantHandles(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+FAbilitySystemGrantHandles::FAbilitySystemGrantHandles()
 {
 
 }
 
-void UAbilitySystemGrantHandles::RemoveFromAbilitySystemComponent(UAbilitySystemComponent* ASC)
+void FAbilitySystemGrantHandles::RemoveFromAbilitySystemComponent(UAbilitySystemComponent* ASC)
 {
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove Ability Set from %s but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove granted sets from %s but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
 		return;
 	}
 	if (ASC->IsOwnerActorAuthoritative() == false)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove Ability Set from %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove granted sets from %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
 		return;
 	}
 
@@ -72,16 +71,16 @@ UAbilitySystemGrantSet::UAbilitySystemGrantSet(const FObjectInitializer& ObjectI
 
 }
 
-void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, UAbilitySystemGrantHandles*& OutGrantHandles) const
+void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySystemGrantHandles& OutGrantHandles) const
 {
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant Ability Set to %s but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant to %s but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
 		return;
 	}
 	if (ASC->IsOwnerActorAuthoritative() == false)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant Ability Set to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC));
 		return;
 	}
 
@@ -92,16 +91,13 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 	{
 		if (!IsValid(AbilityClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on ability set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetNameSafe(this));
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetNameSafe(this));
 			continue;
 		}
 
 		const FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, SourceObject));
 
-		if (OutGrantHandles)
-		{
-			OutGrantHandles->AbilitySpecHandles.Add(SpecHandle);
-		}
+		OutGrantHandles.AbilitySpecHandles.Add(SpecHandle);
 
 		++AbilityIndex;
 	}
@@ -112,7 +108,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 	{
 		if (!IsValid(EffectClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on ability set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetNameSafe(this));
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetNameSafe(this));
 			continue;
 		}
 
@@ -120,10 +116,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 		ContextHandle.AddSourceObject(SourceObject);
 		const FActiveGameplayEffectHandle ActiveHandle = ASC->ApplyGameplayEffectToSelf(EffectClass.GetDefaultObject(), /*, GetLevel()*/1, ContextHandle);
 
-		if (OutGrantHandles)
-		{
-			OutGrantHandles->ActiveEffectHandles.Add(ActiveHandle);
-		}
+		OutGrantHandles.ActiveEffectHandles.Add(ActiveHandle);
 
 		++EffectIndex;
 	}
@@ -134,7 +127,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 	{
 		if (!IsValid(AttributeSetClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on ability set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetNameSafe(this));
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetNameSafe(this));
 			continue;
 		}
 
@@ -143,10 +136,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 		NewAttributeSet->Rename(nullptr, SourceObject);
 		ASC->AddAttributeSetSubobject(NewAttributeSet);
 
-		if (OutGrantHandles)
-		{
-			OutGrantHandles->GrantedAttributeSets.Add(NewAttributeSet);
-		}
+		OutGrantHandles.GrantedAttributeSets.Add(NewAttributeSet);
 
 		++AttributeSetIndex;
 	}
