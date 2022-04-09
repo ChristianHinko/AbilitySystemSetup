@@ -85,22 +85,26 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 	}
 
 
-	// Grant our Gameplay Abilities
-	int AbilityIndex = 0;
-	for (const TSubclassOf<UGameplayAbility> AbilityClass : GrantedAbilities)
+	// Grant our Attribute Sets
+	int AttributeSetIndex = 0;
+	for (const TSubclassOf<UGameplayEffect> AttributeSetClass : GrantedAttributeSets)
 	{
-		if (!IsValid(AbilityClass))
+		if (!IsValid(AttributeSetClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetNameSafe(this));
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetNameSafe(this));
 			continue;
 		}
 
-		const FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, SourceObject));
+		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(SourceObject, AttributeSetClass);
+		NewAttributeSet->Rename(nullptr, SourceObject);
+		ASC->AddAttributeSetSubobject(NewAttributeSet);
 
-		OutGrantHandles.AbilitySpecHandles.Add(SpecHandle);
+		OutGrantHandles.GrantedAttributeSets.Add(NewAttributeSet);
 
-		++AbilityIndex;
+		++AttributeSetIndex;
 	}
+
+	ASC->ForceReplication();
 
 	// Grant our Gameplay Effects
 	int EffectIndex = 0;
@@ -121,25 +125,20 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 		++EffectIndex;
 	}
 
-	// Grant our Attribute Sets
-	int AttributeSetIndex = 0;
-	for (const TSubclassOf<UGameplayEffect> AttributeSetClass : GrantedAttributeSets)
+	// Grant our Gameplay Abilities
+	int AbilityIndex = 0;
+	for (const TSubclassOf<UGameplayAbility> AbilityClass : GrantedAbilities)
 	{
-		if (!IsValid(AttributeSetClass))
+		if (!IsValid(AbilityClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetNameSafe(this));
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetNameSafe(this));
 			continue;
 		}
 
-		// TODO: right now this thing assumes you will not re-use Attribute Set instances
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(SourceObject, AttributeSetClass);
-		NewAttributeSet->Rename(nullptr, SourceObject);
-		ASC->AddAttributeSetSubobject(NewAttributeSet);
+		const FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, SourceObject));
 
-		OutGrantHandles.GrantedAttributeSets.Add(NewAttributeSet);
+		OutGrantHandles.AbilitySpecHandles.Add(SpecHandle);
 
-		++AttributeSetIndex;
+		++AbilityIndex;
 	}
-
-	ASC->ForceReplication();
 }
