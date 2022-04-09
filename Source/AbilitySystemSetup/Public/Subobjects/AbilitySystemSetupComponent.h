@@ -16,7 +16,6 @@ struct FGameplayAbilitySpec;
 class UAttributeSet;
 
 
-
 DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbilitySystemComponent* const/*, PreviousASC*/, UAbilitySystemComponent* const/*, NewASC*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent*);
 
@@ -43,10 +42,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * 			- In this case, we need to make our Pawn both the Avatar Actor and Owner Actor of his ASC.
  * 
  * 
- * Having the ASC on the Player State can make unpossession and re-possession a huge pain since given Abilities and added Attribute Sets exist on the Player State rather than the Pawn. So character-
- * specific stats will persist across possessions and respawns.
- * We provide some helpful bools to make unpossession a little better:
- * 		- Use bRemoveAttributeSetsOnUnPossessed to remove added Attribute Sets
  * 
  * 
  * Key Features:
@@ -59,15 +54,12 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  * 		2) Attribute Sets
  * 			- Fill out StartingAttributeSets with the Attribute Set classes that you want to be created and added.
  * 			- If, for some reason, you need advanced control over this then use the OnAddStartingAttributeSets delegate to add any created Attribute Sets to the ASC.
- * 			- Any Attribute Sets owned by this Actor will be automatically removed from the ASC on UnPossessed (assuming bRemoveAttributeSetsOnUnPossessed).
- * 				- If you need an Attribute Set to persist between Characters make sure you manually set its outer to the Player State (or something persistent). Even better, create
- * 				the Attribute Set as a default subobject on the Player State class (if possible) and it will automatically be added to the Player's ASC and persist accross possessions.
  * 
  * 		3) Gameplay Effects
  * 			- Fill out StartingEffects with any Gameplay Effects that you want to be applied on startup (e.g. GE_InitCharacter, GE_HealthRegen).
  * 
  * 		4) Gameplay Tags
- * 			- Use to OnRemoveAvatarRelatedTags delegate to remove all Character-related Tags from the ASC.
+ * 			- Use to RemoveLooseAvatarRelatedTagsDelegate delegate to remove all avatar-related Tags from the ASC.
  * 				- An example of how your game might implement this is by removing all Tags with the "Character", "Pawn", or "Actor" parent Tags (this sounds like a pain).
  * 				- Also we haven't needed to use this yet so we don't know the best way to remove these Tags. The only way I can think to do this is by dynamically
  * 				defining a Gameplay Effect and applying it.
@@ -92,13 +84,6 @@ public:
 	/** These Effects are only applied one time on startup (example starting effects: GE_InitCharacter, GE_HealthRegen) */
 	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
 		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
-	/**
-	 * Takes this object's Attribute Set(s) away from the current ASC. This is on by default to prevent the potential problem of the ASC having 2 Attribute Sets of the same class.
-	 * However if the ASC no longer has this object's Attribute Set, Gameplay Effects can no longer modify their Attributes.
-	 * Disabling this would be useful for features such as switching to possessing a drone mid-game. Which case you would obviously want to keep your character's health Attribute Sets and such.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup|AttributeSets")
-		uint8 bRemoveAttributeSetsOnUnPossessed : 1;
 
 
 	// Public functions for owner to call..........
@@ -130,15 +115,16 @@ public:
 	 */
 	FAbilitySystemSetupDelegate GiveStartingAbilitiesDelegate;
 	/**
-	 * Server only event for removing all AvatarActor-related Tags.
+	 * Server and client event for removing all AvatarActor-related Tags.
 	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
-	FAbilitySystemSetupDelegate RemoveAvatarRelatedTagsDelegate;
+	FAbilitySystemSetupDelegate RemoveLooseAvatarRelatedTagsDelegate;
 
 protected:
 	virtual void InitializeComponent() override;
 
 private:
+	// ----- Initialization functions -----
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
 	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
@@ -148,10 +134,13 @@ private:
 	/** Give all Abilities listed in StartingAbilities. */
 	bool GiveStartingAbilities();
 
+	// ----- Uninitialization functions -----
 	/** Removes all Abilities that we've given to the ASC */
 	int32 ClearGivenAbilities();
 	/** Removes all Attribute Sets that we added to the ASC */
 	int32 RemoveOwnedAttributeSets();
+	/** Removes all Loose Gameplay Tags that external sources specified we should remove */
+	void RemoveLooseAvatarRelatedTags();
 
 
 
