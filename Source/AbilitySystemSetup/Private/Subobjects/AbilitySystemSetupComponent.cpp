@@ -25,8 +25,6 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	bWantsInitializeComponent = true;
 
 	bFirstInitialization = true;
-
-	bRemoveAttributeSetsOnUnPossessed = true;
 }
 void UAbilitySystemSetupComponent::InitializeComponent()
 {
@@ -153,17 +151,22 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 				CurrentASC->ClearActorInfo();
 			}
 
+
+
+			// Abilities
 			if (GetOwnerRole() == ROLE_Authority)
 			{
 				ClearGivenAbilities();
+			}
 
-				if (bRemoveAttributeSetsOnUnPossessed)
-				{
-					RemoveOwnedAttributeSets();
-				}
+			// Tags
+			RemoveLooseAvatarRelatedTags();
 
-				// Give the game an opportunity to remove all Character related tags
-				RemoveAvatarRelatedTagsDelegate.Broadcast(CurrentASC.Get());
+
+			// Attribute Sets
+			if (GetOwnerRole() == ROLE_Authority)
+			{
+				RemoveOwnedAttributeSets();
 			}
 		}
 		else
@@ -382,5 +385,13 @@ int32 UAbilitySystemSetupComponent::RemoveOwnedAttributeSets()
 	ASC->ForceReplication();
 
 	return RetVal;
+}
+void UAbilitySystemSetupComponent::RemoveLooseAvatarRelatedTags()
+{
+	// Give external sources an opportunity to remove any Loose Gameplay Tags
+	if (CurrentASC.IsValid())
+	{
+		RemoveLooseAvatarRelatedTagsDelegate.Broadcast(CurrentASC.Get());
+	}
 }
 //END UninitializeAbilitySystemComponent() helper functions
