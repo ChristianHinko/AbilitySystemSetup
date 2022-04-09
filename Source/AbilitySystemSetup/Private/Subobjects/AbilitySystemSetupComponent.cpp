@@ -114,8 +114,6 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 
 	if (bFirstInitialization)
 	{
-		OnAbilitySystemSetUpPreInitializedDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get()); // good place to bind to Attribute/Tag events, but currently the GE replicates to client faster than it can broadcast, so we need to fix this
-
 		if (GetOwnerRole() == ROLE_Authority)
 		{
 			ApplyStartingEffects();
@@ -129,7 +127,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		GiveStartingAbilities();
 	}
 
-	OnAbilitySystemSetUpDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get());
+	OnInitializeAbilitySystemComponentDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get());
 }
 void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 {

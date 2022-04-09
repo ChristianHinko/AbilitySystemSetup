@@ -102,9 +102,7 @@ public:
 
 
 	/** Broadcasted when the Ability System is set up and ready to go */
-	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpDelegate;
-	/** Broadcasted when the Ability System is set up BUT before starting Effects are applied and before starting Abilities are given */
-	FAbilitySystemComponentChangeDelegate OnAbilitySystemSetUpPreInitializedDelegate;
+	FAbilitySystemComponentChangeDelegate OnInitializeAbilitySystemComponentDelegate;
 	
 	/**
 	 * Server only event for giving starting Attribute Sets via C++.

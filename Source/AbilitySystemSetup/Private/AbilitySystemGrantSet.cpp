@@ -133,7 +133,6 @@ void FAbilitySystemGrantHandles::TransferTo(UAbilitySystemComponent* NewASC)
 		OldAbilitySystemComponent->RemoveActiveGameplayEffect(ActiveHandle);
 	}
 
-
 	// Transfer our Abilities
 	TArray<FGameplayAbilitySpecHandle> AbilitySpecHandlesCopy = AbilitySpecHandles;
 	AbilitySpecHandles.Empty();
