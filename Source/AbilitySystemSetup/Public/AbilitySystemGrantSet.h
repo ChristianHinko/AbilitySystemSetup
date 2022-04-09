@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
 
-#include "AbilitySet.generated.h"
+#include "AbilitySystemGrantSet.generated.h"
 
 
 class UGameplayAbility;

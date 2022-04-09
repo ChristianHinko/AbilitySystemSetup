@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySet.h"
+#include "AbilitySystemGrantSet.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
