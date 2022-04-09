@@ -86,7 +86,9 @@ public:
 		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
 
 
-	// Public functions for owner to call..........
+	/**
+	 * ----- Public Functions for Owner to Call -----
+	 */
 	/** Sets the Avatar Actor with the ASC */
 	void InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	/** Clears the Avatar Actor from the ASC */
@@ -124,7 +126,9 @@ protected:
 	virtual void InitializeComponent() override;
 
 private:
-	// ----- Initialization functions -----
+	/**
+	 * ----- Initialization Functions -----
+	 */
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
 	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
@@ -134,7 +138,9 @@ private:
 	/** Give all Abilities listed in StartingAbilities. */
 	bool GiveStartingAbilities();
 
-	// ----- Uninitialization functions -----
+	/**
+	 * ----- Uninitialization Functions -----
+	 */
 	/** Removes all Abilities that we've given to the ASC */
 	int32 ClearGivenAbilities();
 	/** Removes all Attribute Sets that we added to the ASC */
@@ -145,7 +151,9 @@ private:
 
 
 
-	//			Internal members:
+	/**
+	 * ----- Internal members -----
+	 */
 	/** In most cases, our AvatarActor */
 	APawn* OwningPawn;
 	/** Shows that we already have input binded with the Ability System */
