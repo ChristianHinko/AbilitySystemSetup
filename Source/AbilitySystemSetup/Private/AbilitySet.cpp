@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystemGrantSet.h"
+#include "AbilitySet.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
@@ -9,9 +9,10 @@
 
 
 ///////////////////////////////////////
-/// FAbilitySystemGrantHandles
+/// FAbilitySetGrantedHandles
 ///////////////////////////////////////
-void FAbilitySystemGrantHandles::RemoveFromAbilitySystemComponent()
+
+void FAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -66,9 +67,10 @@ void FAbilitySystemGrantHandles::RemoveFromAbilitySystemComponent()
 
 
 ///////////////////////////////////////
-/// UAbilitySystemGrantSet
+/// UAbilitySet
 ///////////////////////////////////////
-void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySystemGrantHandles& OutGrantHandles) const
+
+void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySetGrantedHandles& OutGrantedHandles) const
 {
 	if (!IsValid(ASC))
 	{
@@ -83,7 +85,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 
 	
 	// Inject the ASC
-	OutGrantHandles.AbilitySystemComponent = ASC;
+	OutGrantedHandles.AbilitySystemComponent = ASC;
 
 	// Grant our Attribute Sets
 	int AttributeSetIndex = 0;
@@ -99,7 +101,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 		NewAttributeSet->Rename(nullptr, SourceObject);
 		ASC->AddAttributeSetSubobject(NewAttributeSet);
 
-		OutGrantHandles.GrantedAttributeSets.Add(NewAttributeSet);
+		OutGrantedHandles.GrantedAttributeSets.Add(NewAttributeSet);
 
 		++AttributeSetIndex;
 	}
@@ -120,7 +122,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 		ContextHandle.AddSourceObject(SourceObject);
 		const FActiveGameplayEffectHandle ActiveHandle = ASC->ApplyGameplayEffectToSelf(EffectClass.GetDefaultObject(), /*, GetLevel()*/1, ContextHandle);
 
-		OutGrantHandles.ActiveEffectHandles.Add(ActiveHandle);
+		OutGrantedHandles.ActiveEffectHandles.Add(ActiveHandle);
 
 		++EffectIndex;
 	}
@@ -137,7 +139,7 @@ void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemCompone
 
 		const FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, SourceObject));
 
-		OutGrantHandles.AbilitySpecHandles.Add(SpecHandle);
+		OutGrantedHandles.AbilitySpecHandles.Add(SpecHandle);
 
 		++AbilityIndex;
 	}

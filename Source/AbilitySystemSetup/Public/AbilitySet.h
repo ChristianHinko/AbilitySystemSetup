@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
 
-#include "AbilitySystemGrantSet.generated.h"
+#include "AbilitySet.generated.h"
 
 
 class UGameplayAbility;
@@ -17,25 +17,20 @@ struct FActiveGameplayEffectHandle;
 
 
 /**
- * FAbilitySystemGrantHandles
- * 
- * Keeps track of what has been granted by the UAbilitySystemGrantSet.
+ * Keeps track of what has been granted by the UAbilitySet.
  * Provides removal of granted handles.
  */
 USTRUCT()
-struct ABILITYSYSTEMSETUP_API FAbilitySystemGrantHandles
+struct ABILITYSYSTEMSETUP_API FAbilitySetGrantedHandles
 {
 	GENERATED_BODY()
 
-	friend class UAbilitySystemGrantSet;
+	friend class UAbilitySet;
 public:
 	/** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
 	void RemoveFromAbilitySystemComponent();
 
 protected:
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-
 	UPROPERTY()
 		TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
 	UPROPERTY()
@@ -43,22 +38,23 @@ protected:
 	UPROPERTY()
 		TArray<UAttributeSet*> GrantedAttributeSets;
 
+
+	UPROPERTY()
+		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };
 
 
 /**
- * UAbilitySystemGrantSet
- * 
  * Non-mutable "ability set" for granting Gameplay Abilities, Gameplay Effects, and Attribute Sets.
  */
 UCLASS(Blueprintable, Const)
-class ABILITYSYSTEMSETUP_API UAbilitySystemGrantSet : public UObject
+class ABILITYSYSTEMSETUP_API UAbilitySet : public UObject
 {
 	GENERATED_BODY()
 
 public:
 	/** Grants the grant set to the specified Ability System Component and outputs their handles that can be used later for removal. */
-	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySystemGrantHandles& OutGrantHandles) const;
+	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySetGrantedHandles& OutGrantedHandles) const;
 
 protected:
 	/** Abilities to give on grant NOTE: These Abilities are assigned EAbilityInputID::None and a level of 1 */

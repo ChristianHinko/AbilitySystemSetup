@@ -97,16 +97,16 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	// Grant Abilities, Active Effects, and Attribute Sets
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		if (!bGrantedGrantSets)
+		if (!bGrantedAbilitySets)
 		{
-			for (TSubclassOf<UAbilitySystemGrantSet> GrantSet : AbilitySystemGrantSets)
+			for (TSubclassOf<UAbilitySet> AbilitySet : AbilitySets)
 			{
-				if (IsValid(GrantSet))
+				if (IsValid(AbilitySet))
 				{
-					GrantSet.GetDefaultObject()->GrantToAbilitySystemComponent(ASC, GetOwner(), GrantHandles.AddDefaulted_GetRef());
+					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(ASC, GetOwner(), GrantHandles.AddDefaulted_GetRef());
 				}
 			}
-			bGrantedGrantSets = true;
+			bGrantedAbilitySets = true;
 		}
 	}
 
@@ -136,7 +136,7 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 			// Remove Abilities, Active Effects, and Attribute Sets
 			if (GetOwnerRole() == ROLE_Authority)
 			{
-				for (FAbilitySystemGrantHandles GrantHandle : GrantHandles)
+				for (FAbilitySetGrantedHandles GrantHandle : GrantHandles)
 				{
 					GrantHandle.RemoveFromAbilitySystemComponent();
 				}

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "AbilitySystemGrantSet.h"
+#include "AbilitySet.h"
 
 #include "AbilitySystemSetupComponent.generated.h"
 
@@ -15,7 +15,6 @@ class UGameplayEffect;
 enum class EGameplayEffectReplicationMode : uint8;
 struct FGameplayAbilitySpec;
 class UAttributeSet;
-class UAbilitySystemGrantSet;
 
 
 
@@ -79,8 +78,8 @@ public:
 
 
 	// Ability sets to grant to this pawn's ability system.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GrantSet")
-		TArray<TSubclassOf<UAbilitySystemGrantSet>> AbilitySystemGrantSets;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySets")
+		TArray<TSubclassOf<UAbilitySet>> AbilitySets;
 
 
 	/**
@@ -131,9 +130,9 @@ private:
 	/** In most cases, our AvatarActor */
 	APawn* OwningPawn;
 	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can remove them from our ASC on UnPossess */
-	TArray<FAbilitySystemGrantHandles> GrantHandles;
-	/** Indicates that the list of Grant Sets has been granted */
-	uint8 bGrantedGrantSets : 1;
+	TArray<FAbilitySetGrantedHandles> GrantHandles;
+	/** Indicates that the list of AbilitySets has been granted */
+	uint8 bGrantedAbilitySets : 1;
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
 	UPROPERTY()
