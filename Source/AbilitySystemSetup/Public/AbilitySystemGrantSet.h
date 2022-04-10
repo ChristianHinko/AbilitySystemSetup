@@ -32,9 +32,6 @@ public:
 	/** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
 	void RemoveFromAbilitySystemComponent();
 
-	/** Transfer granted Attribute Sets, Effects, and Abilities to a new Ability System Component (e.g. possessing a new Avatar Actor during gameplay) */
-	void TransferTo(UAbilitySystemComponent* NewASC);
-
 protected:
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
