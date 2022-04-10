@@ -8,14 +8,7 @@
 
 #include "AbilitySystemSetupComponent.generated.h"
 
-
-class UGameplayAbility;
 class UAbilitySystemComponent;
-class UGameplayEffect;
-enum class EGameplayEffectReplicationMode : uint8;
-struct FGameplayAbilitySpec;
-class UAttributeSet;
-
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent* const);
@@ -81,9 +74,9 @@ public:
 		TArray<TSubclassOf<UAbilitySet>> AbilitySets;
 
 
-	/**
-	 * ----- Public Functions for Owner to Call -----
-	 */
+	///////////////////////////////////////
+	/// Functions for owner
+	///////////////////////////////////////
 	/** Sets the Avatar Actor with the ASC */
 	void InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	/** Clears the Avatar Actor from the ASC */
@@ -98,34 +91,25 @@ public:
 
 	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemSetupDelegate OnInitializeAbilitySystemComponentDelegate;
-	/**
-	 * Server and client event for removing all Loose AvatarActor-related Tags.
-	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
-	 */
+	/** Server and client event for removing all Loose AvatarActor-related Tags. */
 	FAbilitySystemSetupDelegate RemoveLooseAvatarRelatedTagsDelegate;
 
 protected:
+	// BEGIN UActorComponent interface
 	virtual void OnRegister() override;
+	// END UActorComponent interface
 
 private:
-	/**
-	 * ----- Initialization Functions -----
-	 */
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
-
-	/**
-	 * ----- Uninitialization Functions -----
-	 */
 	/** Removes all Loose Gameplay Tags that external sources specified we should remove */
 	void RemoveLooseAvatarRelatedTags();
 
 
 
 
-	/**
-	 * ----- Internal members -----
-	 */
+	
+	// ----- Internal members -----
 	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
 	TArray<FAbilitySetGrantedHandles> GrantHandles;
 	/** Indicates that the list of AbilitySets has been granted */
