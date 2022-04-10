@@ -22,17 +22,21 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	bWantsInitializeComponent = true;
+
+	bAbilitySystemInputBinded = false;
 }
-void UAbilitySystemSetupComponent::InitializeComponent()
+void UAbilitySystemSetupComponent::OnRegister()
 {
-	Super::InitializeComponent();
+	Super::OnRegister();
 
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	TArray<UActorComponent*> AbilitySystemSetupComponents;
 	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
-	ensureAlwaysMsgf((AbilitySystemSetupComponents.Num() == 1), TEXT("Only one AbilitySystemSetupComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
+	if (AbilitySystemSetupComponents.Num() > 1)
+	{
+		UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("No more than one Ability System Setup Component is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
+	}
 #endif
 }
 
@@ -57,10 +61,10 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	}
 
 	AActor* CurrentAvatar = ASC->GetAvatarActor();	// the passed in ASC's old avatar
-	AActor* NewAvatarToUse = GetOwner();				// new avatar for the passed in ASC
-	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC [%s] on actor [%s] owner [%s], current [%s] "), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(ASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
+	AActor* NewAvatarToUse = GetOwner();			// new avatar for the passed in ASC
+	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC: [%s] on actor: [%s] with owner: [%s] and Avatar Actor: [%s]"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(ASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
 	
-	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated
+	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client)
 	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
 	{
 		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous AbilitySystemSetupComponent (the setup component of the old avatar actor)

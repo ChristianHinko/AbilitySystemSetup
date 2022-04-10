@@ -105,7 +105,7 @@ public:
 	FAbilitySystemSetupDelegate RemoveLooseAvatarRelatedTagsDelegate;
 
 protected:
-	virtual void InitializeComponent() override;
+	virtual void OnRegister() override;
 
 private:
 	/**
