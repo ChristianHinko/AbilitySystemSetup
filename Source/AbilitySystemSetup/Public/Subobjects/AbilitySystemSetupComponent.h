@@ -135,11 +135,8 @@ private:
 	/** Indicates that input has already been binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
 	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
+		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
 		TArray<UAttributeSet*> CreatedAttributeSets;
-	// This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
-	UPROPERTY()
-		TWeakObjectPtr<AController> PreviousController;
 };
