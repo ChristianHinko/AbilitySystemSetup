@@ -93,7 +93,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 	{
 		if (!IsValid(AttributeSetClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on AbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
 			continue;
 		}
 
@@ -114,7 +114,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 	{
 		if (!IsValid(EffectClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on AbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
 			continue;
 		}
 
@@ -133,7 +133,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 	{
 		if (!IsValid(AbilityClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on grant set [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on AbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
 			continue;
 		}
 

@@ -17,8 +17,8 @@ struct FActiveGameplayEffectHandle;
 
 
 /**
- * Keeps track of what has been granted by the UAbilitySet.
- * Provides removal of granted handles.
+ * Stores granted handles from a specific AbilitySet
+ * Used often for cleanup of an AbilitySystemComponent (e.g. Character death)
  */
 USTRUCT()
 struct ABILITYSYSTEMSETUP_API FAbilitySetGrantedHandles
@@ -53,11 +53,11 @@ class ABILITYSYSTEMSETUP_API UAbilitySet : public UObject
 	GENERATED_BODY()
 
 public:
-	/** Grants the grant set to the specified Ability System Component and outputs their handles that can be used later for removal. */
+	/** Grants the AbilitySet while outputing handles that can be used later for removal */
 	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySetGrantedHandles& OutGrantedHandles) const;
 
 protected:
-	/** Abilities to give on grant NOTE: These Abilities are assigned EAbilityInputID::None and a level of 1 */
+	/** Abilities to give on grant NOTE: These Abilities are given a level of 1 */
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
 		TArray<const TSubclassOf<UGameplayAbility>> GrantedAbilities;
 	
