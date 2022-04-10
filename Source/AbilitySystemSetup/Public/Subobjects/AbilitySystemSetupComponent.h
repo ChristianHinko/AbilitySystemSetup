@@ -126,8 +126,6 @@ private:
 	/**
 	 * ----- Internal members -----
 	 */
-	/** Our AvatarActor Pawn */
-	APawn* OwningPawn;
 	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
 	TArray<FAbilitySetGrantedHandles> GrantHandles;
 	/** Indicates that the list of AbilitySets has been granted */

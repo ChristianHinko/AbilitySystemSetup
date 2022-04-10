@@ -34,10 +34,6 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
 	ensureAlwaysMsgf((AbilitySystemSetupComponents.Num() == 1), TEXT("Only one AbilitySystemSetupComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
 #endif
-
-
-	// Get casted owners
-	OwningPawn = Cast<APawn>(GetOwner()); // NOTE: maybe do a GetTypedOuter() instead?
 }
 
 
@@ -84,7 +80,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	AbilitySystemComponent = ASC;
 	AbilitySystemComponent->InitAbilityActorInfo(ASC->GetOwnerActor(), NewAvatarToUse);
 
-
+	const APawn* OwningPawn = Cast<APawn>(GetOwner());
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
 	{ 
 		// Bind Player input to the AbilitySystemComponent.
