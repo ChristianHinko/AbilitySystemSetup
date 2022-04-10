@@ -18,7 +18,7 @@ class UAttributeSet;
 
 
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent* const);
 
 
 /**
