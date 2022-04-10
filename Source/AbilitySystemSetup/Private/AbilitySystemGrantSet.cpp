@@ -11,12 +11,6 @@
 ///////////////////////////////////////
 /// FAbilitySystemGrantHandles
 ///////////////////////////////////////
-
-FAbilitySystemGrantHandles::FAbilitySystemGrantHandles()
-{
-
-}
-
 void FAbilitySystemGrantHandles::RemoveFromAbilitySystemComponent()
 {
 	if (AbilitySystemComponent.IsValid())
@@ -71,7 +65,6 @@ void FAbilitySystemGrantHandles::TransferTo(UAbilitySystemComponent* NewASC)
 	if (AbilitySystemComponent.IsValid() == false)
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to transfer granted sets but our AbilitySystemComponent was NULL. Called RemoveFromAbilitySystemComponent() and returned"), ANSI_TO_TCHAR(__FUNCTION__));
-		RemoveFromAbilitySystemComponent();
 		return;
 	}
 	if (AbilitySystemComponent->IsOwnerActorAuthoritative() == false)
@@ -166,13 +159,6 @@ void FAbilitySystemGrantHandles::TransferTo(UAbilitySystemComponent* NewASC)
 ///////////////////////////////////////
 /// UAbilitySystemGrantSet
 ///////////////////////////////////////
-
-UAbilitySystemGrantSet::UAbilitySystemGrantSet(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-
-}
-
 void UAbilitySystemGrantSet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySystemGrantHandles& OutGrantHandles) const
 {
 	if (!IsValid(ASC))

@@ -29,9 +29,6 @@ struct ABILITYSYSTEMSETUP_API FAbilitySystemGrantHandles
 
 	friend class UAbilitySystemGrantSet;
 public:
-	FAbilitySystemGrantHandles();
-
-
 	/** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
 	void RemoveFromAbilitySystemComponent();
 
@@ -63,9 +60,6 @@ class ABILITYSYSTEMSETUP_API UAbilitySystemGrantSet : public UObject
 	GENERATED_BODY()
 
 public:
-	UAbilitySystemGrantSet(const FObjectInitializer& ObjectInitializer);
-
-
 	/** Grants the grant set to the specified Ability System Component and outputs their handles that can be used later for removal. */
 	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySystemGrantHandles& OutGrantHandles) const;
 
