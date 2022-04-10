@@ -18,12 +18,11 @@ class UAttributeSet;
 
 
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbilitySystemComponent* const/*, PreviousASC*/, UAbilitySystemComponent* const/*, NewASC*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent*);
 
 
 /**
- * NOTE: Actor with this component must be the avatar actor.
+ * NOTE: Actor owning this component must be the avatar actor.
  * 
  * 
  * 
@@ -98,9 +97,9 @@ public:
 
 
 	/** Broadcasted when the Ability System is set up and ready to go */
-	FAbilitySystemComponentChangeDelegate OnInitializeAbilitySystemComponentDelegate;
+	FAbilitySystemSetupDelegate OnInitializeAbilitySystemComponentDelegate;
 	/**
-	 * Server and client event for removing all AvatarActor-related Tags.
+	 * Server and client event for removing all Loose AvatarActor-related Tags.
 	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
 	 */
 	FAbilitySystemSetupDelegate RemoveLooseAvatarRelatedTagsDelegate;
@@ -127,18 +126,16 @@ private:
 	/**
 	 * ----- Internal members -----
 	 */
-	/** In most cases, our AvatarActor */
+	/** Our AvatarActor Pawn */
 	APawn* OwningPawn;
-	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can remove them from our ASC on UnPossess */
+	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
 	TArray<FAbilitySetGrantedHandles> GrantHandles;
 	/** Indicates that the list of AbilitySets has been granted */
 	uint8 bGrantedAbilitySets : 1;
-	/** Shows that we already have input binded with the Ability System */
+	/** Indicates that input has already been binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> PreviousASC;
 	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
 	UPROPERTY()
 		TArray<UAttributeSet*> CreatedAttributeSets;

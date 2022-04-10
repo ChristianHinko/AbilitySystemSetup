@@ -110,7 +110,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		}
 	}
 
-	OnInitializeAbilitySystemComponentDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get());
+	OnInitializeAbilitySystemComponentDelegate.Broadcast(CurrentASC.Get());
 }
 void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 {
@@ -151,7 +151,6 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 		}
 	}
 
-	PreviousASC = CurrentASC.Get();
 	CurrentASC = nullptr;
 
 	// TODO: This is temporary - in UE5, APawn has its own PreviousController variable that we can use rather than making our own
