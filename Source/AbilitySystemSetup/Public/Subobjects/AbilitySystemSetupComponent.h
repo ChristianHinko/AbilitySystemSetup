@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "AbilitySystemGrantSet.h"
 
 #include "AbilitySystemSetupComponent.generated.h"
 
@@ -14,6 +15,8 @@ class UGameplayEffect;
 enum class EGameplayEffectReplicationMode : uint8;
 struct FGameplayAbilitySpec;
 class UAttributeSet;
+class UAbilitySystemGrantSet;
+
 
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilitySystemComponentChangeDelegate, UAbilitySystemComponent* const/*, PreviousASC*/, UAbilitySystemComponent* const/*, NewASC*/);
@@ -75,15 +78,9 @@ public:
 	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
 
 
-	/** NOTE: No AbilitySpecHandles are tracked upon give. These Abilities must be activated by class or by Ability tag. These Abilities are assigned EAbilityInputID::None */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Abilities")
-		TArray<TSubclassOf<UGameplayAbility>> StartingAbilities;
-	/** Attribute Sets to create and add on startup */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|AttributeSets")
-		TArray<TSubclassOf<UAttributeSet>> StartingAttributeSets;
-	/** These Effects are only applied one time on startup (example starting effects: GE_InitCharacter, GE_HealthRegen) */
-	UPROPERTY(EditDefaultsOnly, Category = "AbilitySystemSetup|Effects")
-		TArray<TSubclassOf<UGameplayEffect>> StartingEffects;
+	// Ability sets to grant to this pawn's ability system.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GrantSet")
+		TArray<TSubclassOf<UAbilitySystemGrantSet>> AbilitySystemGrantSets;
 
 
 	/**
@@ -103,17 +100,6 @@ public:
 
 	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemComponentChangeDelegate OnInitializeAbilitySystemComponentDelegate;
-	
-	/**
-	 * Server only event for giving starting Attribute Sets via C++.
-	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
-	 */
-	FAbilitySystemSetupDelegate AddStartingAttributeSetsDelegate;
-	/**
-	 * Server only event for giving starting abilities via C++.
-	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
-	 */
-	FAbilitySystemSetupDelegate GiveStartingAbilitiesDelegate;
 	/**
 	 * Server and client event for removing all AvatarActor-related Tags.
 	 * NOTE: See example implementation of this event in "C_AbilitySystemSetupCharacter.cpp".
@@ -129,20 +115,10 @@ private:
 	 */
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
-	/** Add starting Attribute Sets to the ASC using the StartingAttributeSets array and broadcasting OnAddStartingAttributeSets */
-	void AddStartingAttributeSets();
-	/** Apply all Effects listed in StartingEffects */
-	void ApplyStartingEffects();
-	/** Give all Abilities listed in StartingAbilities. */
-	bool GiveStartingAbilities();
 
 	/**
 	 * ----- Uninitialization Functions -----
 	 */
-	/** Removes all Abilities that we've given to the ASC */
-	int32 ClearGivenAbilities();
-	/** Removes all Attribute Sets that we added to the ASC */
-	int32 RemoveOwnedAttributeSets();
 	/** Removes all Loose Gameplay Tags that external sources specified we should remove */
 	void RemoveLooseAvatarRelatedTags();
 
@@ -154,10 +130,12 @@ private:
 	 */
 	/** In most cases, our AvatarActor */
 	APawn* OwningPawn;
+	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can remove them from our ASC on UnPossess */
+	TArray<FAbilitySystemGrantHandles> GrantHandles;
+	/** Indicates that the list of Grant Sets has been granted */
+	uint8 bGrantedGrantSets : 1;
 	/** Shows that we already have input binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
-	/** Indicates that we have not applied the StartingEffects yet */
-	uint8 bFirstInitialization : 1;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> CurrentASC;
 	UPROPERTY()

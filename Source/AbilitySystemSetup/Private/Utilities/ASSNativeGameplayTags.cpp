@@ -5,9 +5,12 @@
 
 
 
+namespace NativeGameplayTags
+{
 #if 0
-// Ability tags
-UE_DEFINE_GAMEPLAY_TAG(Tag_JumpAbility, TEXT("Ability.Movement.Jump"))
-UE_DEFINE_GAMEPLAY_TAG(Tag_CrouchAbility, TEXT("Ability.Movement.Crouch"))
-UE_DEFINE_GAMEPLAY_TAG(Tag_RunAbility, TEXT("Ability.Movement.Run"))
+	// Ability Tags
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Fire,											TEXT("Ability.Fire"))
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Reload,											TEXT("Ability.Reload"))
+	UE_DEFINE_GAMEPLAY_TAG(Ability_ADS,												TEXT("Ability.ADS"))
 #endif
+}

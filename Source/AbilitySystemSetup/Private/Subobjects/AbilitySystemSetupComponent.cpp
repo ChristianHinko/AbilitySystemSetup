@@ -23,8 +23,6 @@ UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitiali
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	bWantsInitializeComponent = true;
-
-	bFirstInitialization = true;
 }
 void UAbilitySystemSetupComponent::InitializeComponent()
 {
@@ -40,17 +38,6 @@ void UAbilitySystemSetupComponent::InitializeComponent()
 
 	// Get casted owners
 	OwningPawn = Cast<APawn>(GetOwner()); // NOTE: maybe do a GetTypedOuter() instead?
-
-	// Create Attribute Sets using the StartingAttributeSets array
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		for (const TSubclassOf<UAttributeSet> AttributeSetClass : StartingAttributeSets)
-		{
-			// Create this new Attribute Set
-			UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(GetOwner(), AttributeSetClass);
-			CreatedAttributeSets.Add(NewAttributeSet);
-		}
-	}
 }
 
 
@@ -107,24 +94,20 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 		BindAbilitySystemInput(OwningPawn->InputComponent);
 	}
 
+	// Grant Abilities, Active Effects, and Attribute Sets
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		AddStartingAttributeSets();
-	}
-
-	if (bFirstInitialization)
-	{
-		if (GetOwnerRole() == ROLE_Authority)
+		if (!bGrantedGrantSets)
 		{
-			ApplyStartingEffects();
+			for (TSubclassOf<UAbilitySystemGrantSet> GrantSet : AbilitySystemGrantSets)
+			{
+				if (IsValid(GrantSet))
+				{
+					GrantSet.GetDefaultObject()->GrantToAbilitySystemComponent(ASC, GetOwner(), GrantHandles.AddDefaulted_GetRef());
+				}
+			}
+			bGrantedGrantSets = true;
 		}
-
-		bFirstInitialization = false;
-	}
-
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		GiveStartingAbilities();
 	}
 
 	OnInitializeAbilitySystemComponentDelegate.Broadcast(PreviousASC.Get(), CurrentASC.Get());
@@ -150,22 +133,17 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 			}
 
 
-
-			// Abilities
+			// Remove Abilities, Active Effects, and Attribute Sets
 			if (GetOwnerRole() == ROLE_Authority)
 			{
-				ClearGivenAbilities();
+				for (FAbilitySystemGrantHandles GrantHandle : GrantHandles)
+				{
+					GrantHandle.RemoveFromAbilitySystemComponent();
+				}
 			}
 
-			// Tags
+			// Remove Loose Gameplay Tags
 			RemoveLooseAvatarRelatedTags();
-
-
-			// Attribute Sets
-			if (GetOwnerRole() == ROLE_Authority)
-			{
-				RemoveOwnedAttributeSets();
-			}
 		}
 		else
 		{
@@ -236,154 +214,6 @@ void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* Input
 
 }
 
-//BEGIN InitializeAbilitySystemComponent() helper functions
-void UAbilitySystemSetupComponent::AddStartingAttributeSets()
-{
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-
-
-	// Allow a chance for owner to give starting Attribute Sets through C++
-	AddStartingAttributeSetsDelegate.Broadcast(ASC);
-
-	// Add our CreatedAttributeSets
-	for (UAttributeSet* AttributeSet : CreatedAttributeSets)
-	{
-		if (UASSAbilitySystemBlueprintLibrary::GetAttributeSet(ASC, AttributeSet->GetClass()))
-		{
-			// Already add an Attribute Set of this class!
-			UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() Tried to add a %s when one has already been added! Skipping this Attribute Set."), ANSI_TO_TCHAR(__FUNCTION__), *(AttributeSet->GetClass()->GetName()));
-			continue;
-		}
-
-		// Add this Attribute Set
-		AttributeSet->Rename(nullptr, GetOwner()); // assign the outer so that we know that it is ours so we can remove it when needed - I saw Roy do this too in his ArcInventory
-		ASC->AddAttributeSetSubobject(AttributeSet);
-	}
-
-
-	// Mark it Net Dirty after adding any Attribute Sets
-	ASC->ForceReplication();
-}
-
-void UAbilitySystemSetupComponent::ApplyStartingEffects()
-{
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to apply starting Effects on %s but AbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-		return;
-	}
-
-	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
-	EffectContextHandle.AddInstigator(GetOwner(), GetOwner());
-	EffectContextHandle.AddSourceObject(GetOwner());
-	for (int32 i = 0; i < StartingEffects.Num(); ++i)
-	{
-		FGameplayEffectSpecHandle NewEffectSpecHandle = ASC->MakeOutgoingSpec(StartingEffects[i], 1/*GetLevel()*/, EffectContextHandle);
-		if (NewEffectSpecHandle.IsValid())
-		{
-			ASC->ApplyGameplayEffectSpecToSelf(*NewEffectSpecHandle.Data.Get());
-		}
-	}
-}
-
-bool UAbilitySystemSetupComponent::GiveStartingAbilities()
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		return false;
-	}
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to give starting abilities on %s but AbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-		return false;
-	}
-
-	// Allow a chance for owner to give starting abilities through C++
-	GiveStartingAbilitiesDelegate.Broadcast(ASC);
-
-	// Give non-handle starting Abilities
-	for (int32 i = 0; i < StartingAbilities.Num(); ++i)
-	{
-		FGameplayAbilitySpec Spec = FGameplayAbilitySpec(StartingAbilities[i], /*, GetLevel()*/1, INDEX_NONE, GetOwner());
-		ASC->GiveAbility(Spec);
-	}
-
-	return true;
-}
-//END InitializeAbilitySystemComponent() helper functions
-
-//BEGIN UninitializeAbilitySystemComponent() helper functions
-int32 UAbilitySystemSetupComponent::ClearGivenAbilities()
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		return 0;
-	}
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not clear given Abilities from ASC so it probably has unneeded Abilities and possibly duplicates now. Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-		return 0;
-	}
-
-
-	int32 RetVal = 0;
-
-	for (int32 i = ASC->GetActivatableAbilities().Num() - 1; i >= 0; --i)
-	{
-		const FGameplayAbilitySpec& Spec = ASC->GetActivatableAbilities()[i];
-		if (Spec.SourceObject == GetOwner()) // ensure we were the ones who gave this Ability - SourceObjects are expected to correctly assigned when using GiveAbility()
-		{
-			// Remove it
-			ASC->ClearAbility(Spec.Handle);
-			++RetVal;
-		}
-	}
-
-	return RetVal;
-}
-
-int32 UAbilitySystemSetupComponent::RemoveOwnedAttributeSets()
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		return 0;
-	}
-	UAbilitySystemComponent* ASC = CurrentASC.Get();
-	if (!IsValid(ASC))
-	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() ASC was invalid. Could not remove owned Attribute Sets from ASC so it probably has unneeded Attribute Sets and possibly duplicates now (very bad). Owner: %s"), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-		return 0;
-	}
-
-
-	int32 RetVal = 0;
-
-	for (int32 i = ASC->GetSpawnedAttributes().Num() - 1; i >= 0; --i)
-	{
-		if (const UAttributeSet* AS = ASC->GetSpawnedAttributes()[i])
-		{
-			if (AS->GetOwningActor() == GetOwner()) // ensure we were the one who added this Attribute Set
-			{
-				// remove it
-				ASC->GetSpawnedAttributes_Mutable().RemoveAt(i);
-				++RetVal;
-			}
-		}
-	}
-
-	// Mark it Net Dirty
-	ASC->ForceReplication();
-
-	return RetVal;
-}
 void UAbilitySystemSetupComponent::RemoveLooseAvatarRelatedTags()
 {
 	// Give external sources an opportunity to remove any Loose Gameplay Tags
@@ -392,4 +222,3 @@ void UAbilitySystemSetupComponent::RemoveLooseAvatarRelatedTags()
 		RemoveLooseAvatarRelatedTagsDelegate.Broadcast(CurrentASC.Get());
 	}
 }
-//END UninitializeAbilitySystemComponent() helper functions
