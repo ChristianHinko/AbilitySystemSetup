@@ -118,22 +118,12 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 	{
 		if (AbilitySystemComponent->GetAvatarActor() == GetOwner())
 		{
+			// Cancel ongoing stuff
 			AbilitySystemComponent->CancelAbilities(nullptr, nullptr);
 			AbilitySystemComponent->RemoveAllGameplayCues();
 
-			if (IsValid(AbilitySystemComponent->GetOwnerActor()))
-			{
-				// Clear our avatar actor from it (this will re-init other actor info as well)
-				AbilitySystemComponent->SetAvatarActor(nullptr);
-			}
-			else
-			{
-				// Clear ALL actor info because don't even have an owner actor for some reason
-				AbilitySystemComponent->ClearActorInfo();
-			}
 
-
-			// Remove Abilities, Active Effects, and Attribute Sets
+			// Remove granted AbilitySets
 			if (GetOwnerRole() == ROLE_Authority)
 			{
 				for (FAbilitySetGrantedHandles GrantHandle : GrantHandles)
@@ -144,6 +134,19 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 
 			// Remove Loose Gameplay Tags
 			RemoveLooseAvatarRelatedTags();
+
+
+			// Clear the AvatarActor from the ASC
+			if (IsValid(AbilitySystemComponent->GetOwnerActor()))
+			{
+				// Clear our avatar actor from it (this will re-init other actor info as well)
+				AbilitySystemComponent->SetAvatarActor(nullptr);
+			}
+			else
+			{
+				// Clear ALL actor info because don't even have an owner actor for some reason
+				AbilitySystemComponent->ClearActorInfo();
+			}
 		}
 		else
 		{
@@ -169,7 +172,7 @@ void UAbilitySystemSetupComponent::HandleControllerChanged()
 	ensure(AbilitySystemComponent->AbilityActorInfo->OwnerActor == AbilitySystemComponent->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
 
 
-	AbilitySystemComponent->RefreshAbilityActorInfo();		// update ActorInfo's Controller
+	AbilitySystemComponent->RefreshAbilityActorInfo();		// update our ActorInfo's PlayerController
 }
 
 void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -198,11 +201,12 @@ void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* Input
 			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 		}
 
-		ASC->BindAbilityActivationToInputComponent(InputComponent, FGameplayAbilityInputBinds(
-			AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
-			AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings
-			AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// name of our GAS input enum that gives the names of the rest of our inputs in the project settings
-		)
+		ASC->BindAbilityActivationToInputComponent(InputComponent,
+			FGameplayAbilityInputBinds(
+				AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
+				AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings
+				AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// name of our GAS input enum that gives the names of the rest of our inputs in the project settings
+			)
 		);
 
 		bAbilitySystemInputBinded = true; // only run this function only once

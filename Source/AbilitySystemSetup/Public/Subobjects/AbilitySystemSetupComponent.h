@@ -8,57 +8,66 @@
 
 #include "AbilitySystemSetupComponent.generated.h"
 
+
 class UAbilitySystemComponent;
+
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemComponent* const);
 
 
 /**
- * NOTE: Actor owning this component must be the avatar actor.
+ * Provides setup functionality for avatar actors with an ASC.
+ * This component is to be used by avatar actors only.
  * 
+ * This component provides the functionality for initializing and uninitializing an ASC. For initialization, it sets us up as the AvatarActor for
+ * the ASC and grants AbilitySets (allowing you to choose starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it
+ * removes the granted AbilitySets, gives external sources an opportunity to remove Loose Gameplay Tags (this is the only manual cleanup),
+ * and disassociates us from the ASC.
  * 
- * 
- * Provides the minimal and necessary setup for Ability System Components.
- * Provides a nice setup for ASCs where the Avatar Actor differs from the Owner Actor (this was the primary motivation behind this component).
- * Provides setup functions for unpossession and re-possession the Avatar Actor.
- * 
- * For Player controlled pawns, this currently expects your ASC to be on your PlayerState. We do however plan on also supporting the ASC being on the Pawn for games where that is needed. We have a method for achieving this (just make use of the AIAbilitySystemComponent for that situation).
- * The Player State's ASC is kept track of by the PlayerAbilitySystemComponent pointer.
- * 
- * This component is flexible enough to be used on any Actor that has an Ability System Component.
- * There are 2 different scenerios where you need a setup with the Ability System:
- * 		1) The Actor is being player controlled (a Pawn)
- * 			- PlayerAbilitySystemComponent will be used (exists outside of this component)
- * 			- In this case, we need to make our Pawn the Avatar Actor of the Player's ASC.
- * 		2) The Actor is NOT player controlled (a wall, tree, or even an AI controlled Pawn)
- * 			- AIAbilitySystemComponent will be used (exists on this component)
- * 			- In this case, we need to make our Pawn both the Avatar Actor and Owner Actor of his ASC.
+ * This component does not automate anything. You have to manually call on provided functions for anything to happen......
  * 
  * 
  * 
  * 
- * Key Features:
- * 		1) Gameplay Abilities
- * 			- Fill out StartingAbilities with the Gameplay Ability classes that you want to be given.
- * 			- If you want a Spec Handle for a starting Ability, use the OnGiveStartingAbilities delegate to give the Ability by Spec Handle.
- * 			- Any Abilities with their SourceObject as this Actor will be automatically cleared from the ASC on UnPossessed.
- * 				- If you need an Ability to persist between Characters make sure you set its SourceObject to the Player State (or something persistent) on Give Ability.
  * 
- * 		2) Attribute Sets
- * 			- Fill out StartingAttributeSets with the Attribute Set classes that you want to be created and added.
- * 			- If, for some reason, you need advanced control over this then use the OnAddStartingAttributeSets delegate to add any created Attribute Sets to the ASC.
+ * ----------------------------------
+ *				Setup
+ * ----------------------------------
  * 
- * 		3) Gameplay Effects
- * 			- Fill out StartingEffects with any Gameplay Effects that you want to be applied on startup (e.g. GE_InitCharacter, GE_HealthRegen).
+ * Required for all Pawns:
+ *		- PossessedBy()
+ *			- Call HandleControllerChanged() after the Super call
+ *		- UnPossessed()
+ *			- Call HandleControllerChanged() after the Super call
+ *		- OnRep_Controller()
+ *			- Call HandleControllerChanged() after the Super call
+ *		- SetupPlayerInputComponent()
+ *			- Call SetupPlayerInputComponent() after the Super call at the end of the function
  * 
- * 		4) Gameplay Tags
- * 			- Use to RemoveLooseAvatarRelatedTagsDelegate delegate to remove all avatar-related Tags from the ASC.
- * 				- An example of how your game might implement this is by removing all Tags with the "Character", "Pawn", or "Actor" parent Tags (this sounds like a pain).
- * 				- Also we haven't needed to use this yet so we don't know the best way to remove these Tags. The only way I can think to do this is by dynamically
- * 				defining a Gameplay Effect and applying it.
- * 			- NOTE: This should be a last resort solution. If you really need this much functionality, then maybe just put the ASC on the Character.
  * 
+ * Recomended places for initialization and uninitialization:
+ *		Pawn with ASC on the Player State:
+ *			- PossessedBy()
+ *				- Call InitializeAbilitySystemComponent() after the Super call
+ *			- UnPossessed()
+ *				- Call UninitializeAbilitySystemComponent() before the Super call
+ *			- OnRep_PlayerState()
+ *				- If IsPlayerControlled()
+ *					- Call InitializeAbilitySystemComponent() after the Super call IF we have a valid Player State
+ *					- Call UninitializeAbilitySystemComponent() after the Super call IF we do not have a valid Player State
+ *		
+ *		Pawn with ASC on itself:
+ *			- PostInitializeComponents()
+ *				- Call InitializeAbilitySystemComponent() after the Super call
+ *			- EndPlay()
+ *				- Call UninitializeAbilitySystemComponent() before the Super call
+ *		
+ *		Actor with ASC:
+ *			- PostInitializeComponents()
+ *				- Call InitializeAbilitySystemComponent() after the Super call
+ *			- EndPlay()
+ *				- Call UninitializeAbilitySystemComponent() before the Super call
  */
 UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
 class ABILITYSYSTEMSETUP_API UAbilitySystemSetupComponent : public UActorComponent
@@ -74,9 +83,7 @@ public:
 		TArray<TSubclassOf<UAbilitySet>> AbilitySets;
 
 
-	///////////////////////////////////////
-	/// Functions for owner
-	///////////////////////////////////////
+	// ----- Functions provided for owner -----
 	/** Sets the Avatar Actor with the ASC */
 	void InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	/** Clears the Avatar Actor from the ASC */
@@ -85,7 +92,6 @@ public:
 	void HandleControllerChanged();
 	/** Called at the end of your Pawn's SetupPlayerInputComponent() event */
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
-
 
 
 
@@ -106,8 +112,6 @@ private:
 	void RemoveLooseAvatarRelatedTags();
 
 
-
-
 	
 	// ----- Internal members -----
 	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
@@ -118,7 +122,4 @@ private:
 	uint8 bAbilitySystemInputBinded : 1;
 	UPROPERTY()
 		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-	/** AttributeSets that have been created. Kept track of so that we can add and remove them when needed. */
-	UPROPERTY()
-		TArray<UAttributeSet*> CreatedAttributeSets;
 };
