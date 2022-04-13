@@ -32,7 +32,6 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
-	SourceActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
 
 	// Ensure we are re-enabled in case we were re-used
 	SetActorTickEnabled(true);
