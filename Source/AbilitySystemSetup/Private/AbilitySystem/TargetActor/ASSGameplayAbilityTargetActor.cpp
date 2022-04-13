@@ -3,8 +3,6 @@
 
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
-#include "Abilities/GameplayAbility.h"
-#include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
 #include "BlueprintFunctionLibraries/BFL_HitResultHelpers.h"
 
 
@@ -12,14 +10,15 @@
 AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = false;
-	ShouldProduceTargetDataOnServer = false;
+	PrimaryActorTick.bCanEverTick = false; // we don't need ticking by default
+	// Start with Tick disabled. We'll enable it in StartTargeting() and disable it again in DisableTargetActor().
+	// For instant confirmations, tick will never happen because we StartTargeting(), ConfirmTargeting(), and immediately DisableTargetActor().
+	SetActorTickEnabled(false);
 
+	ShouldProduceTargetDataOnServer = false;
 
 	ReticleClass = AASSGameplayAbilityWorldReticle::StaticClass();
 
-	//MultiFilter = Filter;
-	MultiFilter.bOnlyAcceptAbilitySystemInterfaces = true;
 	bAllowMultipleHitsPerActor = false;
 
 	MaxRange = 100000.f;
@@ -27,25 +26,9 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 
 	bUseAimPointAsStartLocation = true;
 	bTraceAffectsAimPitch = true;
-
-}
-void AASSGameplayAbilityTargetActor::PreInitializeComponents()
-{
-	Super::PreInitializeComponents();
-
-	Filter = UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(MultiFilter, SourceActor);
-}
-void AASSGameplayAbilityTargetActor::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-
-	// Start with Tick disabled. We'll enable it in StartTargeting() and disable it again in StopTargeting().
-	// For instant confirmations, tick will never happen because we StartTargeting(), ConfirmTargeting(), and immediately StopTargeting().
-	SetActorTickEnabled(false);
 }
 
-
+// This is when the Ability Task starts using us
 void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
@@ -70,6 +53,7 @@ void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 	}
 
 }
+// Where we perform our logic for collecting Target Data
 void AASSGameplayAbilityTargetActor::ConfirmTargetingAndContinue()
 {
 	check(ShouldProduceTargetData());
@@ -78,10 +62,10 @@ void AASSGameplayAbilityTargetActor::ConfirmTargetingAndContinue()
 		return;
 	}
 }
-void AASSGameplayAbilityTargetActor::StopTargeting()
+void AASSGameplayAbilityTargetActor::DisableTargetActor()
 {
 	SetActorTickEnabled(false); // disable tick while we aren't being used
-	DestroyReticleActors(); // we should have a Reticle pooling system for this eventually
+	DestroyReticleActors(); // we should have a Reticle pooling system for this in the future
 }
 
 void AASSGameplayAbilityTargetActor::FilterHitResults(TArray<FHitResult>& OutHitResults, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
@@ -172,7 +156,7 @@ void AASSGameplayAbilityTargetActor::DirWithPlayerController(const AActor* InSou
 	// Line trace from the TraceStart to the the point that player is looking at so we can calculate the direction
 	TArray<FHitResult> HitResults;
 	InSourceActor->GetWorld()->LineTraceMultiByChannel(HitResults, AimStart, AimEnd, TraceChannel, Params);
-	FHitResult HitResult = HitResults.Num() ? HitResults[0] : FHitResult();
+	const FHitResult& HitResult = HitResults.Num() ? HitResults[0] : FHitResult();
 
 	const bool bUseTraceResult = /*HitResult.bBlockingHit && */(FVector::DistSquared(TraceStart, HitResult.Location) <= (MaxRange * MaxRange));
 

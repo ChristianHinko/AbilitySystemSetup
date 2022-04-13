@@ -53,19 +53,19 @@ void UASSAbilitySystemBlueprintLibrary::GiveAbilities(UAbilitySystemComponent* A
 	}
 }
 
-FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeASSFilterHandle(const FASSGameplayTargetDataFilter& SSFilter, AActor* FilterActor)
+FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeASSFilterHandle(const FASSGameplayTargetDataFilter& ASSFilter, AActor* SelfActor)
 {
 	FGameplayTargetDataFilterHandle FilterHandle;
-	FASSGameplayTargetDataFilter* NewFilter = new FASSGameplayTargetDataFilter(SSFilter);
-	NewFilter->InitializeFilterContext(FilterActor);
-	FilterHandle.Filter = TSharedPtr<FASSGameplayTargetDataFilter>(NewFilter);
+	FASSGameplayTargetDataFilter* NewFilter = new FASSGameplayTargetDataFilter(ASSFilter);
+	NewFilter->InitializeFilterContext(SelfActor);
+	FilterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(NewFilter);
 	return FilterHandle;
 }
-FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(const FGTDF_MultiFilter& SSFilter, AActor* FilterActor)
+FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(const FGTDF_MultiFilter& MultiFilter, AActor* SelfActor)
 {
 	FGameplayTargetDataFilterHandle FilterHandle;
-	FGTDF_MultiFilter* NewFilter = new FGTDF_MultiFilter(SSFilter);
-	NewFilter->InitializeFilterContext(FilterActor);
-	FilterHandle.Filter = TSharedPtr<FGTDF_MultiFilter>(NewFilter);
+	FGTDF_MultiFilter* NewFilter = new FGTDF_MultiFilter(MultiFilter);
+	NewFilter->InitializeFilterContext(SelfActor);
+	FilterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(NewFilter);
 	return FilterHandle;
 }

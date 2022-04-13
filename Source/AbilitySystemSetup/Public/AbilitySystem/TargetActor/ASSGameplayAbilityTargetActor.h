@@ -30,9 +30,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true), Category = "Targeting")
 		FASSWorldReticleParameters ASSReticleParams;
 
-	/** Our custom Gameplay Target Data Filter */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Target Data")
-		FGTDF_MultiFilter MultiFilter;
 	/**
 	 * If true, when a trace overlaps an actor's multiple collisions, those multiple collision hits will add
 	 * that actor to the hitresults multiple times.
@@ -60,9 +57,11 @@ public:
 
 
 	/**
-	 * Called if this Target Actor is going to be reused at the end of Wait Target Data to disable this actor (good for reusing Target Actors across these task activations)
+	 * Called when we are done being used by the Ability Task.
+	 * Use StartTargeting() to re-enable. This is helpful for re-using Target Actors across multiple Ability Task activations.
+	 * Must have bDestroyOnConfirmation = false to use this.
 	 */
-	virtual void StopTargeting();
+	virtual void DisableTargetActor();
 
 
 	/** Max range of this target actor (not required for all target actors) */
@@ -90,11 +89,9 @@ public:
 
 
 protected:
-	virtual void PreInitializeComponents() override;
-	virtual void PostInitializeComponents() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	// This is when the Wait Target Data Task starts using us
+	// This is when the Ability Task starts using us
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 	// Where we perform our logic for collecting Target Data
 	virtual void ConfirmTargetingAndContinue() override;
@@ -122,4 +119,3 @@ protected:
 *		Resetting the reticles array in StartTargeting shouldn't just destroy all reticles for resetting. Reticles should be recycled (deactivated and activated)
 *	2) 
 */
-

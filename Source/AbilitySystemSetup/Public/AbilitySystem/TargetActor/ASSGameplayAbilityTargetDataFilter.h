@@ -44,7 +44,7 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 
 	/**
 	 * Exclusively accept Actors that implement the IAbilitySystemInterface.
-	 * Note: this setting is not affected by bReverseFilter
+	 * NOTE: This setting is not affected by bReverseFilter
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		bool bOnlyAcceptAbilitySystemInterfaces;
