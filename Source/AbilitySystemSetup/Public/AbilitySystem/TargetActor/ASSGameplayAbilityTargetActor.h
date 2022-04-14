@@ -15,7 +15,11 @@ class AASSGameplayAbilityWorldReticle;
 
 
 /**
- * Base Target Actor class
+ * Base Target Actor class.
+ * 
+ * Can be disabled and re-enabled across mutliple Ability Task activations.
+ * Provides start location and aiming with Player Controller functions.
+ * Has array of spawned Reticle Actors.
  */
 UCLASS(Abstract, notplaceable)
 class ABILITYSYSTEMSETUP_API AASSGameplayAbilityTargetActor : public AGameplayAbilityTargetActor
@@ -31,10 +35,8 @@ public:
 		FASSWorldReticleParameters ASSReticleParams;
 
 	/**
-	 * If true, when a trace overlaps an actor's multiple collisions, those multiple collision hits will add
-	 * that actor to the hitresults multiple times.
-	 * 
-	 * TODO: add option for picking the hit with highest damage
+	 * If true, when a trace overlaps an Actor's multiple collisions, those multiple collision hits can add
+	 * that Actor to the Hit Results multiple times.
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Target Data")
 		bool bAllowMultipleHitsPerActor;
@@ -48,12 +50,12 @@ public:
 	 * Filters out one hit result out of a given array. Is meant to be use in FHitResult loops.
 	 * Returns true if hit was filtered.
 	 */
-	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 	/**
 	 * Returns true if hit does not pass the filter.
 	 * Does NOT remove the hit from the given HitResults.
 	 */	
-	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 
 
 	/**
@@ -79,25 +81,18 @@ public:
 	/** Outputs the direction that our StartLocation is aiming - towards our Player's aiming endpoint */
 	FVector GetAimDirectionOfStartLocation(const FCollisionQueryParams& Params) const;
 
-	static bool ClipCameraRayToAbilityRange(const FVector& CameraLocation, const FVector& CameraDirection, const FVector& AbilityCenter, const float AbilityRange, FVector& OutClippedPosition);
-
-
 protected:
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	// This is when the Ability Task starts using us
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
-	// Where we perform our logic for collecting Target Data
 	virtual void ConfirmTargetingAndContinue() override;
 
 	/**
-	 * Calculates AimDir which is used in DirWithPlayerController().
+	 * Calculates AimDir which is used in GetAimDirectionOfStartLocation().
 	 * This can be overriden to add bullet spread for guns and stuff.
-	 * 
-	 * You can also determine AimStart if needed
 	 */
 	virtual void CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const;
 
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	/** List of custom Reticle actors */
 	TArray<TWeakObjectPtr<AASSGameplayAbilityWorldReticle>> ReticleActors;
@@ -106,10 +101,3 @@ protected:
 	virtual void DestroyReticleActors();
 
 };
-
-/*
-* Todo:
-*	1) Pooling system for reticles (assuming were using a reusable target actor)
-*		Resetting the reticles array in StartTargeting shouldn't just destroy all reticles for resetting. Reticles should be recycled (deactivated and activated)
-*	2) 
-*/

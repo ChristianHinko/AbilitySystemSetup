@@ -77,20 +77,20 @@ void AASSGameplayAbilityTargetActor::FilterHitResults(TArray<FHitResult>& OutHit
 		}
 	}
 }
-bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
+bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
 {
-	if (HitResultFailsFilter(OutHitResults, IndexToTryFilter, FilterHandle, inAllowMultipleHitsPerActor))
+	if (HitResultFailsFilter(OutHitResults, IndexToTryToFilter, FilterHandle, inAllowMultipleHitsPerActor))
 	{
-		OutHitResults.RemoveAt(IndexToTryFilter);
+		OutHitResults.RemoveAt(IndexToTryToFilter);
 		return true;
 	}
 
 	// This index was not filtered
 	return false;
 }
-bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
+bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
 {
-	const FHitResult& HitToTryFilter = InHitResults[IndexToTryFilter];
+	const FHitResult& HitToTryFilter = InHitResults[IndexToTryToFilter];
 
 
 	if (FilterHandle.Filter.IsValid()) // if valid filter
@@ -109,7 +109,7 @@ bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResul
 
 
 		// Check if any Hit Results before this hit contains a Hit Result with this Actor already
-		for (int32 i = 0; i < IndexToTryFilter; ++i)
+		for (int32 i = 0; i < IndexToTryToFilter; ++i)
 		{
 			const FHitResult& Hit = InHitResults[i];
 
@@ -130,14 +130,11 @@ bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResul
 
 FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation(const FCollisionQueryParams& Params) const
 {
-	FVector AimPoint;
+	FVector AimStart;
 	FVector AimDir;
-	CalculateAimDirection(AimPoint, AimDir);
+	CalculateAimDirection(AimStart, AimDir);
 
-	FVector AimEnd = AimPoint + (AimDir * MaxRange);
-	ClipCameraRayToAbilityRange(AimPoint, AimDir, StartLocation.GetTargetingTransform().GetLocation(), MaxRange, AimEnd);
-
-	return UBFL_CollisionQueryHelpers::GetLocationAimDirection(GetWorld(), Params, AimPoint, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
+	return UBFL_CollisionQueryHelpers::GetLocationAimDirection(GetWorld(), Params, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
 }
 
 void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const
@@ -156,26 +153,6 @@ void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart,
 
 	OutAimStart = ViewStart;
 	OutAimDir = ViewRot.Vector();
-}
-
-bool AASSGameplayAbilityTargetActor::ClipCameraRayToAbilityRange(const FVector& CameraLocation, const FVector& CameraDirection, const FVector& AbilityCenter, const float AbilityRange, FVector& OutClippedPosition)
-{
-	const FVector CameraToCenter = AbilityCenter - CameraLocation;
-	const float DotToCenter = FVector::DotProduct(CameraToCenter, CameraDirection);
-	if (DotToCenter >= 0)		//If this fails, we're pointed away from the center, but we might be inside the sphere and able to find a good exit point.
-	{
-		const float DistanceSquared = CameraToCenter.SizeSquared() - (DotToCenter * DotToCenter);
-		const float RadiusSquared = (AbilityRange * AbilityRange);
-		if (DistanceSquared <= RadiusSquared)
-		{
-			const float DistanceFromCamera = FMath::Sqrt(RadiusSquared - DistanceSquared);
-			const float DistanceAlongRay = DotToCenter + DistanceFromCamera;					//Subtracting instead of adding will get the other intersection point
-			OutClippedPosition = CameraLocation + (DistanceAlongRay * CameraDirection);			//Cam aim point clipped to range sphere
-			return true;
-		}
-	}
-
-	return false;
 }
 
 
@@ -210,11 +187,11 @@ AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnReticleAct
 
 void AASSGameplayAbilityTargetActor::DestroyReticleActors()
 {
-	for (int32 i = ReticleActors.Num() - 1; i >= 0; i--)
+	for (int32 i = ReticleActors.Num() - 1; i >= 0; --i)
 	{
 		if (ReticleActors[i].IsValid())
 		{
-			ReticleActors[i].Get()->Destroy();
+			ReticleActors[i].Get()->Destroy(); // we should have a reticle pooling system instead of creating and destroying these all of the time
 		}
 	}
 
