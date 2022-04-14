@@ -76,14 +76,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
 		bool bUseAimPointAsStartLocation;
 
-	/** Does the trace affect the aiming pitch */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
-		bool bTraceAffectsAimPitch;
-
-	/** Outputs a point that the player controller is looking at (within the MaxRange) (also this uses TraceChannel) */
-	void AimWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceEnd) const;
-	/** Outputs a direction to use rather than a trace endpoint */
-	void DirWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceDir) const;
+	/** Outputs the direction that our StartLocation is aiming - towards our Player's aiming endpoint */
+	FVector GetAimDirectionOfStartLocation(const FCollisionQueryParams& Params) const;
 
 	static bool ClipCameraRayToAbilityRange(const FVector& CameraLocation, const FVector& CameraDirection, const FVector& AbilityCenter, const float AbilityRange, FVector& OutClippedPosition);
 

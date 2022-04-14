@@ -4,6 +4,7 @@
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
 #include "BlueprintFunctionLibraries/BFL_HitResultHelpers.h"
+#include "BlueprintFunctionLibraries/BFL_CollisionQueryHelpers.h"
 
 
 
@@ -25,7 +26,6 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 	TraceChannel = ECollisionChannel::ECC_Visibility;
 
 	bUseAimPointAsStartLocation = true;
-	bTraceAffectsAimPitch = true;
 }
 
 // This is when the Ability Task starts using us
@@ -128,78 +128,33 @@ bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResul
 	return false;
 }
 
-void AASSGameplayAbilityTargetActor::AimWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceEnd) const
+FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation(const FCollisionQueryParams& Params) const
 {
-	FVector TraceDir;
-	DirWithPlayerController(InSourceActor, Params, TraceStart, TraceDir);
-
-	OutTraceEnd = TraceStart + (TraceDir * MaxRange);
-}
-void AASSGameplayAbilityTargetActor::DirWithPlayerController(const AActor* InSourceActor, FCollisionQueryParams Params, const FVector& TraceStart, FVector& OutTraceDir) const
-{
-	FVector AimStart;
+	FVector AimPoint;
 	FVector AimDir;
-	CalculateAimDirection(AimStart, AimDir);
-	FVector AimEnd = AimStart + (AimDir * MaxRange);
+	CalculateAimDirection(AimPoint, AimDir);
 
-	ClipCameraRayToAbilityRange(AimStart, AimDir, TraceStart, MaxRange, AimEnd);
+	FVector AimEnd = AimPoint + (AimDir * MaxRange);
+	ClipCameraRayToAbilityRange(AimPoint, AimDir, StartLocation.GetTargetingTransform().GetLocation(), MaxRange, AimEnd);
 
-	// If the TraceStart is nearly equal to the AimStart, skip the useless camera trace and just return the aim direction
-	if (TraceStart.Equals(AimStart))
-	{
-		// As an optimization, skip the extra trace and return here
-		OutTraceDir = (AimEnd - TraceStart).GetSafeNormal();
-		return;
-	}
-
-	// Line trace from the TraceStart to the the point that player is looking at so we can calculate the direction
-	TArray<FHitResult> HitResults;
-	InSourceActor->GetWorld()->LineTraceMultiByChannel(HitResults, AimStart, AimEnd, TraceChannel, Params);
-	const FHitResult& HitResult = HitResults.Num() ? HitResults[0] : FHitResult();
-
-	const bool bUseTraceResult = /*HitResult.bBlockingHit && */(FVector::DistSquared(TraceStart, HitResult.Location) <= (MaxRange * MaxRange));
-
-	const FVector AdjustedEnd = (bUseTraceResult) ? HitResult.Location : AimEnd;
-
-	FVector AdjustedAimDir = (AdjustedEnd - TraceStart).GetSafeNormal();
-	if (AdjustedAimDir.IsZero())
-	{
-		AdjustedAimDir = AimDir;
-	}
-
-	if (!bTraceAffectsAimPitch && bUseTraceResult)
-	{
-		FVector OriginalAimDir = (AimEnd - TraceStart).GetSafeNormal();
-
-		if (!OriginalAimDir.IsZero())
-		{
-			// Convert to angles and use original pitch
-			const FRotator OriginalAimRot = OriginalAimDir.Rotation();
-
-			FRotator AdjustedAimRot = AdjustedAimDir.Rotation();
-			AdjustedAimRot.Pitch = OriginalAimRot.Pitch;
-
-			AdjustedAimDir = AdjustedAimRot.Vector();
-		}
-	}
-
-	OutTraceDir = AdjustedAimDir;
+	return UBFL_CollisionQueryHelpers::GetLocationAimDirection(GetWorld(), Params, AimPoint, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
 }
 
 void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const
 {
-	if (!OwningAbility) // Server and launching client only
+	if (!IsValid(OwningAbility)) // server and launching client only
 	{
 		return;
 	}
 
-
 	const APlayerController* PC = OwningAbility->GetCurrentActorInfo()->PlayerController.Get();
 	check(PC);
 
+	FVector ViewStart;
 	FRotator ViewRot;
-	PC->GetPlayerViewPoint(OutAimStart, ViewRot);
+	PC->GetPlayerViewPoint(ViewStart, ViewRot);
 
+	OutAimStart = ViewStart;
 	OutAimDir = ViewRot.Vector();
 }
 
