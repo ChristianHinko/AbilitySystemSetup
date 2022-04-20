@@ -10,7 +10,8 @@
 
 
 /**
- * 
+ * The plugin's developer settings is useful so that we can avoid hardcoding game specific values in the GAS setup logic.
+ * This helps us keep the GAS setup generic to any game.
  */
 UCLASS(config=Game, defaultconfig, meta=(DisplayName = "Ability System Setup"))
 class ABILITYSYSTEMSETUP_API UDS_AbilitySystemSetup : public UDeveloperSettings
