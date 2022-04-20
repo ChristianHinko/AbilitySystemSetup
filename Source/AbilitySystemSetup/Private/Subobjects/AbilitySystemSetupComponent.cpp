@@ -216,7 +216,6 @@ void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* Input
 
 void UAbilitySystemSetupComponent::RemoveLooseAvatarRelatedTags()
 {
-	// Give external sources an opportunity to remove any Loose Gameplay Tags
 	if (AbilitySystemComponent.IsValid())
 	{
 		RemoveLooseAvatarRelatedTagsDelegate.Broadcast(AbilitySystemComponent.Get());

@@ -108,7 +108,7 @@ protected:
 private:
 	/** Makes the input events work for GAS */
 	void BindAbilitySystemInput(UInputComponent* InputComponent);
-	/** Removes all Loose Gameplay Tags that external sources specified we should remove */
+	/** Broadcasts event to allow external sources to cleanup any Loose Gameplay Tags they were managing */
 	void RemoveLooseAvatarRelatedTags();
 
 
