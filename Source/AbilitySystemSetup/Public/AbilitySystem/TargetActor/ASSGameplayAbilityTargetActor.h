@@ -18,7 +18,7 @@ class AASSGameplayAbilityWorldReticle;
  * Base Target Actor class.
  * 
  * Can be disabled and re-enabled across mutliple Ability Task activations.
- * Provides start location and aiming with Player Controller functions.
+ * Provides helpful aiming direction functions using the StartLocation and the Player Controller.
  * Has array of spawned Reticle Actors.
  */
 UCLASS(Abstract, notplaceable)
@@ -78,8 +78,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
 		bool bUseAimPointAsStartLocation;
 
-	/** Outputs the direction that our StartLocation is aiming - towards our Player's aiming endpoint */
-	FVector GetAimDirectionOfStartLocation(const FCollisionQueryParams& Params) const;
+	/** Outputs the direction which our StartLocation is aiming - towards our Player's aiming endpoint */
+	FVector GetAimDirectionOfStartLocation() const;
 
 protected:
 	virtual void StartTargeting(UGameplayAbility* Ability) override;

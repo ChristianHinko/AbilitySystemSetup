@@ -128,13 +128,15 @@ bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResul
 	return false;
 }
 
-FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation(const FCollisionQueryParams& Params) const
+FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation() const
 {
 	FVector AimStart;
 	FVector AimDir;
 	CalculateAimDirection(AimStart, AimDir);
 
-	return UBFL_CollisionQueryHelpers::GetLocationAimDirection(GetWorld(), Params, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(SourceActor);
+	return UBFL_CollisionQueryHelpers::GetLocationAimDirection(GetWorld(), CollisionQueryParams, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
 }
 
 void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const
@@ -145,14 +147,14 @@ void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart,
 	}
 
 	const APlayerController* PC = OwningAbility->GetCurrentActorInfo()->PlayerController.Get();
-	check(PC);
-
-	FVector ViewStart;
-	FRotator ViewRot;
-	PC->GetPlayerViewPoint(ViewStart, ViewRot);
-
-	OutAimStart = ViewStart;
-	OutAimDir = ViewRot.Vector();
+	if (IsValid(PC))
+	{
+		FVector ViewStart;
+		FRotator ViewRot;
+		PC->GetPlayerViewPoint(ViewStart, ViewRot);
+		OutAimStart = ViewStart;
+		OutAimDir = ViewRot.Vector();
+	}
 }
 
 
@@ -191,7 +193,7 @@ void AASSGameplayAbilityTargetActor::DestroyReticleActors()
 	{
 		if (ReticleActors[i].IsValid())
 		{
-			ReticleActors[i].Get()->Destroy(); // we should have a reticle pooling system instead of creating and destroying these all of the time
+			ReticleActors[i]->Destroy(); // we should have a reticle pooling system instead of creating and destroying these all of the time
 		}
 	}
 
