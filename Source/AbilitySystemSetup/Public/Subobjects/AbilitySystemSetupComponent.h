@@ -17,18 +17,15 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
 
 
 /**
- * Provides setup functionality for avatar actors with an ASC.
+ * Provides common GAS initialization/uninitialization logic with AbilitySets granted while initialized.
  * This component is to be used by avatar actors only.
  * 
- * This component provides the functionality for initializing and uninitializing an ASC. For initialization, it sets us up as the AvatarActor for
- * the ASC and grants AbilitySets (allowing you to choose starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it
- * removes the granted AbilitySets, gives external sources an opportunity to remove Loose Gameplay Tags (this is the only manual cleanup),
+ * For initialization, it sets us up as the AvatarActor for the ASC and grants AbilitySets (allowing you to choose 
+ * starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it ungrants the granted AbilitySets, 
+ * gives external sources an opportunity to remove Loose Gameplay Tags (this is the only manual cleanup),
  * and disassociates us from the ASC.
  * 
  * This component does not automate anything. You have to manually call on provided functions for anything to happen......
- * 
- * 
- * 
  * 
  * 
  * ----------------------------------
