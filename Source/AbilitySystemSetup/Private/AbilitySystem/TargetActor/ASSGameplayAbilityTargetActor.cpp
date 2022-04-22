@@ -79,7 +79,7 @@ void AASSGameplayAbilityTargetActor::FilterHitResults(TArray<FHitResult>& OutHit
 }
 bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
 {
-	if (HitResultFailsFilter(OutHitResults, IndexToTryToFilter, FilterHandle, inAllowMultipleHitsPerActor))
+	if (WouldHitResultGetFiltered(OutHitResults, IndexToTryToFilter, FilterHandle, inAllowMultipleHitsPerActor))
 	{
 		OutHitResults.RemoveAt(IndexToTryToFilter);
 		return true;
@@ -88,7 +88,7 @@ bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitR
 	// This index was not filtered
 	return false;
 }
-bool AASSGameplayAbilityTargetActor::HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
+bool AASSGameplayAbilityTargetActor::WouldHitResultGetFiltered(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
 {
 	const FHitResult& HitToTryFilter = InHitResults[IndexToTryToFilter];
 

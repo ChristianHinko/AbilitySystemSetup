@@ -55,7 +55,7 @@ public:
 	 * Returns true if hit does not pass the filter.
 	 * Does NOT remove the hit from the given HitResults.
 	 */	
-	bool HitResultFailsFilter(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
+	bool WouldHitResultGetFiltered(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 
 
 	/**
