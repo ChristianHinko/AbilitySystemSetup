@@ -43,7 +43,7 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	const UEnum* AbilityInputIDEnum = FindObject<UEnum>(ANY_PACKAGE, *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 	if (AbilityInputIDEnum)
 	{
-		// Ensure this UEnum has proper enum setup! (I.e. enum ``Unset`` and enum ``NoInput`` as the first 2)
+		// Ensure this UEnum has proper enum setup! (i.e. enum ``Unset`` and enum ``NoInput`` as the first 2)
 		if (AbilityInputIDEnum->GetNameStringByValue(0) != TEXT("Unset") || AbilityInputIDEnum->GetNameStringByIndex(0) != TEXT("Unset"))
 		{
 			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your ``%s`` UEnum is missing the ``Unset`` enum. Go to your %s definition and make sure you have ``Unset`` as the first enum (and make sure the value is 0). This is important for us to be able to detect when someone forgets to set an Ability's input ID (it's good to give all Abilities an input ID)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
