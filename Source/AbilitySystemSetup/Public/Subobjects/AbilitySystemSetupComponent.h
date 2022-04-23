@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "AbilitySet.h"
+#include "AbilitySystem/Types/AbilitySet.h"
 
 #include "AbilitySystemSetupComponent.generated.h"
 
