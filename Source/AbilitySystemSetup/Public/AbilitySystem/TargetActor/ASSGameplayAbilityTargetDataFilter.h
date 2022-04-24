@@ -72,11 +72,10 @@ struct ABILITYSYSTEMSETUP_API FGTDF_MultiFilter : public FASSGameplayTargetDataF
 
 	virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const override;
 
-	/** Subclass actors must be one of these to pass the filter. */
+	/** Whitelist */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		TArray<TSubclassOf<AActor>> RequiredActorClasses;
-	/** Subclass actors must NOT be one of these to pass the filter. */
+	/** Blacklist */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		TArray<TSubclassOf<AActor>> FilteredActorClasses;
-
 };

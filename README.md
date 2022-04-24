@@ -17,7 +17,10 @@ The plugin will ensure that entered values are correct and notify if you they ar
 	- Supports any Actor as the `AvatarActor`
 	- Supports GAS input bindings
 - **ASSEngineSubsystem** - Used to load global data tables and tags via ``UAbilitySystemGlobals::InitGlobalData()``
-- **Engine only safety checks**:
-	- Ensures valid source object when giving ability
-	- Ensures GAS input enum values matches with the Action Mappings
-- **Automatic activate on give** - 
+- **Engine only safety checks** - Ensures silent errors don\'t go unnoticed
+- **Ability to reuse TargetActors**
+- **Custom Target Data Filter** - An improved method of handling the filtering process
+	- Class whitelist array
+	- Class blacklist array
+	- Option to only allow classes implementing `IAbilitySystemInterface`
+- **Base classes for common types** - Provides quality of life features and extra functionality
