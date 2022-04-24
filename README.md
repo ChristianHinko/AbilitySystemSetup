@@ -5,8 +5,9 @@ Current engine version: 4.27.2
 The pourpose of this plugin is to provide a reusable base Ability System that extends Epic\'s Gameplay Ability System (GAS) plugin. It provides necissary code for the setup of GAS.
 
 ## Setup
-Goto your project settings to configure game specific data required for GAS setup.
 ![Plugin Project Settings](/Images/Readme/PluginProjectSettings.png)
+
+Goto your project settings to configure game specific data required for GAS setup.
 The plugin will ensure that entered values are correct and notify if you they aren\'t
 
 ## Key Features
