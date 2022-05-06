@@ -3,8 +3,6 @@
 
 #include "AbilitySystem/Types/ASSGameplayAbilityTargetTypes.h"
 
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
-
 
 
 FASSGameplayAbilityTargetData::FASSGameplayAbilityTargetData()

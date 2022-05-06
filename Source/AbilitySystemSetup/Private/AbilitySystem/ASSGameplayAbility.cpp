@@ -3,8 +3,6 @@
 
 #include "AbilitySystem/ASSGameplayAbility.h"
 
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
-
 
 
 UASSGameplayAbility::UASSGameplayAbility()

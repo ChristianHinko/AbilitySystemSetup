@@ -3,8 +3,6 @@
 
 #include "AbilitySystemSetup.h"
 
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
-
 
 
 #define LOCTEXT_NAMESPACE "FAbilitySystemSetupModule"

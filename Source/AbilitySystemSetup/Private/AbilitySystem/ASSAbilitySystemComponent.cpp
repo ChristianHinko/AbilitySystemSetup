@@ -6,7 +6,6 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/ASSGameplayAbility.h"
 #include "GameplayCueManager.h"
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)

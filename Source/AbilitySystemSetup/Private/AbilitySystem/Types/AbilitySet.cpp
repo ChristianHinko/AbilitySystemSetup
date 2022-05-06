@@ -4,7 +4,6 @@
 #include "AbilitySystem/Types/AbilitySet.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 
 

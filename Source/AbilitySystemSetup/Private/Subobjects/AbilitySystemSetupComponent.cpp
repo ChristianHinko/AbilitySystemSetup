@@ -9,7 +9,6 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/InputComponent.h"
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 #include "DS_AbilitySystemSetup.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
