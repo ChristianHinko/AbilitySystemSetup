@@ -4,7 +4,7 @@
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
 #include "BlueprintFunctionLibraries/BFL_HitResultHelpers.h"
-#include "BlueprintFunctionLibraries/BFL_CollisionQueryHelpers.h"
+#include "BlueprintFunctionLibraries/BFL_MathHelpers.h"
 
 
 
@@ -136,7 +136,7 @@ FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation() const
 
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(SourceActor);
-	return UBFL_CollisionQueryHelpers::GetLocationAimDirection(GetWorld(), CollisionQueryParams, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
+	return UBFL_MathHelpers::GetLocationAimDirection(GetWorld(), CollisionQueryParams, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
 }
 
 void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const
