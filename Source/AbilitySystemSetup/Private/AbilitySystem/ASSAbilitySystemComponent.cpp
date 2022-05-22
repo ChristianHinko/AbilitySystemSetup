@@ -45,16 +45,19 @@ void UASSAbilitySystemComponent::InitializeComponent()
 		// Ensure this UEnum has proper enum setup! (i.e. enum ``Unset`` and enum ``NoInput`` as the first 2)
 		if (AbilityInputIDEnum->GetNameStringByValue(0) != TEXT("Unset") || AbilityInputIDEnum->GetNameStringByIndex(0) != TEXT("Unset"))
 		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your ``%s`` UEnum is missing the ``Unset`` enum. Go to your %s definition and make sure you have ``Unset`` as the first enum (and make sure the value is 0). This is important for us to be able to detect when someone forgets to set an Ability's input ID (it's good to give all Abilities an input ID)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is missing the ``Unset`` enum. Go to your %s definition and make sure you have ``Unset`` as the first enum (and make sure the value is 0). This is important for us to be able to detect when someone forgets to set an Ability's input ID (it's good to give all Abilities an input ID)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			check(0);
 		}
 		if (AbilityInputIDEnum->GetNameStringByValue(1) != TEXT("NoInput") || AbilityInputIDEnum->GetNameStringByIndex(1) != TEXT("NoInput"))
 		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your ``%s`` UEnum is missing the ``NoInput`` enum. Go to your %s definition and make sure you have ``NoInput`` as the second enum (and make sure the value is 1). This enum allows you to state that an Ability does not use input binding"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is missing the ``NoInput`` enum. Go to your %s definition and make sure you have ``NoInput`` as the second enum (and make sure the value is 1). This enum allows you to state that an Ability does not use input binding"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			check(0);
 		}
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The UEnum ``%s`` does not exist. Ensure correct spelling for the name of your AbilityInputID Enum and make sure it is a UENUM so we can find it!"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The UEnum ``%s`` does not exist. Ensure correct spelling for the name of your AbilityInputID Enum and make sure it is a UENUM so we can find it!"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+		check(0);
 	}
 
 
@@ -72,11 +75,13 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	// Ensure the Confirm and Cancel Target input actions exist! (Check to see if ConfirmTargetInputActionName and CancelTargetInputActionName in the plugin settings are real inputs)
 	if (ActionNames.Contains(ConfirmTargetInputActionName) == false)
 	{
-		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your ConfirmTarget input action!"), *(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName));
+		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your ConfirmTarget input action!"), *(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName));
+		check(0);
 	}
 	if (ActionNames.Contains(CancelTargetInputActionName) == false)
 	{
-		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your CancelTarget input action!"), *(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName));
+		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your CancelTarget input action!"), *(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName));
+		check(0);
 	}
 
 
@@ -95,11 +100,13 @@ void UASSAbilitySystemComponent::InitializeComponent()
 
 			if (AbilityInputIDEnum->GetIndexByName(ActionName) != ExpectedEnumIndex)
 			{
-				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("Your %s UEnum is not matched up with your Action Mappings list in DefaultInput.ini - Expected ``%s`` enum at the %s spot in %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()), *FString::FromInt(ExpectedEnumIndex), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your %s UEnum is not matched up with your Action Mappings list in DefaultInput.ini - Expected ``%s`` enum at the %s spot in %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()), *FString::FromInt(ExpectedEnumIndex), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+				check(0);
 			}
 			if (AbilityInputIDEnum->GetValueByName(ActionName) != ExpectedEnumIndex)
 			{
-				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Fatal, TEXT("%s::%s has defined a numeric value for itself. These enums should provide no numeric use and are purely to represent Action Mappings. Leave the enum at the default determined value. Even if you did do it this way, the Ability System's input events won't work that way"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()));
+				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("%s::%s has defined a numeric value for itself. These enums should provide no numeric use and are purely to represent Action Mappings. Leave the enum at the default determined value. Even if you did do it this way, the Ability System's input events won't work that way"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()));
+				check(0);
 			}
 
 
@@ -116,7 +123,8 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	if (!IsValid(AbilitySpec.SourceObject))
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Fatal, TEXT("%s() SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemComponentSetup, Error, TEXT("%s() SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 

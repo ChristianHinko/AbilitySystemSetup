@@ -34,7 +34,8 @@ void UAbilitySystemSetupComponent::OnRegister()
 	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
 	if (AbilitySystemSetupComponents.Num() > 1)
 	{
-		UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("No more than one Ability System Setup Component is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("No more than one Ability System Setup Component is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
+		check(0);
 	}
 #endif
 }
@@ -197,7 +198,8 @@ void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* Input
 		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UDS_AbilitySystemSetup>();
 		if (!IsValid(AbilitySystemSetupDeveloperSettings))
 		{
-			UE_LOG(LogAbilitySystemSetup, Fatal, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+			check(0);
 		}
 
 		ASC->BindAbilityActivationToInputComponent(InputComponent,
