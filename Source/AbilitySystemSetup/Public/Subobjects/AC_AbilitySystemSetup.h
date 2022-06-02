@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "AbilitySystem/Types/AbilitySet.h"
 
-#include "AbilitySystemSetupComponent.generated.h"
+#include "AC_AbilitySystemSetup.generated.h"
 
 
 class UAbilitySystemComponent;
@@ -67,12 +67,12 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  *				- Call UninitializeAbilitySystemComponent() before the Super call
  */
 UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
-class ABILITYSYSTEMSETUP_API UAbilitySystemSetupComponent : public UActorComponent
+class ABILITYSYSTEMSETUP_API UAC_AbilitySystemSetup : public UActorComponent
 {
 	GENERATED_BODY()
 	
 public:
-	UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer);
+	UAC_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer);
 
 
 	// Ability sets to grant to this pawn's ability system.

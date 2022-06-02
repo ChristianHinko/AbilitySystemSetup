@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Subobjects/AbilitySystemSetupComponent.h"
+#include "Subobjects/AC_AbilitySystemSetup.h"
 
 #include "Net/UnrealNetwork.h"
 #include "AbilitySystemInterface.h"
@@ -17,14 +17,14 @@
 
 
 
-UAbilitySystemSetupComponent::UAbilitySystemSetupComponent(const FObjectInitializer& ObjectInitializer)
+UAC_AbilitySystemSetup::UAC_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
 	bAbilitySystemInputBinded = false;
 }
-void UAbilitySystemSetupComponent::OnRegister()
+void UAC_AbilitySystemSetup::OnRegister()
 {
 	Super::OnRegister();
 
@@ -34,14 +34,14 @@ void UAbilitySystemSetupComponent::OnRegister()
 	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
 	if (AbilitySystemSetupComponents.Num() > 1)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("No more than one Ability System Setup Component is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("No more than one UAC_AbilitySystemSetup is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
 		check(0);
 	}
 #endif
 }
 
 
-void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC)
+void UAC_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC)
 {
 	if (!IsValid(ASC))
 	{
@@ -67,7 +67,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client)
 	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
 	{
-		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous AbilitySystemSetupComponent (the setup component of the old avatar actor)
+		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous AC_AbilitySystemSetup (the setup component of the old avatar actor)
 		{
 			if (PreviousAbilitySystemSetupComponent->AbilitySystemComponent == ASC)
 			{
@@ -112,7 +112,7 @@ void UAbilitySystemSetupComponent::InitializeAbilitySystemComponent(UAbilitySyst
 
 	OnInitializeAbilitySystemComponentDelegate.Broadcast(AbilitySystemComponent.Get());
 }
-void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
+void UAC_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -157,7 +157,7 @@ void UAbilitySystemSetupComponent::UninitializeAbilitySystemComponent()
 	AbilitySystemComponent = nullptr;
 }
 
-void UAbilitySystemSetupComponent::HandleControllerChanged()
+void UAC_AbilitySystemSetup::HandleControllerChanged()
 {
 	if (AbilitySystemComponent.IsValid() == false)
 	{
@@ -175,12 +175,12 @@ void UAbilitySystemSetupComponent::HandleControllerChanged()
 	AbilitySystemComponent->RefreshAbilityActorInfo();		// update our ActorInfo's PlayerController
 }
 
-void UAbilitySystemSetupComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void UAC_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Called in SetupPlayerInputComponent() because of a potential race condition.
 	BindAbilitySystemInput(PlayerInputComponent);
 }
-void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* InputComponent)
+void UAC_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InputComponent)
 {
 	if (!IsValid(InputComponent))
 	{
@@ -215,7 +215,7 @@ void UAbilitySystemSetupComponent::BindAbilitySystemInput(UInputComponent* Input
 
 }
 
-void UAbilitySystemSetupComponent::RemoveLooseAvatarRelatedTags()
+void UAC_AbilitySystemSetup::RemoveLooseAvatarRelatedTags()
 {
 	if (AbilitySystemComponent.IsValid())
 	{
