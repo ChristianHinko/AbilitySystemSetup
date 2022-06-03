@@ -27,13 +27,9 @@ class ABILITYSYSTEMSETUP_API UASSAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
-
+	UASSAttributeSet(const FObjectInitializer& ObjectInitializer);
 
 protected:
-	/**
-	 * Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes. (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before)
-	 */
-	void AdjustAttributeForMaxChange(const FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, const float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
 
 };
 
@@ -41,7 +37,7 @@ protected:
 /**
  * Our custom FAttributeSetInitter.
  * 
- * Not implemented. Optional struct some games may find useful.
+ * Optional struct some games may find useful. Not implemented.
  * 
  * Possible reasons to use an FAttributeSetInitter
  *  - Curve tables defining descrete attribute values for each ASC level (this would use FAttributeSetInitterDiscreteLevels)
