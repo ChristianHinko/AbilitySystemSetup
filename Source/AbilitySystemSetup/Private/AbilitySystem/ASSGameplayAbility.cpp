@@ -19,23 +19,29 @@ UASSGameplayAbility::UASSGameplayAbility()
 
 void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	TryCallOnAvatarSetOnPrimaryInstance
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	if (AbilityInputID == 0)
+	// Fix the engine accidently calling OnAvatarSet() on CDO instead of calling it on the instances
+	if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && !IsInstantiated())
 	{
-		UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
-		check(0);
+		// Broken call to OnAvatarSet().
+		// Do the fix - call our version on each instance.
+		for (UGameplayAbility* Ability : Spec.GetAbilityInstances())
+		{
+			UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(Ability);
+			if (IsValid(ASSAbility))
+			{
+				ASSAbility->OnAvatarSetThatWorks(ActorInfo, Spec);
+			}
+		}
+		return;
 	}
-	if (AbilityTags.IsEmpty())
-	{
-		UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
-		check(0);
-	}
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
-	// Epic's comment: Projects may want to initiate passives or do other "BeginPlay" type of logic here.
+	// Nothing went wrong. Call our version.
+	// If we are NonInstanced, then being the CDO is okay.
+	// If we are instanced, then the engine called us from UGameplayAbility::OnGiveAbility().
+	OnAvatarSetThatWorks(ActorInfo, Spec);
+	return;
 }
 void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
@@ -104,6 +110,22 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		}
 	}
 	//END Copied from Super (for Blueprint support)
+}
+
+void UASSGameplayAbility::OnAvatarSetThatWorks(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	if (AbilityInputID == 0)
+	{
+		UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
+	}
+	if (AbilityTags.IsEmpty())
+	{
+		UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
+	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 }
 
 void UASSGameplayAbility::ExternalEndAbility()

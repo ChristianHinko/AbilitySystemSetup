@@ -29,28 +29,22 @@ public:
 	uint8 bActivateOnGiveAbility : 1;
 
 
-	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override final;
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	/**
+	 * The engine's OnAvatarSet() is not called properly for instanced abilities! When the avatar actor changes, the
+	 * event is mistakingly called on the CDO.
+	 * This version correctly gets called on instanced abilities when the avatar actor changes.
+	 */
+	virtual void OnAvatarSetThatWorks(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec);
 
 	/** An exposed EndAbility() that isn't a cancellation. Used for ability batching. */
 	virtual void ExternalEndAbility();
 
 
 	//virtual void OnCurrentAbilityPredictionKeyRejected(); // Not implemented or hooked up yet
-
 	virtual void OnActivationPredictionKeyRejected(); // Not implemented or hooked up yet
-
 };
-
-/** Annoying fix for the engine calling OnAvatarSet() on the CDO */
-#define TryCallOnAvatarSetOnPrimaryInstance \
-if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && HasAnyFlags(RF_ClassDefaultObject)) \
-{ \
-	for (UGameplayAbility* Ability : Spec.GetAbilityInstances()) \
-	{ \
-		Ability->OnAvatarSet(ActorInfo, Spec); \
-	} \
-	return; \
-}
