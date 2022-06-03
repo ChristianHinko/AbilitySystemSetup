@@ -23,34 +23,45 @@ public:
 	 * Get an Attribute Set by class off of the given ASC
 	 */
 	UFUNCTION(Category = "AttributeSet")
-		static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* ASC, const TSubclassOf<UAttributeSet> AttributeSetClass);
+		static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* InASC, const TSubclassOf<UAttributeSet> InAttributeSetClass);
 	/**
 	 * Get an Attribute Set by class off of the given ASC
 	 */
 	template <typename T>
-	static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* ASC);
+	static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* InASC);
 	/**
 	 * Get an Attribute Set by class off of the given ASC.
 	 * Returns the desired Attribute Set in its type.
 	 */
 	template <typename T>
-	static T* GetAttributeSetCasted(const UAbilitySystemComponent* ASC);
+	static T* GetAttributeSetCasted(const UAbilitySystemComponent* InASC);
 
 
-	// Gameplay cue helpers for running them locally
-	static void ExecuteGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters);
-	static void AddGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters);
-	static void RemoveGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters);
+	// Gameplay Cue helpers for running them locally
+	static void ExecuteGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters);
+	static void AddGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters);
+	static void RemoveGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters);
 
-	/** Returns a list of currently active ability instances that match the tags */
-	static void GetActiveAbilitiesWithTags(const UAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer, TArray<UGameplayAbility*>& ActiveAbilities);
+	/** Returns a list of currently active Ability instances that match the Tags */
+	static void GetActiveAbilitiesWithTags(const UAbilitySystemComponent* InASC, const FGameplayTagContainer& InTags, TArray<UGameplayAbility*>& OutActiveAbilities);
 
-	/** Returns an ability spec handle from a class. If modifying call MarkAbilitySpecDirty */
-	static FGameplayAbilitySpecHandle FindAbilitySpecHandleFromClass(UAbilitySystemComponent* InASC, TSubclassOf<UGameplayAbility> AbilityClass, UObject* OptionalSourceObject = nullptr);
+	/** Returns an Ability spec handle from a class. If modifying call MarkAbilitySpecDirty() */
+	static FGameplayAbilitySpecHandle FindAbilitySpecHandleFromClass(UAbilitySystemComponent* InASC, const TSubclassOf<UGameplayAbility> InAbilityClass, const UObject* InSourceObject = nullptr);
+
+	/** Give a list of Abilities by specs */
+	static void GiveAbilities(UAbilitySystemComponent* InASC, const TArray<FGameplayAbilitySpec>& InAbilities);
 
 
-	static void GiveAbilities(UAbilitySystemComponent* ASCToAddTo, const TArray<FGameplayAbilitySpec>& Abilities);
-
+	/**
+	 * UAbilitySystemComponent::TargetConfirm() but modified to only confirm targeting on
+	 * the Target Actors associated with the given InAbility.
+	 */
+	virtual void TargetConfirmByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility);
+	/**
+	 * UAbilitySystemComponent::TargetCancel() but modified to re-add the Target Actors that
+	 * are not associated with the given InAbility.
+	 */
+	virtual void TargetCancelByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility);
 
 	/**
 	 * Create a handle for filtering target data, filling out all fields
@@ -67,12 +78,12 @@ public:
 
 
 template <typename T>
-UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* ASC)
+UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* InASC)
 {
-	return GetAttributeSet(ASC, T::StaticClass());
+	return GetAttributeSet(InASC, T::StaticClass());
 }
 template <typename T>
-T* UASSAbilitySystemBlueprintLibrary::GetAttributeSetCasted(const UAbilitySystemComponent* ASC)
+T* UASSAbilitySystemBlueprintLibrary::GetAttributeSetCasted(const UAbilitySystemComponent* InASC)
 {
-	return Cast<T>(GetAttributeSet<T>(ASC));
+	return Cast<T>(GetAttributeSet<T>(InASC));
 }

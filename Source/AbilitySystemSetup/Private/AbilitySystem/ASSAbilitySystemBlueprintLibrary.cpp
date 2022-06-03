@@ -5,17 +5,18 @@
 
 #include "AbilitySystemGlobals.h"
 #include "GameplayCueManager.h"
+#include "Abilities/GameplayAbilityTargetActor.h"
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
 
 
 
-UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* ASC, const TSubclassOf<UAttributeSet> AttributeSetClass)
+UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* InASC, const TSubclassOf<UAttributeSet> InAttributeSetClass)
 {
 	// Potentially find an Attribute Set of this class
-	UAttributeSet* const * const FoundAttributeSet = ASC->GetSpawnedAttributes().FindByPredicate(
-		[&AttributeSetClass](const UAttributeSet* AS)
+	UAttributeSet* const * const FoundAttributeSet = InASC->GetSpawnedAttributes().FindByPredicate(
+		[&InAttributeSetClass](const UAttributeSet* AS)
 		{
-			return (AS->GetClass() == AttributeSetClass);
+			return (AS->GetClass() == InAttributeSetClass);
 		}
 	);
 
@@ -29,79 +30,129 @@ UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbility
 }
 
 
-void UASSAbilitySystemBlueprintLibrary::ExecuteGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+void UASSAbilitySystemBlueprintLibrary::ExecuteGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters)
 {
-	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Executed, GameplayCueParameters);
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), InGameplayCueTag, EGameplayCueEvent::Type::Executed, InGameplayCueParameters);
 }
-void UASSAbilitySystemBlueprintLibrary::AddGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+void UASSAbilitySystemBlueprintLibrary::AddGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters)
 {
-	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::OnActive, GameplayCueParameters);
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), InGameplayCueTag, EGameplayCueEvent::Type::OnActive, InGameplayCueParameters);
 }
-void UASSAbilitySystemBlueprintLibrary::RemoveGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+void UASSAbilitySystemBlueprintLibrary::RemoveGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters)
 {
-	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), InGameplayCueTag, EGameplayCueEvent::Type::Removed, InGameplayCueParameters);
 }
 
-void UASSAbilitySystemBlueprintLibrary::GetActiveAbilitiesWithTags(const UAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer, TArray<UGameplayAbility*>& ActiveAbilities)
+void UASSAbilitySystemBlueprintLibrary::GetActiveAbilitiesWithTags(const UAbilitySystemComponent* InASC, const FGameplayTagContainer& InTags, TArray<UGameplayAbility*>& OutActiveAbilities)
 {
-	TArray<FGameplayAbilitySpec*> AbilitiesToActivate;
-	InASC->GetActivatableGameplayAbilitySpecsByAllMatchingTags(GameplayTagContainer, AbilitiesToActivate, false);
+	// Get the active specs by tags
+	TArray<FGameplayAbilitySpec*> ActiveAbilitySpecsByTags;
+	InASC->GetActivatableGameplayAbilitySpecsByAllMatchingTags(InTags, ActiveAbilitySpecsByTags, false);
 
-	// Iterate the list of all ability specs
-	for (FGameplayAbilitySpec* Spec : AbilitiesToActivate)
+	// Get all of the instances of these specs
+	for (const FGameplayAbilitySpec* Spec : ActiveAbilitySpecsByTags)
 	{
-		// Iterate all instances on this ability spec
-		TArray<UGameplayAbility*> AbilityInstances = Spec->GetAbilityInstances();
-
-		for (UGameplayAbility* ActiveAbility : AbilityInstances)
+		for (UGameplayAbility* ActiveAbility : Spec->GetAbilityInstances())
 		{
-			ActiveAbilities.Add(Cast<UGameplayAbility>(ActiveAbility));
+			OutActiveAbilities.Add(ActiveAbility);
 		}
 	}
 }
 
-FGameplayAbilitySpecHandle UASSAbilitySystemBlueprintLibrary::FindAbilitySpecHandleFromClass(UAbilitySystemComponent* InASC, TSubclassOf<UGameplayAbility> AbilityClass, UObject* OptionalSourceObject)
+FGameplayAbilitySpecHandle UASSAbilitySystemBlueprintLibrary::FindAbilitySpecHandleFromClass(UAbilitySystemComponent* InASC, const TSubclassOf<UGameplayAbility> InAbilityClass, const UObject* InSourceObject)
 {
+	// Find by class
 	FScopedAbilityListLock ActiveScopeLock(*InASC); // ABILITYLIST_SCOPE_LOCK
-
 	for (const FGameplayAbilitySpec& Spec : InASC->GetActivatableAbilities())
 	{
-		TSubclassOf<UGameplayAbility> SpecAbilityClass = Spec.Ability->GetClass();
-		if (SpecAbilityClass == AbilityClass)
+		if (Spec.Ability->GetClass() == InAbilityClass)
 		{
-			if (!OptionalSourceObject || (OptionalSourceObject && Spec.SourceObject == OptionalSourceObject))
+			// Use the specified source object
+			if (InSourceObject && Spec.SourceObject != InSourceObject)
 			{
-				return Spec.Handle;
+				continue;
 			}
+
+			// Found it
+			return Spec.Handle;
 		}
 	}
 
 	return FGameplayAbilitySpecHandle();
 }
 
-void UASSAbilitySystemBlueprintLibrary::GiveAbilities(UAbilitySystemComponent* ASC, const TArray<FGameplayAbilitySpec>& Abilities)
+void UASSAbilitySystemBlueprintLibrary::GiveAbilities(UAbilitySystemComponent* InASC, const TArray<FGameplayAbilitySpec>& InAbilities)
 {
-	if (::IsValid(ASC) == false)	// :: uses global scope instead to avoid using the UAbilitySystemBlueprintLibrary::IsValid()
+	if (::IsValid(InASC) == false) // use global scope to avoid using the UAbilitySystemBlueprintLibrary::IsValid()
 	{
-		UE_LOG(LogGameplayAbilitySetup, Warning, TEXT("%s() ASC was not valid when trying to give list of abilities. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogGameplayAbilitySetup, Warning, TEXT("%s() InASC was not valid when trying to give list of abilities. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	if (ASC->IsOwnerActorAuthoritative() == false)
+	if (InASC->IsOwnerActorAuthoritative() == false)
 	{
 		UE_LOG(LogGameplayAbilitySetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
-	for (const FGameplayAbilitySpec& SpecToGive : Abilities)
+	for (const FGameplayAbilitySpec& SpecToGive : InAbilities)
 	{
-		if (ASC->GetActivatableAbilities().ContainsByPredicate(
+		if (InASC->GetActivatableAbilities().ContainsByPredicate(
 			[&SpecToGive](const FGameplayAbilitySpec& Spec)
 			{
 				return Spec.Ability == SpecToGive.Ability;
 			}
 		) == false)
 		{
-			ASC->GiveAbility(SpecToGive);
+			InASC->GiveAbility(SpecToGive);
+		}
+	}
+}
+
+void UASSAbilitySystemBlueprintLibrary::TargetConfirmByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility)
+{
+	// Callbacks may modify the spawned target actor array so iterate over a copy instead
+	TArray<AGameplayAbilityTargetActor*> LocalTargetActors = InASC->SpawnedTargetActors;
+	InASC->SpawnedTargetActors.Reset();
+	for (AGameplayAbilityTargetActor* TargetActor : LocalTargetActors)
+	{
+		if (TargetActor)
+		{
+			if (TargetActor->IsConfirmTargetingAllowed())
+			{
+				if (TargetActor->OwningAbility == InAbility) // =@MODIFIED MARKER@= wrapped in this if statement
+				{
+					//TODO: There might not be any cases where this bool is false
+					if (!TargetActor->bDestroyOnConfirmation)
+					{
+						InASC->SpawnedTargetActors.Add(TargetActor);
+					}
+					TargetActor->ConfirmTargeting();
+				}
+			}
+			else
+			{
+				InASC->SpawnedTargetActors.Add(TargetActor);
+			}
+		}
+	}
+}
+void UASSAbilitySystemBlueprintLibrary::TargetCancelByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility)
+{
+	// Callbacks may modify the spawned target actor array so iterate over a copy instead
+	TArray<AGameplayAbilityTargetActor*> LocalTargetActors = InASC->SpawnedTargetActors;
+	InASC->SpawnedTargetActors.Reset();
+	for (AGameplayAbilityTargetActor* TargetActor : LocalTargetActors)
+	{
+		if (TargetActor)
+		{
+			if (TargetActor->OwningAbility == InAbility) // =@MODIFIED MARKER@= wrapped in this if statement
+			{
+				TargetActor->CancelTargeting();
+			}
+			else // =@MODIFIED MARKER@= add this else statement
+			{
+				InASC->SpawnedTargetActors.Add(TargetActor);
+			}
 		}
 	}
 }

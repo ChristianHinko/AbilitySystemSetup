@@ -3,13 +3,11 @@
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 
-#include "AbilitySystem/ASSGameplayAbility.h"
-#include "Abilities/GameplayAbilityTargetActor.h"
-
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "DS_AbilitySystemSetup.h"
 #include "GameFramework\InputSettings.h"
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "AbilitySystem/ASSGameplayAbility.h"
 
 
 
@@ -148,56 +146,6 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 
 
 	Super::OnGiveAbility(AbilitySpec);
-}
-
-void UASSAbilitySystemComponent::TargetConfirmByAbility(UGameplayAbility* AbilityToConfirmTargetOn)
-{
-	// Callbacks may modify the spawned target actor array so iterate over a copy instead
-	TArray<AGameplayAbilityTargetActor*> LocalTargetActors = SpawnedTargetActors;
-	SpawnedTargetActors.Reset();
-	for (AGameplayAbilityTargetActor* TargetActor : LocalTargetActors)
-	{
-		if (TargetActor)
-		{
-			if (TargetActor->IsConfirmTargetingAllowed())
-			{
-				if (TargetActor->OwningAbility == AbilityToConfirmTargetOn) // =@OVERRIDED CODE MARKER@= wrapped in this if statement
-				{
-					//TODO: There might not be any cases where this bool is false
-					if (!TargetActor->bDestroyOnConfirmation)
-					{
-						SpawnedTargetActors.Add(TargetActor);
-					}
-					TargetActor->ConfirmTargeting();
-				}
-			}
-			else
-			{
-				SpawnedTargetActors.Add(TargetActor);
-			}
-		}
-	}
-}
-
-void UASSAbilitySystemComponent::TargetCancelByAbility(UGameplayAbility* AbilityToCancelTargetOn)
-{
-	// Callbacks may modify the spawned target actor array so iterate over a copy instead
-	TArray<AGameplayAbilityTargetActor*> LocalTargetActors = SpawnedTargetActors;
-	SpawnedTargetActors.Reset();
-	for (AGameplayAbilityTargetActor* TargetActor : LocalTargetActors)
-	{
-		if (TargetActor)
-		{
-			if (TargetActor->OwningAbility == AbilityToCancelTargetOn) // =@OVERRIDED CODE MARKER@= wrapped in this if statement
-			{
-				TargetActor->CancelTargeting();
-			}
-			else // =@OVERRIDED CODE MARKER@= add this else statement
-			{
-				SpawnedTargetActors.Add(TargetActor);
-			}
-		}
-	}
 }
 
 #pragma region Input Binding

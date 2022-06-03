@@ -28,17 +28,6 @@ public:
 
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
-	/**
-	 * This code is taken from UAbilitySystemComponent::TargetConfirm() and modified to only confirm targeting on
-	 * the Target Actors associated with the given AbilityToConfirmTargetOn.
-	 */
-	virtual void TargetConfirmByAbility(UGameplayAbility* AbilityToConfirmTargetOn);
-	/**
-	 * This code is taken from UAbilitySystemComponent::TargetCancel() and modified to re-add the Target Actors that
-	 * are not associated with the given AbilityToCancelTargetOn.
-	 */
-	virtual void TargetCancelByAbility(UGameplayAbility* AbilityToCancelTargetOn);
-
 	// This override adds a check to see if we should confirm/cancel target actors associated with the InputID on keypress
 	virtual void BindAbilityActivationToInputComponent(UInputComponent* InputComponent, FGameplayAbilityInputBinds BindInfo) override;
 
