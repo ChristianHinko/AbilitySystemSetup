@@ -43,8 +43,4 @@ public:
 
 	/** An exposed EndAbility() that isn't a cancellation. Used for ability batching. */
 	virtual void ExternalEndAbility();
-
-
-	//virtual void OnCurrentAbilityPredictionKeyRejected(); // Not implemented or hooked up yet
-	virtual void OnActivationPredictionKeyRejected(); // Not implemented or hooked up yet
 };

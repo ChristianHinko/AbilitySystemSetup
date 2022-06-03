@@ -72,22 +72,6 @@ bool UASSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 
 void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	if (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted)
-	{
-		// Const cast is a red flag. 
-		FPredictionKey* Key = const_cast<FPredictionKey*>(&ActivationInfo.GetActivationPredictionKey());
-		Key->NewRejectedDelegate().BindUObject(this, &UASSGameplayAbility::OnActivationPredictionKeyRejected);
-
-		if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))	// If we are a client without a valid prediction key
-		{
-			UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability activated but the client has no valid prediction key"), ANSI_TO_TCHAR(__FUNCTION__));
-		}
-	}
-
-
-	
-
-
 	//BEGIN Copied from Super (for Blueprint support)
 	if (bHasBlueprintActivate)
 	{
@@ -135,19 +119,4 @@ void UASSGameplayAbility::ExternalEndAbility()
 	const bool bReplicateEndAbility = true;
 	const bool bWasCancelled = false;
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), bReplicateEndAbility, bWasCancelled);
-}
-
-//void UASSGameplayAbility::OnCurrentAbilityPredictionKeyRejected()
-//{
-//	/*UKismetSystemLibrary::PrintString(this, "Prediction Key rejected ", true, false, FLinearColor::Red);
-//
-//	if (PKey == CurrentActivationInfo.GetActivationPredictionKey())
-//	{
-//		OnActivationPredictionKeyRejected();
-//	}*/
-//}
-
-void UASSGameplayAbility::OnActivationPredictionKeyRejected()
-{
-
 }
