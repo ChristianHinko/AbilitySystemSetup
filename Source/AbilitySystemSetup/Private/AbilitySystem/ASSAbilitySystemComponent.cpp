@@ -3,9 +3,7 @@
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 
-#include "AbilitySystemGlobals.h"
 #include "AbilitySystem/ASSGameplayAbility.h"
-#include "GameplayCueManager.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -328,56 +326,6 @@ void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 	}
 }
 #pragma endregion
-
-void UASSAbilitySystemComponent::GetActiveAbilitiesWithTags(const FGameplayTagContainer& GameplayTagContainer, TArray<UGameplayAbility*>& ActiveAbilities)
-{
-	TArray<FGameplayAbilitySpec*> AbilitiesToActivate;
-	GetActivatableGameplayAbilitySpecsByAllMatchingTags(GameplayTagContainer, AbilitiesToActivate, false);
-
-	// Iterate the list of all ability specs
-	for (FGameplayAbilitySpec* Spec : AbilitiesToActivate)
-	{
-		// Iterate all instances on this ability spec
-		TArray<UGameplayAbility*> AbilityInstances = Spec->GetAbilityInstances();
-
-		for (UGameplayAbility* ActiveAbility : AbilityInstances)
-		{
-			ActiveAbilities.Add(Cast<UGameplayAbility>(ActiveAbility));
-		}
-	}
-}
-
-FGameplayAbilitySpecHandle UASSAbilitySystemComponent::FindAbilitySpecHandleFromClass(TSubclassOf<UGameplayAbility> AbilityClass, UObject* OptionalSourceObject)
-{
-	ABILITYLIST_SCOPE_LOCK();
-	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
-	{
-		TSubclassOf<UGameplayAbility> SpecAbilityClass = Spec.Ability->GetClass();
-		if (SpecAbilityClass == AbilityClass)
-		{
-			if (!OptionalSourceObject || (OptionalSourceObject && Spec.SourceObject == OptionalSourceObject))
-			{
-				return Spec.Handle;
-			}
-		}
-	}
-
-	return FGameplayAbilitySpecHandle();
-}
-
-void UASSAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
-{
-	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Executed, GameplayCueParameters);
-}
-void UASSAbilitySystemComponent::AddGameplayCueLocal(const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
-{
-	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::OnActive, GameplayCueParameters);
-}
-void UASSAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
-{
-	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);
-}
-
 
 
 void UASSAbilitySystemComponent::FullReset()

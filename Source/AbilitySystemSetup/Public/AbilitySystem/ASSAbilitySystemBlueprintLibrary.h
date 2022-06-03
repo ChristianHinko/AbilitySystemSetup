@@ -36,6 +36,19 @@ public:
 	template <typename T>
 	static T* GetAttributeSetCasted(const UAbilitySystemComponent* ASC);
 
+
+	// Gameplay cue helpers for running them locally
+	static void ExecuteGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters);
+	static void AddGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters);
+	static void RemoveGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters);
+
+	/** Returns a list of currently active ability instances that match the tags */
+	static void GetActiveAbilitiesWithTags(const UAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer, TArray<UGameplayAbility*>& ActiveAbilities);
+
+	/** Returns an ability spec handle from a class. If modifying call MarkAbilitySpecDirty */
+	static FGameplayAbilitySpecHandle FindAbilitySpecHandleFromClass(UAbilitySystemComponent* InASC, TSubclassOf<UGameplayAbility> AbilityClass, UObject* OptionalSourceObject = nullptr);
+
+
 	static void GiveAbilities(UAbilitySystemComponent* ASCToAddTo, const TArray<FGameplayAbilitySpec>& Abilities);
 
 
