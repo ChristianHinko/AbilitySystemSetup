@@ -8,7 +8,7 @@
 UASSGameplayAbility::UASSGameplayAbility()
 {
 	AbilityInputID = 0; // Unset
-	bActivateOnGiveAbility = false;
+	bPassiveAbility = false;
 
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
@@ -47,16 +47,10 @@ void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorIn
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	if (bActivateOnGiveAbility)
+	// Passive abilities should auto activate when given
+	if (bPassiveAbility)
 	{
-		if (ActorInfo)
-		{
-			UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-			if (IsValid(ASC))
-			{
-				ASC->TryActivateAbility(Spec.Handle);
-			}
-		}
+		TryActivatePassiveAbility(ActorInfo, Spec);
 	}
 }
 
@@ -119,4 +113,35 @@ void UASSGameplayAbility::ExternalEndAbility()
 	const bool bReplicateEndAbility = true;
 	const bool bWasCancelled = false;
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), bReplicateEndAbility, bWasCancelled);
+}
+
+void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
+{
+	if (!bPassiveAbility)
+	{
+		check(0); // passive ability function was called but this ability isn't passive
+		return;
+	}
+
+	const bool bIsPredicting = (Spec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+	if (ActorInfo && !Spec.IsActive() && !bIsPredicting)
+	{
+		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+		const AActor* AvatarActor = ActorInfo->AvatarActor.Get();
+
+		// If avatar actor is torn off or about to die, don't try to activate it.
+		if (ASC && AvatarActor && !AvatarActor->GetTearOff() && (AvatarActor->GetLifeSpan() <= 0.0f))
+		{
+			const bool bIsLocalExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
+			const bool bIsServerExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
+
+			const bool bClientShouldActivate = ActorInfo->IsLocallyControlled() && bIsLocalExecution;
+			const bool bServerShouldActivate = ActorInfo->IsNetAuthority() && bIsServerExecution;
+
+			if (bClientShouldActivate || bServerShouldActivate)
+			{
+				ASC->TryActivateAbility(Spec.Handle);
+			}
+		}
+	}
 }

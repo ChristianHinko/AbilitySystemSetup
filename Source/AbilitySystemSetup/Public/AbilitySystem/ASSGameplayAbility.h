@@ -26,7 +26,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 		uint8 AbilityInputID;
 
-	uint8 bActivateOnGiveAbility : 1;
+	uint8 bPassiveAbility : 1;
 
 
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override final;
@@ -43,4 +43,8 @@ public:
 
 	/** An exposed EndAbility() that isn't a cancellation. Used for ability batching. */
 	virtual void ExternalEndAbility();
+
+private:
+	//Called to try to active the passive ability
+	void TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 };
