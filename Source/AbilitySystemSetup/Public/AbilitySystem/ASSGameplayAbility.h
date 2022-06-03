@@ -44,13 +44,13 @@ public:
 
 };
 
-/** stupid */ // Also this doesn't work on InstancedPerExecution abilities
-#define TryCallOnAvatarSetOnPrimaryInstance																						\
-if (HasAnyFlags(RF_ClassDefaultObject) && InstancingPolicy != EGameplayAbilityInstancingPolicy::NonInstanced)					\
-{																																\
-	if (UGameplayAbility* PrimaryInstance = Spec.GetPrimaryInstance())															\
-	{																															\
-		PrimaryInstance->OnAvatarSet(ActorInfo, Spec);																			\
-		return;																													\
-	}																															\
-}																																
+/** Annoying fix for the engine calling OnAvatarSet() on the CDO */
+#define TryCallOnAvatarSetOnPrimaryInstance \
+if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && HasAnyFlags(RF_ClassDefaultObject)) \
+{ \
+	for (UGameplayAbility* Ability : Spec.GetAbilityInstances()) \
+	{ \
+		Ability->OnAvatarSet(ActorInfo, Spec); \
+	} \
+	return; \
+}
