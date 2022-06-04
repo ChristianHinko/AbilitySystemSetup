@@ -26,6 +26,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 		uint8 AbilityInputID;
 
+	/** Passive abilities are auto activated on given */
 	uint8 bPassiveAbility : 1;
 
 
