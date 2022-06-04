@@ -3,7 +3,7 @@ Provides a reusable base Ability System that extends Epic\'s Gameplay Ability Sy
 
 Collaborators: ChristianHinko, brian2524
 
-Current engine version: 4.27.2
+Current engine version: 5.0.2
 
 ## Setup
 ![Plugin Project Settings](/Images/Readme/PluginProjectSettings.png)
