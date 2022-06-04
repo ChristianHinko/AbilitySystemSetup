@@ -16,8 +16,6 @@
  */
 class FAbilitySystemSetupModule : public IModuleInterface
 {
-	typedef IModuleInterface Super;
-
 public:
 	virtual bool IsGameModule() const override
 	{

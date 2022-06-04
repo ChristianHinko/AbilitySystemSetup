@@ -9,18 +9,12 @@
 
 void FAbilitySystemSetupModule::StartupModule()
 {
-	Super::StartupModule();
 
-
-	UE_LOG(LogAbilitySystemSetupModule, Verbose, TEXT("%s module start up!"), *FString(ABILITYSYSTEMSETUP_MODULE_NAME))
 }
 
 void FAbilitySystemSetupModule::ShutdownModule()
 {
-	Super::ShutdownModule();
 
-
-	UE_LOG(LogAbilitySystemSetupModule, Verbose, TEXT("%s module shutting down."), *FString(ABILITYSYSTEMSETUP_MODULE_NAME))
 }
 
 #undef LOCTEXT_NAMESPACE
