@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Subobjects/AC_AbilitySystemSetup.h"
+#include "Subobjects/ASSActorComponent_AbilitySystemSetup.h"
 
 #include "Net/UnrealNetwork.h"
 #include "AbilitySystemInterface.h"
@@ -9,7 +9,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/InputComponent.h"
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
-#include "DS_AbilitySystemSetup.h"
+#include "ASSDeveloperSettings_AbilitySystemSetup.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
 
@@ -17,14 +17,14 @@
 
 
 
-UAC_AbilitySystemSetup::UAC_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer)
+UASSActorComponent_AbilitySystemSetup::UASSActorComponent_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
 	bAbilitySystemInputBinded = false;
 }
-void UAC_AbilitySystemSetup::OnRegister()
+void UASSActorComponent_AbilitySystemSetup::OnRegister()
 {
 	Super::OnRegister();
 
@@ -34,14 +34,14 @@ void UAC_AbilitySystemSetup::OnRegister()
 	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
 	if (AbilitySystemSetupComponents.Num() > 1)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("No more than one UAC_AbilitySystemSetup is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("No more than one UASSActorComponent_AbilitySystemSetup is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
 		check(0);
 	}
 #endif
 }
 
 
-void UAC_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC)
+void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC)
 {
 	if (!IsValid(ASC))
 	{
@@ -63,11 +63,11 @@ void UAC_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComp
 	AActor* CurrentAvatar = ASC->GetAvatarActor();	// the passed in ASC's old avatar
 	AActor* NewAvatarToUse = GetOwner();			// new avatar for the passed in ASC
 	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC: [%s] on actor: [%s] with owner: [%s] and Avatar Actor: [%s]"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(ASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
-	
+
 	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client)
 	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
 	{
-		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous AC_AbilitySystemSetup (the setup component of the old avatar actor)
+		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous ASSActorComponent_AbilitySystemSetup (the setup component of the old avatar actor)
 		{
 			if (PreviousAbilitySystemSetupComponent->AbilitySystemComponent == ASC)
 			{
@@ -78,15 +78,15 @@ void UAC_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComp
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	AbilitySystemComponent = ASC;
 	AbilitySystemComponent->InitAbilityActorInfo(ASC->GetOwnerActor(), NewAvatarToUse);
 
 	const APawn* OwningPawn = Cast<APawn>(GetOwner());
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
-	{ 
+	{
 		// Bind Player input to the AbilitySystemComponent.
 		// Called from both SetupPlayerInputComponent() and SetUpAbilitySystemComponent() because of a potential race condition where the Player Controller might
 		// call ClientRestart() which calls SetupPlayerInputComponent() before the Player State is repped to the client so the Player State would be null in SetupPlayerInputComponent().
@@ -99,11 +99,11 @@ void UAC_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComp
 	{
 		if (!bGrantedAbilitySets)
 		{
-			for (TSubclassOf<UAbilitySet> AbilitySet : AbilitySets)
+			for (TSubclassOf<UASSAbilitySet> AbilitySet : AbilitySets)
 			{
 				if (IsValid(AbilitySet))
 				{
-					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(ASC, GetOwner(), GrantHandles.AddDefaulted_GetRef());
+					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(ASC, GetOwner(), GrantedHandles.AddDefaulted_GetRef());
 				}
 			}
 			bGrantedAbilitySets = true;
@@ -112,7 +112,7 @@ void UAC_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComp
 
 	OnInitializeAbilitySystemComponentDelegate.Broadcast(AbilitySystemComponent.Get());
 }
-void UAC_AbilitySystemSetup::UninitializeAbilitySystemComponent()
+void UASSActorComponent_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -126,7 +126,7 @@ void UAC_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 			// Remove granted AbilitySets
 			if (GetOwnerRole() == ROLE_Authority)
 			{
-				for (FAbilitySetGrantedHandles GrantHandle : GrantHandles)
+				for (FASSAbilitySetGrantedHandles GrantHandle : GrantedHandles)
 				{
 					GrantHandle.RemoveFromAbilitySystemComponent();
 				}
@@ -157,7 +157,7 @@ void UAC_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 	AbilitySystemComponent = nullptr;
 }
 
-void UAC_AbilitySystemSetup::HandleControllerChanged()
+void UASSActorComponent_AbilitySystemSetup::HandleControllerChanged()
 {
 	if (AbilitySystemComponent.IsValid() == false)
 	{
@@ -175,12 +175,12 @@ void UAC_AbilitySystemSetup::HandleControllerChanged()
 	AbilitySystemComponent->RefreshAbilityActorInfo();		// update our ActorInfo's PlayerController
 }
 
-void UAC_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Called in SetupPlayerInputComponent() because of a potential race condition.
 	BindAbilitySystemInput(PlayerInputComponent);
 }
-void UAC_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InputComponent)
+void UASSActorComponent_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InputComponent)
 {
 	if (!IsValid(InputComponent))
 	{
@@ -195,10 +195,10 @@ void UAC_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InputCompon
 
 	if (!bAbilitySystemInputBinded)
 	{
-		const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UDS_AbilitySystemSetup>();
+		const UASSDeveloperSettings_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UASSDeveloperSettings_AbilitySystemSetup>();
 		if (!IsValid(AbilitySystemSetupDeveloperSettings))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() No valid pointer to UDS_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() No valid pointer to UASSDeveloperSettings_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 			check(0);
 		}
 
@@ -215,7 +215,7 @@ void UAC_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InputCompon
 
 }
 
-void UAC_AbilitySystemSetup::RemoveLooseAvatarRelatedTags()
+void UASSActorComponent_AbilitySystemSetup::RemoveLooseAvatarRelatedTags()
 {
 	if (AbilitySystemComponent.IsValid())
 	{

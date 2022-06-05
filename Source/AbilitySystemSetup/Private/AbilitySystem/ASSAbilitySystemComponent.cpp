@@ -4,7 +4,7 @@
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-#include "DS_AbilitySystemSetup.h"
+#include "ASSDeveloperSettings_AbilitySystemSetup.h"
 #include "GameFramework\InputSettings.h"
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "AbilitySystem/ASSGameplayAbility.h"
@@ -29,7 +29,7 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST) // editor only section to enforce good workflow
-	const UDS_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UDS_AbilitySystemSetup>();
+	const UASSDeveloperSettings_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UASSDeveloperSettings_AbilitySystemSetup>();
 	const UInputSettings* InputSettings = UInputSettings::GetInputSettings();
 
 

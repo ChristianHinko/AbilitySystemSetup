@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "AbilitySystem/Types/AbilitySet.h"
+#include "AbilitySystem/Types/ASSAbilitySet.h"
 
-#include "AC_AbilitySystemSetup.generated.h"
+#include "ASSActorComponent_AbilitySystemSetup.generated.h"
 
 
 class UAbilitySystemComponent;
@@ -17,11 +17,11 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
 
 
 /**
- * Provides common GAS initialization/uninitialization logic with AbilitySets granted while initialized.
+ * Provides common GAS initialization/uninitialization logic with Ability Sets granted while initialized.
  * This component is to be used by avatar actors only.
  * 
- * For initialization, it sets us up as the AvatarActor for the ASC and grants AbilitySets (allowing you to choose 
- * starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it ungrants the granted AbilitySets, 
+ * For initialization, it sets us up as the AvatarActor for the ASC and grants Ability Sets (allowing you to choose 
+ * starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it ungrants the granted Ability Sets, 
  * gives external sources an opportunity to remove Loose Gameplay Tags (this is the only manual cleanup),
  * and disassociates us from the ASC.
  * 
@@ -67,17 +67,17 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  *				- Call UninitializeAbilitySystemComponent() before the Super call
  */
 UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
-class ABILITYSYSTEMSETUP_API UAC_AbilitySystemSetup : public UActorComponent
+class ABILITYSYSTEMSETUP_API UASSActorComponent_AbilitySystemSetup : public UActorComponent
 {
 	GENERATED_BODY()
-	
+
 public:
-	UAC_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer);
+	UASSActorComponent_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer);
 
 
 	// Ability sets to grant to this pawn's ability system.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySets")
-		TArray<TSubclassOf<UAbilitySet>> AbilitySets;
+		TArray<TSubclassOf<UASSAbilitySet>> AbilitySets;
 
 
 	// ----- Functions provided for owner -----
@@ -109,10 +109,10 @@ private:
 	void RemoveLooseAvatarRelatedTags();
 
 
-	
+
 	// ----- Internal members -----
 	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
-	TArray<FAbilitySetGrantedHandles> GrantHandles;
+	TArray<FASSAbilitySetGrantedHandles> GrantedHandles;
 	/** Indicates that the list of AbilitySets has been granted */
 	uint8 bGrantedAbilitySets : 1;
 	/** Indicates that input has already been binded with the Ability System */

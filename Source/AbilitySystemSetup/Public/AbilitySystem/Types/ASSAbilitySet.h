@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
 
-#include "AbilitySet.generated.h"
+#include "ASSAbilitySet.generated.h"
 
 
 class UGameplayAbility;
@@ -17,15 +17,15 @@ struct FActiveGameplayEffectHandle;
 
 
 /**
- * Stores granted handles from a specific AbilitySet
+ * Stores granted handles from a specific Ability Set
  * Used often for cleanup of an AbilitySystemComponent (e.g. Character death)
  */
 USTRUCT()
-struct ABILITYSYSTEMSETUP_API FAbilitySetGrantedHandles
+struct ABILITYSYSTEMSETUP_API FASSAbilitySetGrantedHandles
 {
 	GENERATED_BODY()
 
-	friend class UAbilitySet;
+	friend class UASSAbilitySet;
 public:
 	/** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
 	void RemoveFromAbilitySystemComponent();
@@ -48,23 +48,23 @@ protected:
  * Non-mutable "ability set" for granting Gameplay Abilities, Gameplay Effects, and Attribute Sets.
  */
 UCLASS(Blueprintable, Const)
-class ABILITYSYSTEMSETUP_API UAbilitySet : public UObject
+class ABILITYSYSTEMSETUP_API UASSAbilitySet : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	/** Grants the AbilitySet while outputing handles that can be used later for removal */
-	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySetGrantedHandles& OutGrantedHandles) const;
+	/** Grants the Ability Set while outputing handles that can be used later for removal */
+	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const;
 
 protected:
 	/** Abilities to give on grant NOTE: These Abilities are given a level of 1 */
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
 		TArray<const TSubclassOf<UGameplayAbility>> GrantedAbilities;
-	
+
 	/** Effects to apply on grant (e.g. GE_InitCharacter, GE_HealthRegen) NOTE: These Effects are assigned a level of 1 */
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 		TArray<const TSubclassOf<UGameplayEffect>> GrantedEffects;
-	
+
 	/** Attribute Sets to create and add on grant */
 	UPROPERTY(EditDefaultsOnly, Category = "AttributeSets")
 		TArray<const TSubclassOf<UAttributeSet>> GrantedAttributeSets;

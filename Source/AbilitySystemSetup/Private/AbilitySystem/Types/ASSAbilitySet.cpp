@@ -1,17 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/Types/AbilitySet.h"
+#include "AbilitySystem/Types/ASSAbilitySet.h"
 
 #include "AbilitySystemComponent.h"
 
 
 
 ///////////////////////////////////////
-/// FAbilitySetGrantedHandles
+/// FASSAbilitySetGrantedHandles
 ///////////////////////////////////////
 
-void FAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
+void FASSAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -66,10 +66,10 @@ void FAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 
 
 ///////////////////////////////////////
-/// UAbilitySet
+/// UASSAbilitySet
 ///////////////////////////////////////
 
-void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FAbilitySetGrantedHandles& OutGrantedHandles) const
+void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const
 {
 	if (!IsValid(ASC))
 	{
@@ -82,7 +82,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 		return;
 	}
 
-	
+
 	// Inject the ASC
 	OutGrantedHandles.AbilitySystemComponent = ASC;
 
@@ -92,7 +92,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 	{
 		if (!IsValid(AttributeSetClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on AbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
 			continue;
 		}
 
@@ -113,7 +113,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 	{
 		if (!IsValid(EffectClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on AbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
 			continue;
 		}
 
@@ -132,7 +132,7 @@ void UAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UO
 	{
 		if (!IsValid(AbilityClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on AbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
+			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
 			continue;
 		}
 

@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DS_AbilitySystemSetup.h"
+#include "ASSDeveloperSettings_AbilitySystemSetup.h"
 
 
 
-UDS_AbilitySystemSetup::UDS_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer)
+UASSDeveloperSettings_AbilitySystemSetup::UASSDeveloperSettings_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	AbilityInputIDEnumName = TEXT("EAbilityInputID");
