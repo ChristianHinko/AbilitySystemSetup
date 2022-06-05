@@ -36,7 +36,7 @@ protected:
 	UPROPERTY()
 		TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
 	UPROPERTY()
-		TArray<UAttributeSet*> GrantedAttributeSets;
+		TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 
 
 	UPROPERTY()
