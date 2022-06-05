@@ -30,7 +30,7 @@ void UASSAbilityTask_WaitTargetData::Activate()
 			RegisterTargetDataCallbacks();
 
 
-			if (IsPendingKill())
+			if (!IsValid(this))
 			{
 				return;
 			}
