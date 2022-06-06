@@ -3,8 +3,8 @@
 
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
-#include "BlueprintFunctionLibraries/BFL_HitResultHelpers.h"
-#include "BlueprintFunctionLibraries/BFL_MathHelpers.h"
+#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_HitResultHelpers.h"
+#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_MathHelpers.h"
 
 
 
@@ -115,7 +115,7 @@ bool AASSGameplayAbilityTargetActor::WouldHitResultGetFiltered(const TArray<FHit
 
 			if (HitToTryFilter.GetActor() == Hit.GetActor()) // if we already hit this actor
 			{
-				if (UBFL_HitResultHelpers::AreHitsFromSameTrace(HitToTryFilter, Hit)) // only remove if they were in the same trace (if they were from separate traces, they aren't considered a duplicate hit)
+				if (UHLBlueprintFunctionLibrary_HitResultHelpers::AreHitsFromSameTrace(HitToTryFilter, Hit)) // only remove if they were in the same trace (if they were from separate traces, they aren't considered a duplicate hit)
 				{
 					return true;
 					break;
@@ -136,7 +136,7 @@ FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation() const
 
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(SourceActor);
-	return UBFL_MathHelpers::GetLocationAimDirection(GetWorld(), CollisionQueryParams, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
+	return UHLBlueprintFunctionLibrary_MathHelpers::GetLocationAimDirection(GetWorld(), CollisionQueryParams, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
 }
 
 void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const
