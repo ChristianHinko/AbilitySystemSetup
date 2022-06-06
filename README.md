@@ -26,4 +26,4 @@ The plugin will ensure that entered values are correct and notify you if they ar
 	- Class blacklist array
 	- Option to only allow classes implementing `IAbilitySystemInterface`
 - **Base classes for common types** - Provides quality of life features and extra functionality
-
+- **Corrects `OnAvatarSet()` Engine bug** - The event doesn\'t properly get called on instanced abilities when only switching the AvatarActor. Resolved by marking the event as final and forwards working calls to `OnAvatarSetThatWorks()`.
