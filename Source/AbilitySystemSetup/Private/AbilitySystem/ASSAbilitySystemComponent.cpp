@@ -135,7 +135,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 		//}
 		//else
 		//{
-		//	// We are EAbilityInputID::NoInput
+		//	// We are EASSAbilityInputID::NoInput
 		//	AbilitySpec.InputID = INDEX_NONE;
 		//}
 	}

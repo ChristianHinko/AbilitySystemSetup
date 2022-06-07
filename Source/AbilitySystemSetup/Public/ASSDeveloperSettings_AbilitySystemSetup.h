@@ -21,12 +21,10 @@ class ABILITYSYSTEMSETUP_API UASSDeveloperSettings_AbilitySystemSetup : public U
 public:
 	UASSDeveloperSettings_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer);
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", config, meta = (DisplayName = "AbilityInputID Enum Name"))
 		FString AbilityInputIDEnumName;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", config, meta = (DisplayName = "ConfirmTarget Input Action Name"))
 		FString ConfirmTargetInputActionName;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", config, meta = (DisplayName = "CancelTarget Input Action Name"))
 		FString CancelTargetInputActionName;
-
 };

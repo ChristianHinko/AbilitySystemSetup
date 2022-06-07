@@ -165,10 +165,10 @@ FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeASSFilter
 	FilterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(NewFilter);
 	return FilterHandle;
 }
-FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(const FGTDF_MultiFilter& MultiFilter, AActor* SelfActor)
+FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& MultiFilter, AActor* SelfActor)
 {
 	FGameplayTargetDataFilterHandle FilterHandle;
-	FGTDF_MultiFilter* NewFilter = new FGTDF_MultiFilter(MultiFilter);
+	FASSGameplayTargetDataFilter_MultiFilter* NewFilter = new FASSGameplayTargetDataFilter_MultiFilter(MultiFilter);
 	NewFilter->InitializeFilterContext(SelfActor);
 	FilterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(NewFilter);
 	return FilterHandle;

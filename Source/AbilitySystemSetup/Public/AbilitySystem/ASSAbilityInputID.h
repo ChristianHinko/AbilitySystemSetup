@@ -19,7 +19,7 @@
  * Do not forget to update your enum whenever you modify the inputs in your DefaultInput.ini. They must match exactly.
  */
 UENUM()
-enum EAbilityInputID // NOTE: i would want to use an enum class here but there is no implicit conversion with them. And our base ASSGameplayAbility has to store AbilityInputID as an integer so explicitly casting would be a pain.
+enum EASSAbilityInputID // NOTE: i would want to use an enum class here but there is no implicit conversion with them. And our base ASSGameplayAbility has to store AbilityInputID as an integer so explicitly casting would be a pain.
 {
 	/** This means the Ability implementor forgot to set an AbilityInputID in their Ability's constructor (``Unset`` is every Ability's default value) */
 	Unset,

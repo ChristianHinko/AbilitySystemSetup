@@ -72,7 +72,7 @@ public:
 	 * Create a handle for filtering target data, filling out all fields
 	 */
 	UFUNCTION(BlueprintPure, Category = "Filter")
-		static FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FGTDF_MultiFilter& MultiFilter, AActor* SelfActor);
+		static FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& MultiFilter, AActor* SelfActor);
 
 };
 

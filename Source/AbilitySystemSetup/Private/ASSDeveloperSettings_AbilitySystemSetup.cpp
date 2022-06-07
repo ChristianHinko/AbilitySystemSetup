@@ -7,8 +7,8 @@
 
 UASSDeveloperSettings_AbilitySystemSetup::UASSDeveloperSettings_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, AbilityInputIDEnumName(FName(NAME_None).ToString())
+	, ConfirmTargetInputActionName(TEXT("ConfirmTarget"))
+	, CancelTargetInputActionName(TEXT("CancelTarget"))
 {
-	AbilityInputIDEnumName = TEXT("EAbilityInputID");
-	ConfirmTargetInputActionName = TEXT("ConfirmTarget");
-	CancelTargetInputActionName = TEXT("CancelTarget");
 }
