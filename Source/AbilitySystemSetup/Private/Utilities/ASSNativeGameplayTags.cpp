@@ -5,7 +5,7 @@
 
 
 
-namespace NativeGameplayTags
+namespace ASSNativeGameplayTags
 {
 #if 0
 	// Ability Tags
