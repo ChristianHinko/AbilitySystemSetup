@@ -3,7 +3,6 @@
 
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
-#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_HitResultHelpers.h"
 #include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_MathHelpers.h"
 
 
@@ -19,8 +18,6 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 	ShouldProduceTargetDataOnServer = false;
 
 	ReticleClass = AASSGameplayAbilityWorldReticle::StaticClass();
-
-	bAllowMultipleHitsPerActor = false;
 
 	MaxRange = 100000.f;
 	TraceChannel = ECollisionChannel::ECC_Visibility;
@@ -65,67 +62,6 @@ void AASSGameplayAbilityTargetActor::DisableTargetActor()
 {
 	SetActorTickEnabled(false); // disable tick while we aren't being used
 	DestroyReticleActors(); // we should have a Reticle pooling system for this in the future
-}
-
-void AASSGameplayAbilityTargetActor::FilterHitResults(TArray<FHitResult>& OutHitResults, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
-{
-	for (int32 i = 0; i < OutHitResults.Num(); ++i)
-	{
-		if (FilterHitResult(OutHitResults, i, FilterHandle, inAllowMultipleHitsPerActor))
-		{
-			// This index was filtered
-		}
-	}
-}
-bool AASSGameplayAbilityTargetActor::FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
-{
-	if (WouldHitResultGetFiltered(OutHitResults, IndexToTryToFilter, FilterHandle, inAllowMultipleHitsPerActor))
-	{
-		OutHitResults.RemoveAt(IndexToTryToFilter);
-		return true;
-	}
-
-	// This index was not filtered
-	return false;
-}
-bool AASSGameplayAbilityTargetActor::WouldHitResultGetFiltered(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const
-{
-	const FHitResult& HitToTryFilter = InHitResults[IndexToTryToFilter];
-
-
-	if (FilterHandle.Filter.IsValid()) // if valid filter
-	{
-		const bool bPassesFilter = FilterHandle.FilterPassesForActor(HitToTryFilter.GetActor());
-		if (!bPassesFilter)
-		{
-			return true;
-		}
-	}
-
-	if (!inAllowMultipleHitsPerActor) // if we should remove multiple hits
-	{
-		// Loop through each Hit Result and check if the hits infront of it (the Hit Results less than the indexToTryFilter) already have its Actor.
-		// If so, remove the indexToTryFilter Hit Result because it has the Actor that was already hit and is considered a duplicate hit.
-
-
-		// Check if any Hit Results before this hit contains a Hit Result with this Actor already
-		for (int32 i = 0; i < IndexToTryToFilter; ++i)
-		{
-			const FHitResult& Hit = InHitResults[i];
-
-			if (HitToTryFilter.GetActor() == Hit.GetActor()) // if we already hit this actor
-			{
-				if (UHLBlueprintFunctionLibrary_HitResultHelpers::AreHitsFromSameTrace(HitToTryFilter, Hit)) // only remove if they were in the same trace (if they were from separate traces, they aren't considered a duplicate hit)
-				{
-					return true;
-					break;
-				}
-			}
-		}
-	}
-
-	// This index was not filtered
-	return false;
 }
 
 FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation() const

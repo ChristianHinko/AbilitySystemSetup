@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityWorldReticle.h"
 
 #include "ASSGameplayAbilityTargetActor.generated.h"
@@ -33,29 +32,6 @@ public:
 	/** Our custom World Reticle Parameters */
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true), Category = "Targeting")
 		FASSWorldReticleParameters ASSReticleParams;
-
-	/**
-	 * If true, when a trace overlaps an Actor's multiple collisions, those multiple collision hits can add
-	 * that Actor to the Hit Results multiple times.
-	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Target Data")
-		bool bAllowMultipleHitsPerActor;
-
-
-	/**
-	 * Filter out hit results that do not pass filter and removes multiple hits per actor if needed
-	 */
-	void FilterHitResults(TArray<FHitResult>& OutHitResults, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
-	/**
-	 * Filters out one hit result out of a given array. Is meant to be use in FHitResult loops.
-	 * Returns true if hit was filtered.
-	 */
-	bool FilterHitResult(TArray<FHitResult>& OutHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
-	/**
-	 * Returns true if hit does not pass the filter.
-	 * Does NOT remove the hit from the given HitResults.
-	 */	
-	bool WouldHitResultGetFiltered(const TArray<FHitResult>& InHitResults, const int32 IndexToTryToFilter, const FGameplayTargetDataFilterHandle& FilterHandle, const bool inAllowMultipleHitsPerActor) const;
 
 
 	/**
