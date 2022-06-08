@@ -61,7 +61,7 @@ void AASSGameplayAbilityTargetActor::ConfirmTargetingAndContinue()
 void AASSGameplayAbilityTargetActor::DisableTargetActor()
 {
 	SetActorTickEnabled(false); // disable tick while we aren't being used
-	DestroyReticleActors(); // we should have a Reticle pooling system for this in the future
+	DestroyWorldReticles(); // we should have a Reticle pooling system for this in the future
 }
 
 FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation() const
@@ -106,7 +106,7 @@ AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnReticleAct
 	{
 		SpawnedReticleActor->ASSInitializeReticle(this, MasterPC, ASSReticleParams);
 		SpawnedReticleActor->SetActorHiddenInGame(true);
-		ReticleActors.Add(SpawnedReticleActor);
+		SpawnedWorldReticles.Add(SpawnedReticleActor);
 
 		// This is to catch cases of playing on a listen server where we are using a replicated reticle actor.
 		// (In a client controlled player, this would only run on the client and therefor never replicate. If it runs
@@ -117,29 +117,28 @@ AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnReticleAct
 		{
 			SpawnedReticleActor->SetReplicates(false);
 		}
-
 	}
 
 	return SpawnedReticleActor;
 }
 
-void AASSGameplayAbilityTargetActor::DestroyReticleActors()
+void AASSGameplayAbilityTargetActor::DestroyWorldReticles()
 {
-	for (int32 i = ReticleActors.Num() - 1; i >= 0; --i)
+	for (int32 i = SpawnedWorldReticles.Num() - 1; i >= 0; --i)
 	{
-		if (ReticleActors[i].IsValid())
+		if (IsValid(SpawnedWorldReticles[i]))
 		{
-			ReticleActors[i]->Destroy(); // we should have a reticle pooling system instead of creating and destroying these all of the time
+			SpawnedWorldReticles[i]->Destroy(); // we should have a reticle pooling system instead of creating and destroying these all of the time
 		}
 	}
 
-	ReticleActors.Empty();
+	SpawnedWorldReticles.Empty();
 }
 
 
 void AASSGameplayAbilityTargetActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	DestroyReticleActors();
+	DestroyWorldReticles();
 
 
 	Super::EndPlay(EndPlayReason);

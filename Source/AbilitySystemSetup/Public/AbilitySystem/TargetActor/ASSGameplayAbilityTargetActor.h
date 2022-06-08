@@ -70,10 +70,11 @@ protected:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
-	/** List of custom Reticle actors */
-	TArray<TWeakObjectPtr<AASSGameplayAbilityWorldReticle>> ReticleActors;
+	/** List of spawned World Reticle actors */
+	UPROPERTY()
+		TArray<TObjectPtr<AGameplayAbilityWorldReticle>> SpawnedWorldReticles;
 
 	AASSGameplayAbilityWorldReticle* SpawnReticleActor(const FVector& Location, const FRotator& Rotation);
-	virtual void DestroyReticleActors();
+	virtual void DestroyWorldReticles();
 
 };
