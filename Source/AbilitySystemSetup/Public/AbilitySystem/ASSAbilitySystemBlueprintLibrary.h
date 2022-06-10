@@ -17,23 +17,23 @@ UCLASS()
 class ABILITYSYSTEMSETUP_API UASSAbilitySystemBlueprintLibrary : public UAbilitySystemBlueprintLibrary
 {
 	GENERATED_BODY()
-	
+
 public:
 	/**
-	 * Get an Attribute Set by class off of the given ASC
+	 * Get an Attribute Set by class off of the given ASC.
 	 */
-	UFUNCTION(Category = "AttributeSet")
+	UFUNCTION(BlueprintPure, Category = "AttributeSet")
 		static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* InASC, const TSubclassOf<UAttributeSet> InAttributeSetClass);
 	/**
-	 * Get an Attribute Set by class off of the given ASC
+	 * Templated version of GetAttributeSet().
 	 */
-	template <typename T>
+	template <class T>
 	static UAttributeSet* GetAttributeSet(const UAbilitySystemComponent* InASC);
 	/**
-	 * Get an Attribute Set by class off of the given ASC.
+	 * Templated version of GetAttributeSet().
 	 * Returns the desired Attribute Set in its type.
 	 */
-	template <typename T>
+	template <class T>
 	static T* GetAttributeSetCasted(const UAbilitySystemComponent* InASC);
 
 
@@ -63,6 +63,7 @@ public:
 	 */
 	virtual void TargetCancelByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility);
 
+
 	/**
 	 * Create a handle for filtering target data, filling out all fields
 	 */
@@ -77,12 +78,12 @@ public:
 };
 
 
-template <typename T>
+template <class T>
 UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* InASC)
 {
 	return GetAttributeSet(InASC, T::StaticClass());
 }
-template <typename T>
+template <class T>
 T* UASSAbilitySystemBlueprintLibrary::GetAttributeSetCasted(const UAbilitySystemComponent* InASC)
 {
 	return Cast<T>(GetAttributeSet<T>(InASC));
