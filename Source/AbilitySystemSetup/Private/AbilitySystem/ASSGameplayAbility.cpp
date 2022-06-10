@@ -5,15 +5,16 @@
 
 
 
-UASSGameplayAbility::UASSGameplayAbility()
+UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	AbilityInputID = 0; // Unset
-	bPassiveAbility = false;
-
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	bServerRespectsRemoteAbilityCancellation = false;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnlyTermination;
+
+	AbilityInputID = 0; // Unset
+	bPassiveAbility = false;
 }
 
 
@@ -31,7 +32,7 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
 			UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(Ability);
 			if (IsValid(ASSAbility))
 			{
-				ASSAbility->OnAvatarSetThatWorks(ActorInfo, Spec);
+				ASSAbility->ASSOnAvatarSet(ActorInfo, Spec);
 			}
 		}
 		return;
@@ -40,9 +41,26 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
 	// Nothing went wrong. Call our version.
 	// If we are NonInstanced, then being the CDO is okay.
 	// If we are instanced, then the engine called us from UGameplayAbility::OnGiveAbility().
-	OnAvatarSetThatWorks(ActorInfo, Spec);
+	ASSOnAvatarSet(ActorInfo, Spec);
 	return;
 }
+void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	// Safe event for on avatar set
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	if (AbilityInputID == 0)
+	{
+		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
+	}
+	if (AbilityTags.IsEmpty())
+	{
+		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
+	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+}
+
 void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
@@ -90,20 +108,27 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	//END Copied from Super (for Blueprint support)
 }
 
-void UASSGameplayAbility::OnAvatarSetThatWorks(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UASSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	if (AbilityInputID == 0)
+	// Call our ASSEndAbility() at a safe point
+	if (IsEndAbilityValid(Handle, ActorInfo))
 	{
-		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
-		check(0);
+		if (ScopeLockCount > 0)
+		{
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
+			return;
+		}
+
+		// This is the safe point to do end ability event logic
+		ASSEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	}
-	if (AbilityTags.IsEmpty())
-	{
-		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
-		check(0);
-	}
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+
+	// End the ability
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+void UASSGameplayAbility::ASSEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	// Safe event for end ability
 }
 
 void UASSGameplayAbility::ExternalEndAbility()
