@@ -16,14 +16,14 @@ class AASSGameplayAbilityWorldReticle;
 /**
  * Base Target Actor class.
  * 
- * Can be disabled and re-enabled across mutliple Ability Task activations.
- * Has array of spawned Reticle Actors.
+ * Can be disabled and re-enabled across multiple Ability Task activations.
+ * Has array of spawned World Reticles.
  */
 UCLASS(Abstract, notplaceable)
 class ABILITYSYSTEMSETUP_API AASSGameplayAbilityTargetActor : public AGameplayAbilityTargetActor
 {
 	GENERATED_BODY()
-	
+
 public:
 	AASSGameplayAbilityTargetActor(const FObjectInitializer& ObjectInitializer);
 
@@ -33,6 +33,8 @@ public:
 		FASSWorldReticleParameters ASSReticleParams;
 
 
+	virtual void StartTargeting(UGameplayAbility* Ability) override;
+
 	/**
 	 * Called when we are done being used by the Ability Task.
 	 * Use StartTargeting() to re-enable. This is helpful for re-using Target Actors across multiple Ability Task activations.
@@ -40,27 +42,15 @@ public:
 	 */
 	virtual void DisableTargetActor();
 
-
-	/** Max range of this target actor (not required for all target actors) */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
-		float MaxRange;
-
-	/** Trace channel for this target actor (not required for all target actors) */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Trace")
-		TEnumAsByte<ECollisionChannel> TraceChannel;
-
 protected:
-	virtual void StartTargeting(UGameplayAbility* Ability) override;
-	virtual void ConfirmTargetingAndContinue() override;
-
-
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
+
+	AASSGameplayAbilityWorldReticle* SpawnWorldReticle(const FVector& Location, const FRotator& Rotation);
+
 	/** List of spawned World Reticle actors */
 	UPROPERTY()
 		TArray<TObjectPtr<AGameplayAbilityWorldReticle>> SpawnedWorldReticles;
 
-	AASSGameplayAbilityWorldReticle* SpawnReticleActor(const FVector& Location, const FRotator& Rotation);
 	virtual void DestroyWorldReticles();
-
 };

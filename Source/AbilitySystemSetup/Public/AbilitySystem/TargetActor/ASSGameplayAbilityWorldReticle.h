@@ -35,7 +35,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Category = "Reticle")
 		FASSWorldReticleParameters ASSParameters;
 
-	virtual void ASSInitializeReticle(AActor* InTargetingActor, APlayerController* PlayerController, FASSWorldReticleParameters InASSParameters);
+	virtual void ASSInitializeReticle(AActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters);
 
 protected:
 
