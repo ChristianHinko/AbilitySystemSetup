@@ -3,8 +3,6 @@
 
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
 
-#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_MathHelpers.h"
-
 
 
 AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInitializer& ObjectInitializer)
@@ -21,8 +19,6 @@ AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInit
 
 	MaxRange = 100000.f;
 	TraceChannel = ECollisionChannel::ECC_Visibility;
-
-	bUseAimPointAsStartLocation = true;
 }
 
 // This is when the Ability Task starts using us
@@ -32,22 +28,6 @@ void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability)
 
 	// Ensure we are re-enabled in case we were re-used
 	SetActorTickEnabled(true);
-
-
-	// TODO: This only updates on StartTargeting(). If you had a non-"EGameplayTargetingConfirmation::Instant" confirmation, this would result in the
-	// start location of where you began targeting. Add more configuration for this (maybe one that updates in StartTargeting(), one that updates on Tick(), and one
-	// that updates in ConfirmTargetingAndContinue())
-	if (bUseAimPointAsStartLocation)
-	{
-		StartLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
-
-		FVector AimStart;
-		FVector AimDir;
-		CalculateAimDirection(AimStart, AimDir);
-
-		StartLocation.LiteralTransform.SetLocation(AimStart);
-	}
-
 }
 // Where we perform our logic for collecting Target Data
 void AASSGameplayAbilityTargetActor::ConfirmTargetingAndContinue()
@@ -62,35 +42,6 @@ void AASSGameplayAbilityTargetActor::DisableTargetActor()
 {
 	SetActorTickEnabled(false); // disable tick while we aren't being used
 	DestroyWorldReticles(); // we should have a Reticle pooling system for this in the future
-}
-
-FVector AASSGameplayAbilityTargetActor::GetAimDirectionOfStartLocation() const
-{
-	FVector AimStart;
-	FVector AimDir;
-	CalculateAimDirection(AimStart, AimDir);
-
-	FCollisionQueryParams CollisionQueryParams;
-	CollisionQueryParams.AddIgnoredActor(SourceActor);
-	return UHLBlueprintFunctionLibrary_MathHelpers::GetLocationAimDirection(GetWorld(), CollisionQueryParams, AimStart, AimDir, MaxRange, StartLocation.GetTargetingTransform().GetLocation());
-}
-
-void AASSGameplayAbilityTargetActor::CalculateAimDirection(FVector& OutAimStart, FVector& OutAimDir) const
-{
-	if (!IsValid(OwningAbility)) // server and launching client only
-	{
-		return;
-	}
-
-	const APlayerController* PC = OwningAbility->GetCurrentActorInfo()->PlayerController.Get();
-	if (IsValid(PC))
-	{
-		FVector ViewStart;
-		FRotator ViewRot;
-		PC->GetPlayerViewPoint(ViewStart, ViewRot);
-		OutAimStart = ViewStart;
-		OutAimDir = ViewRot.Vector();
-	}
 }
 
 
