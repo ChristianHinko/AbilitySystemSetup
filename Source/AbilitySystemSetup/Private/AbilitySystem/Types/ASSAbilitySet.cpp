@@ -1,3 +1,4 @@
+
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
@@ -96,8 +97,7 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC,
 			continue;
 		}
 
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(SourceObject, AttributeSetClass);
-		NewAttributeSet->Rename(nullptr, SourceObject);
+		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(ASC->GetOwnerActor(), AttributeSetClass);
 		ASC->AddAttributeSetSubobject(NewAttributeSet);
 
 		OutGrantedHandles.GrantedAttributeSets.Add(NewAttributeSet);
