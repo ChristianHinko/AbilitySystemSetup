@@ -99,7 +99,7 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 	{
 		if (!bGrantedAbilitySets)
 		{
-			for (TSubclassOf<UASSAbilitySet> AbilitySet : AbilitySets)
+			for (const TSubclassOf<UASSAbilitySet> AbilitySet : AbilitySets)
 			{
 				if (IsValid(AbilitySet))
 				{
