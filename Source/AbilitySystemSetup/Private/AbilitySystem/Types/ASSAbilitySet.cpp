@@ -70,22 +70,22 @@ void FASSAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 /// UASSAbilitySet
 ///////////////////////////////////////
 
-void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const
+void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* InASC, UObject* InSourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const
 {
-	if (!IsValid(ASC))
+	if (!IsValid(InASC))
 	{
 		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	if (ASC->IsOwnerActorAuthoritative() == false)
+	if (InASC->IsOwnerActorAuthoritative() == false)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(ASC->GetName()));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(InASC->GetName()));
 		return;
 	}
 
 
 	// Inject the ASC
-	OutGrantedHandles.AbilitySystemComponent = ASC;
+	OutGrantedHandles.AbilitySystemComponent = InASC;
 
 	// Grant our Attribute Sets
 	int AttributeSetIndex = 0;
@@ -97,15 +97,15 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC,
 			continue;
 		}
 
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(ASC->GetOwnerActor(), AttributeSetClass);
-		ASC->AddAttributeSetSubobject(NewAttributeSet);
+		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(InASC->GetOwnerActor(), AttributeSetClass);
+		InASC->AddAttributeSetSubobject(NewAttributeSet);
 
 		OutGrantedHandles.GrantedAttributeSets.Add(NewAttributeSet);
 
 		++AttributeSetIndex;
 	}
 
-	ASC->ForceReplication();
+	InASC->ForceReplication();
 
 	// Grant our Gameplay Effects
 	int EffectIndex = 0;
@@ -117,9 +117,9 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC,
 			continue;
 		}
 
-		FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
-		ContextHandle.AddSourceObject(SourceObject);
-		const FActiveGameplayEffectHandle ActiveHandle = ASC->ApplyGameplayEffectToSelf(EffectClass.GetDefaultObject(), /*, GetLevel()*/1, ContextHandle);
+		FGameplayEffectContextHandle ContextHandle = InASC->MakeEffectContext();
+		ContextHandle.AddSourceObject(InSourceObject);
+		const FActiveGameplayEffectHandle ActiveHandle = InASC->ApplyGameplayEffectToSelf(EffectClass.GetDefaultObject(), /*, GetLevel()*/1, ContextHandle);
 
 		OutGrantedHandles.ActiveEffectHandles.Add(ActiveHandle);
 
@@ -136,7 +136,7 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC,
 			continue;
 		}
 
-		const FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, SourceObject));
+		const FGameplayAbilitySpecHandle SpecHandle = InASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, InSourceObject));
 
 		OutGrantedHandles.AbilitySpecHandles.Add(SpecHandle);
 

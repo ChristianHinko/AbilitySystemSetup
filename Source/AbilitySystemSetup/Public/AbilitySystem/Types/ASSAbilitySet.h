@@ -54,7 +54,7 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySet : public UObject
 
 public:
 	/** Grants the Ability Set while outputing handles that can be used later for removal */
-	void GrantToAbilitySystemComponent(UAbilitySystemComponent* ASC, UObject* SourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const;
+	void GrantToAbilitySystemComponent(UAbilitySystemComponent* InASC, UObject* InSourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const;
 
 protected:
 	/** Abilities to give on grant NOTE: These Abilities are given a level of 1 */
