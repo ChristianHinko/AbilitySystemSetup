@@ -68,12 +68,12 @@ public:
 	 * Create a handle for filtering target data, filling out all fields
 	 */
 	UFUNCTION(BlueprintPure, Category = "Filter")
-		static FGameplayTargetDataFilterHandle MakeASSFilterHandle(const FASSGameplayTargetDataFilter& ASSFilter, AActor* SelfActor);
+		static FGameplayTargetDataFilterHandle MakeASSFilterHandle(const FASSGameplayTargetDataFilter& InASSFilter, AActor* InSelfActor);
 	/**
 	 * Create a handle for filtering target data, filling out all fields
 	 */
 	UFUNCTION(BlueprintPure, Category = "Filter")
-		static FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& MultiFilter, AActor* SelfActor);
+		static FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& InMultiFilter, AActor* InSelfActor);
 
 };
 

@@ -140,7 +140,7 @@ void UASSGameplayAbility::ExternalEndAbility()
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), bReplicateEndAbility, bWasCancelled);
 }
 
-void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
+void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const
 {
 	if (!bPassiveAbility)
 	{
@@ -148,11 +148,11 @@ void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorI
 		return;
 	}
 
-	const bool bIsPredicting = (Spec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
-	if (ActorInfo && !Spec.IsActive() && !bIsPredicting)
+	const bool bIsPredicting = (InSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+	if (InActorInfo && !InSpec.IsActive() && !bIsPredicting)
 	{
-		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-		const AActor* AvatarActor = ActorInfo->AvatarActor.Get();
+		UAbilitySystemComponent* ASC = InActorInfo->AbilitySystemComponent.Get();
+		const AActor* AvatarActor = InActorInfo->AvatarActor.Get();
 
 		// If avatar actor is torn off or about to die, don't try to activate it.
 		if (ASC && AvatarActor && !AvatarActor->GetTearOff() && (AvatarActor->GetLifeSpan() <= 0.0f))
@@ -160,12 +160,12 @@ void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorI
 			const bool bIsLocalExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
 			const bool bIsServerExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
 
-			const bool bClientShouldActivate = ActorInfo->IsLocallyControlled() && bIsLocalExecution;
-			const bool bServerShouldActivate = ActorInfo->IsNetAuthority() && bIsServerExecution;
+			const bool bClientShouldActivate = InActorInfo->IsLocallyControlled() && bIsLocalExecution;
+			const bool bServerShouldActivate = InActorInfo->IsNetAuthority() && bIsServerExecution;
 
 			if (bClientShouldActivate || bServerShouldActivate)
 			{
-				ASC->TryActivateAbility(Spec.Handle);
+				ASC->TryActivateAbility(InSpec.Handle);
 			}
 		}
 	}
