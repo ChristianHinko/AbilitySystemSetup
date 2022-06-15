@@ -41,35 +41,35 @@ void UASSActorComponent_AbilitySystemSetup::OnRegister()
 }
 
 
-void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC)
+void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC)
 {
-	if (!IsValid(ASC))
+	if (!IsValid(InASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() failed to setup with GAS because ASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() failed to setup with GAS because InASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	if (AbilitySystemComponent == ASC)
+	if (AbilitySystemComponent == InASC)
 	{
 		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() called again after already being initialized - no need to proceed"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
-	// Resolve edge case: You forgot to uninitialize the ASC before initializing a new one
+	// Resolve edge case: You forgot to uninitialize the InASC before initializing a new one
 	if (AbilitySystemComponent.IsValid())
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the InASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
 		UninitializeAbilitySystemComponent();
 	}
 
-	AActor* CurrentAvatar = ASC->GetAvatarActor();	// the passed in ASC's old avatar
-	AActor* NewAvatarToUse = GetOwner();			// new avatar for the passed in ASC
-	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC: [%s] on actor: [%s] with owner: [%s] and Avatar Actor: [%s]"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(ASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(ASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
+	AActor* CurrentAvatar = InASC->GetAvatarActor(); // the passed in ASC's old avatar
+	AActor* NewAvatarToUse = GetOwner();			 // new avatar for the passed in ASC
+	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC: [%s] on actor: [%s] with owner: [%s] and Avatar Actor: [%s]"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(InASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(InASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
 
 	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client)
 	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
 	{
 		if (ThisClass* PreviousAbilitySystemSetupComponent = CurrentAvatar->FindComponentByClass<ThisClass>())		// get the previous ASSActorComponent_AbilitySystemSetup (the setup component of the old avatar actor)
 		{
-			if (PreviousAbilitySystemSetupComponent->AbilitySystemComponent == ASC)
+			if (PreviousAbilitySystemSetupComponent->AbilitySystemComponent == InASC)
 			{
 				// Our old avatar actor forgot to uninitialize the ASC    OR    our old avatar actor hasn't been destroyed by replication yet during respawn
 				// We will uninitialize the ASC from the old avatar before initializing it with this new avatar
@@ -81,8 +81,8 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 
 
 
-	AbilitySystemComponent = ASC;
-	AbilitySystemComponent->InitAbilityActorInfo(ASC->GetOwnerActor(), NewAvatarToUse);
+	AbilitySystemComponent = InASC;
+	AbilitySystemComponent->InitAbilityActorInfo(InASC->GetOwnerActor(), NewAvatarToUse);
 
 	const APawn* OwningPawn = Cast<APawn>(GetOwner());
 	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
@@ -103,7 +103,7 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 			{
 				if (IsValid(AbilitySet))
 				{
-					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(ASC, GetOwner(), GrantedHandles.AddDefaulted_GetRef());
+					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(InASC, GetOwner(), GrantedHandles.AddDefaulted_GetRef());
 				}
 			}
 			bGrantedAbilitySets = true;
@@ -175,14 +175,14 @@ void UASSActorComponent_AbilitySystemSetup::HandleControllerChanged()
 	AbilitySystemComponent->RefreshAbilityActorInfo();		// update our ActorInfo's PlayerController
 }
 
-void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent)
 {
 	// Called in SetupPlayerInputComponent() because of a potential race condition.
-	BindAbilitySystemInput(PlayerInputComponent);
+	BindAbilitySystemInput(InPlayerInputComponent);
 }
-void UASSActorComponent_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InputComponent)
+void UASSActorComponent_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InInputComponent)
 {
-	if (!IsValid(InputComponent))
+	if (!IsValid(InInputComponent))
 	{
 		return;
 	}
@@ -202,7 +202,7 @@ void UASSActorComponent_AbilitySystemSetup::BindAbilitySystemInput(UInputCompone
 			check(0);
 		}
 
-		ASC->BindAbilityActivationToInputComponent(InputComponent,
+		ASC->BindAbilityActivationToInputComponent(InInputComponent,
 			FGameplayAbilityInputBinds(
 				AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
 				AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings

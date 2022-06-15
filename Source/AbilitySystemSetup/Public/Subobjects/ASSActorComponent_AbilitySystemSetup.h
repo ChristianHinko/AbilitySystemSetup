@@ -82,13 +82,13 @@ public:
 
 	// ----- Functions provided for owner -----
 	/** Sets the Avatar Actor with the ASC */
-	void InitializeAbilitySystemComponent(UAbilitySystemComponent* ASC);
+	void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC);
 	/** Clears the Avatar Actor from the ASC */
 	void UninitializeAbilitySystemComponent();
 	/** Called by the owning pawn when the Pawn's Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller() */
 	void HandleControllerChanged();
 	/** Called at the end of your Pawn's SetupPlayerInputComponent() event */
-	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
+	void SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent);
 
 
 
@@ -104,7 +104,7 @@ protected:
 
 private:
 	/** Makes the input events work for GAS */
-	void BindAbilitySystemInput(UInputComponent* InputComponent);
+	void BindAbilitySystemInput(UInputComponent* InInputComponent);
 	/** Broadcasts event to allow external sources to cleanup any Loose Gameplay Tags they were managing */
 	void RemoveLooseAvatarRelatedTags();
 
