@@ -43,15 +43,15 @@ bool FASSGameplayTargetDataFilter::ASSFilterPassesForActor(const AActor* ActorTo
 
 
 /////////////////////////////////////////////////////////
-/// FGTDF_MultiFilter
+/// FASSGameplayTargetDataFilter_MultiFilter
 /////////////////////////////////////////////////////////
 
-FGTDF_MultiFilter::FGTDF_MultiFilter()
+FASSGameplayTargetDataFilter_MultiFilter::FASSGameplayTargetDataFilter_MultiFilter()
 {
 
 }
 
-bool FGTDF_MultiFilter::ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const
+bool FASSGameplayTargetDataFilter_MultiFilter::ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const
 {
 	if (RequiredActorClasses.Num() > 0)
 	{

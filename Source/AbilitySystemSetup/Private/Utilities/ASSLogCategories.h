@@ -9,7 +9,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetupModule, Log, All)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemComponentSetup, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogGameplayAbilitySetup, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogGameplayASSAbilitySetup, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogGameplayAbilityTargetActorSetup, Log, All)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetup, Log, All)

@@ -7,6 +7,7 @@ public class AbilitySystemSetup : ModuleRules
 	public AbilitySystemSetup(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PrivatePCHHeaderFile = "Private/AbilitySystemSetupPrivatePCH.h";
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core" });
 		PrivateDependencyModuleNames.AddRange(

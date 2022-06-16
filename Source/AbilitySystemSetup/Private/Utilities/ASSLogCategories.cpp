@@ -8,7 +8,7 @@
 DEFINE_LOG_CATEGORY(LogAbilitySystemSetupModule)
 
 DEFINE_LOG_CATEGORY(LogAbilitySystemComponentSetup)
-DEFINE_LOG_CATEGORY(LogGameplayAbilitySetup)
+DEFINE_LOG_CATEGORY(LogGameplayASSAbilitySetup)
 DEFINE_LOG_CATEGORY(LogGameplayAbilityTargetActorSetup)
 
 DEFINE_LOG_CATEGORY(LogAbilitySystemSetup)

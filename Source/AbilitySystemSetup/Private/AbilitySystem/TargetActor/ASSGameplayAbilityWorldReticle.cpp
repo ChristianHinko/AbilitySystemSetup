@@ -12,11 +12,11 @@ AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle(const FObjectIn
 }
 
 
-void AASSGameplayAbilityWorldReticle::ASSInitializeReticle(AActor* InTargetingActor, APlayerController* PlayerController, FASSWorldReticleParameters InASSParameters)
+void AASSGameplayAbilityWorldReticle::ASSInitializeReticle(AActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters)
 {
 	check(InTargetingActor);
 
 	ASSParameters = InASSParameters;
 
-	InitializeReticle(InTargetingActor, PlayerController, InASSParameters); // call at the end instead of beginning because of their call to OnParametersInitialized()
+	InitializeReticle(InTargetingActor, InPlayerController, InASSParameters); // call at the end instead of beginning because of their call to OnParametersInitialized()
 }

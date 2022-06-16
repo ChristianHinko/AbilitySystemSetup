@@ -4,39 +4,26 @@
 #include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
+#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_ActorHelpers.h"
 
-
-
-FASSGameplayAbilityActorInfo::FASSGameplayAbilityActorInfo()
-{
-
-}
 
 
 void FASSGameplayAbilityActorInfo::InitFromActor(AActor* InOwnerActor, AActor* InAvatarActor, UAbilitySystemComponent* InAbilitySystemComponent)
 {
-	ASSInitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
-    OnInitted.Broadcast();
-}
-void FASSGameplayAbilityActorInfo::ASSInitFromActor(AActor* InOwnerActor, AActor* InAvatarActor, UAbilitySystemComponent* InAbilitySystemComponent)
-{
-	Super::InitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
+    Super::InitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
+
+
+    // Get the Controller
+    Controller = UHLBlueprintFunctionLibrary_ActorHelpers::GetTypedOwnerIncludingSelfCasted<AController>(InOwnerActor);
 
     // Get our ASC
     ASSAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(InAbilitySystemComponent);
-}
-
-void FASSGameplayAbilityActorInfo::SetAvatarActor(AActor* InAvatarActor)
-{
-    Super::SetAvatarActor(InAvatarActor);
-
-
 }
 
 void FASSGameplayAbilityActorInfo::ClearActorInfo()
 {
     Super::ClearActorInfo();
 
-
+    Controller = nullptr;
     ASSAbilitySystemComponent = nullptr;
 }

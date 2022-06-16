@@ -6,7 +6,6 @@
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 #include "ASSGameplayAbilityTargetDataFilter.generated.h"
 
@@ -44,7 +43,7 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 
 	/**
 	 * Exclusively accept Actors that implement the IAbilitySystemInterface.
-	 * Note: this setting is not affected by bReverseFilter
+	 * NOTE: This setting is not affected by bReverseFilter
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		bool bOnlyAcceptAbilitySystemInterfaces;
@@ -55,7 +54,7 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 
 
 /////////////////////////////////////////////////////////
-/// FGTDF_MultiFilter
+/// FASSGameplayTargetDataFilter_MultiFilter
 /////////////////////////////////////////////////////////
 
 
@@ -63,20 +62,19 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
  * Target Data Filter that can filter by an array of Actor types
  */
 USTRUCT(BlueprintType)
-struct ABILITYSYSTEMSETUP_API FGTDF_MultiFilter : public FASSGameplayTargetDataFilter
+struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter_MultiFilter : public FASSGameplayTargetDataFilter
 {
 	GENERATED_BODY()
 
-	FGTDF_MultiFilter();
+	FASSGameplayTargetDataFilter_MultiFilter();
 
 
 	virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const override;
 
-	/** Subclass actors must be one of these to pass the filter. */
+	/** Whitelist */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		TArray<TSubclassOf<AActor>> RequiredActorClasses;
-	/** Subclass actors must NOT be one of these to pass the filter. */
+	/** Blacklist */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
 		TArray<TSubclassOf<AActor>> FilteredActorClasses;
-
 };

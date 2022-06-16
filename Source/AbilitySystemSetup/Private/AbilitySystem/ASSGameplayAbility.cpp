@@ -3,48 +3,72 @@
 
 #include "AbilitySystem/ASSGameplayAbility.h"
 
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 
-
-UASSGameplayAbility::UASSGameplayAbility()
+UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	AbilityInputID = 0; // Unset
-	bActivateOnGiveAbility = false;
-
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	bServerRespectsRemoteAbilityCancellation = false;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnlyTermination;
+
+	AbilityInputID = 0; // Unset
+	bPassiveAbility = false;
 }
 
 
 void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	TryCallOnAvatarSetOnPrimaryInstance
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (AbilityInputID == 0)
+	// Fix the engine accidently calling OnAvatarSet() on CDO instead of calling it on the instances
+	if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && !IsInstantiated())
 	{
-		UE_LOG(LogGameplayAbilitySetup, Fatal, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
+		// Broken call to OnAvatarSet().
+		// Do the fix - call our version on each instance.
+		for (UGameplayAbility* Ability : Spec.GetAbilityInstances())
+		{
+			UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(Ability);
+			if (IsValid(ASSAbility))
+			{
+				ASSAbility->ASSOnAvatarSet(ActorInfo, Spec);
+			}
+		}
+		return;
 	}
 
-	// Epic's comment: Projects may want to initiate passives or do other "BeginPlay" type of logic here.
+	// Nothing went wrong. Call our version.
+	// If we are NonInstanced, then being the CDO is okay.
+	// If we are instanced, then the engine called us from UGameplayAbility::OnGiveAbility().
+	ASSOnAvatarSet(ActorInfo, Spec);
+	return;
 }
+void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	// Safe event for on avatar set
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	if (AbilityInputID == 0)
+	{
+		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
+	}
+	if (AbilityTags.IsEmpty())
+	{
+		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
+		check(0);
+	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+}
+
 void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	if (bActivateOnGiveAbility)
+	// Passive abilities should auto activate when given
+	if (bPassiveAbility)
 	{
-		if (ActorInfo)
-		{
-			UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-			if (IsValid(ASC))
-			{
-				ASC->TryActivateAbility(Spec.Handle);
-			}
-		}
+		TryActivatePassiveAbility(ActorInfo, Spec);
 	}
 }
 
@@ -60,22 +84,6 @@ bool UASSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 
 void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	if (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted)
-	{
-		// Const cast is a red flag. 
-		FPredictionKey* Key = const_cast<FPredictionKey*>(&ActivationInfo.GetActivationPredictionKey());
-		Key->NewRejectedDelegate().BindUObject(this, &UASSGameplayAbility::OnActivationPredictionKeyRejected);
-
-		if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))	// If we are a client without a valid prediction key
-		{
-			UE_LOG(LogGameplayAbilitySetup, Error, TEXT("%s() Ability activated but the client has no valid prediction key"), ANSI_TO_TCHAR(__FUNCTION__));
-		}
-	}
-
-
-	
-
-
 	//BEGIN Copied from Super (for Blueprint support)
 	if (bHasBlueprintActivate)
 	{
@@ -100,6 +108,29 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	//END Copied from Super (for Blueprint support)
 }
 
+void UASSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	// Call our ASSEndAbility() at a safe point
+	if (IsEndAbilityValid(Handle, ActorInfo))
+	{
+		if (ScopeLockCount > 0)
+		{
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
+			return;
+		}
+
+		// This is the safe point to do end ability event logic
+		ASSEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	}
+
+	// End the ability
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+void UASSGameplayAbility::ASSEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	// Safe event for end ability
+}
+
 void UASSGameplayAbility::ExternalEndAbility()
 {
 	check(CurrentActorInfo);
@@ -109,17 +140,33 @@ void UASSGameplayAbility::ExternalEndAbility()
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), bReplicateEndAbility, bWasCancelled);
 }
 
-//void UASSGameplayAbility::OnCurrentAbilityPredictionKeyRejected()
-//{
-//	/*UKismetSystemLibrary::PrintString(this, "Prediction Key rejected ", true, false, FLinearColor::Red);
-//
-//	if (PKey == CurrentActivationInfo.GetActivationPredictionKey())
-//	{
-//		OnActivationPredictionKeyRejected();
-//	}*/
-//}
-
-void UASSGameplayAbility::OnActivationPredictionKeyRejected()
+void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const
 {
+	if (!bPassiveAbility)
+	{
+		check(0); // passive ability function was called but this ability isn't passive
+		return;
+	}
 
+	const bool bIsPredicting = (InSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+	if (InActorInfo && !InSpec.IsActive() && !bIsPredicting)
+	{
+		UAbilitySystemComponent* ASC = InActorInfo->AbilitySystemComponent.Get();
+		const AActor* AvatarActor = InActorInfo->AvatarActor.Get();
+
+		// If avatar actor is torn off or about to die, don't try to activate it.
+		if (ASC && AvatarActor && !AvatarActor->GetTearOff() && (AvatarActor->GetLifeSpan() <= 0.0f))
+		{
+			const bool bIsLocalExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
+			const bool bIsServerExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
+
+			const bool bClientShouldActivate = InActorInfo->IsLocallyControlled() && bIsLocalExecution;
+			const bool bServerShouldActivate = InActorInfo->IsNetAuthority() && bIsServerExecution;
+
+			if (bClientShouldActivate || bServerShouldActivate)
+			{
+				ASC->TryActivateAbility(InSpec.Handle);
+			}
+		}
+	}
 }

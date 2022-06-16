@@ -5,7 +5,6 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
-#include "AbilitySystemSetup/Private/Utilities/ASSLogCategories.h"
 
 
 
@@ -31,7 +30,7 @@ void UASSAbilityTask_WaitTargetData::Activate()
 			RegisterTargetDataCallbacks();
 
 
-			if (IsPendingKill())
+			if (!IsValid(this))
 			{
 				return;
 			}
@@ -72,17 +71,16 @@ void UASSAbilityTask_WaitTargetData::OnDestroy(bool AbilityEnded)
 		}
 		else
 		{
-			// Instead of destroying it, just deactivate it:
+			// Instead of destroying it, just deactivate it
 
 			AASSGameplayAbilityTargetActor* ASSTargetActor = Cast<AASSGameplayAbilityTargetActor>(TargetActor);
 			if (IsValid(ASSTargetActor))
 			{
-				// Tell the Target Actor he is being deactivated
-				ASSTargetActor->StopTargeting();
+				ASSTargetActor->DisableTargetActor();
 			}
 			else
 			{
-				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call StopTargeting() but we couldn't because of this"), ANSI_TO_TCHAR(__FUNCTION__));
+				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call DisableTargetActor() but we couldn't because of this"), ANSI_TO_TCHAR(__FUNCTION__));
 			}
 
 			// Clear added callbacks

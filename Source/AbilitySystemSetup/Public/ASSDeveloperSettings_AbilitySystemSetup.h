@@ -5,21 +5,21 @@
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
 
-#include "DS_AbilitySystemSetup.generated.h"
+#include "ASSDeveloperSettings_AbilitySystemSetup.generated.h"
 
 
 
 /**
- * 
+ * The plugin's developer settings is useful so that we can avoid hardcoding game specific values in the GAS setup logic.
+ * This helps us keep the GAS setup generic to any game.
  */
 UCLASS(config=Game, defaultconfig, meta=(DisplayName = "Ability System Setup"))
-class ABILITYSYSTEMSETUP_API UDS_AbilitySystemSetup : public UDeveloperSettings
+class ABILITYSYSTEMSETUP_API UASSDeveloperSettings_AbilitySystemSetup : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
 public:
-	UDS_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer);
-
+	UASSDeveloperSettings_AbilitySystemSetup(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", config, meta = (DisplayName = "AbilityInputID Enum Name"))
 		FString AbilityInputIDEnumName;
@@ -27,5 +27,4 @@ public:
 		FString ConfirmTargetInputActionName;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", config, meta = (DisplayName = "CancelTarget Input Action Name"))
 		FString CancelTargetInputActionName;
-
 };
