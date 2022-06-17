@@ -85,12 +85,12 @@ void UASSAbilitySystemBlueprintLibrary::GiveAbilities(UAbilitySystemComponent* I
 {
 	if (::IsValid(InASC) == false) // use global scope to avoid using the UAbilitySystemBlueprintLibrary::IsValid()
 	{
-		UE_LOG(LogGameplayASSAbilitySetup, Warning, TEXT("%s() InASC was not valid when trying to give list of abilities. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() InASC was not valid when trying to give list of abilities. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	if (InASC->IsOwnerActorAuthoritative() == false)
 	{
-		UE_LOG(LogGameplayASSAbilitySetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 

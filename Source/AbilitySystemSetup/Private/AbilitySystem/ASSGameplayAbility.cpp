@@ -50,12 +50,12 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	if (AbilityInputID == 0)
 	{
-		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
 		check(0);
 	}
 	if (AbilityTags.IsEmpty())
 	{
-		UE_LOG(LogGameplayASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
 		check(0);
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
