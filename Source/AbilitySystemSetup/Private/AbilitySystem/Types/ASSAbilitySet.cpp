@@ -46,12 +46,12 @@ void FASSAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 		}
 		else
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove granted sets from %s without authority"), ANSI_TO_TCHAR(__FUNCTION__), *(AbilitySystemComponent->GetName()));
+			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to remove granted sets from %s without authority"), ANSI_TO_TCHAR(__FUNCTION__), *(AbilitySystemComponent->GetName()));
 		}
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to remove granted sets from %s but AbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__), *(AbilitySystemComponent->GetName()));
+		UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to remove granted sets from %s but AbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__), *(AbilitySystemComponent->GetName()));
 	}
 
 	// Empty everything
@@ -74,12 +74,12 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* InAS
 {
 	if (!IsValid(InASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to grant but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	if (InASC->IsOwnerActorAuthoritative() == false)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried to grant to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(InASC->GetName()));
+		UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to grant to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(InASC->GetName()));
 		return;
 	}
 
@@ -93,7 +93,7 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* InAS
 	{
 		if (!IsValid(AttributeSetClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAttributeSets[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
+			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() GrantedAttributeSets[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
 			continue;
 		}
 
@@ -113,7 +113,7 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* InAS
 	{
 		if (!IsValid(EffectClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedEffects[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
+			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() GrantedEffects[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
 			continue;
 		}
 
@@ -132,7 +132,7 @@ void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* InAS
 	{
 		if (!IsValid(AbilityClass))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() GrantedAbilities[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
+			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() GrantedAbilities[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
 			continue;
 		}
 
