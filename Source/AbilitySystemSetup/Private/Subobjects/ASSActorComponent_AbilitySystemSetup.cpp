@@ -23,6 +23,8 @@ UASSActorComponent_AbilitySystemSetup::UASSActorComponent_AbilitySystemSetup(con
 	PrimaryComponentTick.bCanEverTick = false;
 
 	bAbilitySystemInputBinded = false;
+
+	bInitialized = false;
 }
 void UASSActorComponent_AbilitySystemSetup::OnRegister()
 {
@@ -54,9 +56,9 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 		return;
 	}
 	// Resolve edge case: You forgot to uninitialize the InASC before initializing a new one
-	if (AbilitySystemComponent.IsValid())
+	if (bInitialized || AbilitySystemComponent.IsValid())
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the InASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
 		UninitializeAbilitySystemComponent();
 	}
 
@@ -110,10 +112,13 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 		}
 	}
 
+	bInitialized = true;
 	OnInitializeAbilitySystemComponentDelegate.Broadcast(AbilitySystemComponent.Get());
 }
 void UASSActorComponent_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 {
+	bInitialized = false;
+
 	if (AbilitySystemComponent.IsValid())
 	{
 		if (AbilitySystemComponent->GetAvatarActor() == GetOwner())

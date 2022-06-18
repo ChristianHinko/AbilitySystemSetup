@@ -91,11 +91,13 @@ public:
 	void SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent);
 
 
-
 	/** Broadcasted when the Ability System is set up and ready to go */
 	FAbilitySystemSetupDelegate OnInitializeAbilitySystemComponentDelegate;
 	/** Server and client event for removing all Loose AvatarActor-related Tags. */
 	FAbilitySystemSetupDelegate RemoveLooseAvatarRelatedTagsDelegate;
+
+	/** Are we initialized with an ASC */
+	bool IsInitializedWithASC() const { return bInitialized; }
 
 protected:
 	// BEGIN UActorComponent interface
@@ -111,12 +113,16 @@ private:
 
 
 	// ----- Internal members -----
+	/** The initialized ASC */
+	UPROPERTY()
+		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
 	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
 	TArray<FASSAbilitySetGrantedHandles> GrantedHandles;
 	/** Indicates that the list of AbilitySets has been granted */
 	uint8 bGrantedAbilitySets : 1;
 	/** Indicates that input has already been binded with the Ability System */
 	uint8 bAbilitySystemInputBinded : 1;
-	UPROPERTY()
-		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	/** Indicates that we are initialized with an Ability System Component */
+	uint8 bInitialized : 1;
 };
