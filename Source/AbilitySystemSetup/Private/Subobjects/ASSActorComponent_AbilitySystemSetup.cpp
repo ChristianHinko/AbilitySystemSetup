@@ -23,6 +23,7 @@ UASSActorComponent_AbilitySystemSetup::UASSActorComponent_AbilitySystemSetup(con
 	PrimaryComponentTick.bCanEverTick = false;
 
 	bAbilitySystemInputBinded = false;
+	bInitialized = false;
 }
 void UASSActorComponent_AbilitySystemSetup::OnRegister()
 {
@@ -34,7 +35,7 @@ void UASSActorComponent_AbilitySystemSetup::OnRegister()
 	GetOwner()->GetComponents(ThisClass::StaticClass(), AbilitySystemSetupComponents);
 	if (AbilitySystemSetupComponents.Num() > 1)
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("No more than one UASSActorComponent_AbilitySystemSetup is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
+		UE_LOG(LogASSSetupComponent, Error, TEXT("No more than one UASSActorComponent_AbilitySystemSetup is allowed on actors. Culprit: [%s]"), *GetNameSafe(GetOwner()));
 		check(0);
 	}
 #endif
@@ -45,24 +46,24 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 {
 	if (!IsValid(InASC))
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() failed to setup with GAS because InASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSSetupComponent, Error, TEXT("%s() failed to setup with GAS because InASC passed in was NULL"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	if (AbilitySystemComponent == InASC)
 	{
-		UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() called again after already being initialized - no need to proceed"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSSetupComponent, Verbose, TEXT("%s() called again after already being initialized - no need to proceed"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	// Resolve edge case: You forgot to uninitialize the InASC before initializing a new one
-	if (AbilitySystemComponent.IsValid())
+	if (bInitialized || AbilitySystemComponent.IsValid())
 	{
-		UE_LOG(LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the InASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSSetupComponent, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));
 		UninitializeAbilitySystemComponent();
 	}
 
 	AActor* CurrentAvatar = InASC->GetAvatarActor(); // the passed in ASC's old avatar
 	AActor* NewAvatarToUse = GetOwner();			 // new avatar for the passed in ASC
-	UE_LOG(LogAbilitySystemSetup, Verbose, TEXT("%s() setting up ASC: [%s] on actor: [%s] with owner: [%s] and Avatar Actor: [%s]"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(InASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(InASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
+	UE_LOG(LogASSSetupComponent, Verbose, TEXT("%s() setting up ASC: [%s] on actor: [%s] with owner: [%s] and Avatar Actor: [%s]"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(InASC), *GetNameSafe(NewAvatarToUse), *GetNameSafe(InASC->GetOwnerActor()), *GetNameSafe(CurrentAvatar));
 
 	// Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client)
 	if ((CurrentAvatar != nullptr) && (CurrentAvatar != NewAvatarToUse))	// if we are switching avatars (there was previously one in use)
@@ -73,7 +74,7 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 			{
 				// Our old avatar actor forgot to uninitialize the ASC    OR    our old avatar actor hasn't been destroyed by replication yet during respawn
 				// We will uninitialize the ASC from the old avatar before initializing it with this new avatar
-				UE_CLOG(GetOwnerRole() == ROLE_Authority, LogAbilitySystemSetup, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));	// only on the Authority because we can be certain there is something wrong if the server gets here (regardless this log should catch our attention and get us to fix it)
+				UE_CLOG(GetOwnerRole() == ROLE_Authority, LogASSSetupComponent, Warning, TEXT("%s() - Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."), ANSI_TO_TCHAR(__FUNCTION__));	// only on the Authority because we can be certain there is something wrong if the server gets here (regardless this log should catch our attention and get us to fix it)
 				PreviousAbilitySystemSetupComponent->UninitializeAbilitySystemComponent();		// kick out the old avatar from the ASC
 			}
 		}
@@ -110,10 +111,13 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 		}
 	}
 
+	bInitialized = true;
 	OnInitializeAbilitySystemComponentDelegate.Broadcast(AbilitySystemComponent.Get());
 }
 void UASSActorComponent_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 {
+	bInitialized = false;
+
 	if (AbilitySystemComponent.IsValid())
 	{
 		if (AbilitySystemComponent->GetAvatarActor() == GetOwner())
@@ -150,7 +154,7 @@ void UASSActorComponent_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 		}
 		else
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried uninitializing the ASC when the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+			UE_LOG(LogASSSetupComponent, Error, TEXT("%s() Tried uninitializing the ASC when the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
 		}
 	}
 
@@ -166,7 +170,7 @@ void UASSActorComponent_AbilitySystemSetup::HandleControllerChanged()
 	}
 	if (AbilitySystemComponent->GetAvatarActor() != GetOwner())
 	{
-		UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSSetupComponent, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	ensure(AbilitySystemComponent->AbilityActorInfo->OwnerActor == AbilitySystemComponent->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
@@ -198,7 +202,7 @@ void UASSActorComponent_AbilitySystemSetup::BindAbilitySystemInput(UInputCompone
 		const UASSDeveloperSettings_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UASSDeveloperSettings_AbilitySystemSetup>();
 		if (!IsValid(AbilitySystemSetupDeveloperSettings))
 		{
-			UE_LOG(LogAbilitySystemSetup, Error, TEXT("%s() No valid pointer to UASSDeveloperSettings_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
+			UE_LOG(LogASSSetupComponent, Error, TEXT("%s() No valid pointer to UASSDeveloperSettings_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
 			check(0);
 		}
 

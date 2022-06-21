@@ -7,11 +7,12 @@
 
 DEFINE_LOG_CATEGORY(LogAbilitySystemSetupModule)
 
-DEFINE_LOG_CATEGORY(LogAbilitySystemComponentSetup)
-DEFINE_LOG_CATEGORY(LogGameplayASSAbilitySetup)
-DEFINE_LOG_CATEGORY(LogGameplayAbilityTargetActorSetup)
+DEFINE_LOG_CATEGORY(LogASSAbilitySystemComponentSetup)
+DEFINE_LOG_CATEGORY(LogASSAbilitySetup)
+DEFINE_LOG_CATEGORY(LogASSTargetActorSetup)
 
-DEFINE_LOG_CATEGORY(LogAbilitySystemSetup)
+DEFINE_LOG_CATEGORY(LogASSAbilitySet)
+DEFINE_LOG_CATEGORY(LogASSSetupComponent)
 
 
 DEFINE_LOG_CATEGORY(LogAbilitySystemInputEnumMappingsSafetyChecks)

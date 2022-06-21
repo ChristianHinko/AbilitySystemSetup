@@ -80,7 +80,7 @@ void UASSAbilityTask_WaitTargetData::OnDestroy(bool AbilityEnded)
 			}
 			else
 			{
-				UE_LOG(LogGameplayAbilityTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call DisableTargetActor() but we couldn't because of this"), ANSI_TO_TCHAR(__FUNCTION__));
+				UE_LOG(LogASSTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call DisableTargetActor() but we couldn't because of this"), ANSI_TO_TCHAR(__FUNCTION__));
 			}
 
 			// Clear added callbacks

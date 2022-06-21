@@ -8,11 +8,12 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetupModule, Log, All)
 
-DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemComponentSetup, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogGameplayASSAbilitySetup, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogGameplayAbilityTargetActorSetup, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemComponentSetup, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySetup, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogASSTargetActorSetup, Log, All)
 
-DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetup, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySet, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogASSSetupComponent, Log, All)
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemInputEnumMappingsSafetyChecks, Log, All)

@@ -119,7 +119,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 	if (!IsValid(AbilitySpec.SourceObject))
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Error, TEXT("%s() SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySystemComponentSetup, Error, TEXT("%s() SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability"), ANSI_TO_TCHAR(__FUNCTION__));
 		check(0);
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -141,7 +141,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	}
 	else
 	{
-		UE_LOG(LogAbilitySystemComponentSetup, Warning, TEXT("%s() no meaningful AbilityInputID for given Ability because the UASSGameplayAbility was null"), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySystemComponentSetup, Warning, TEXT("%s() no meaningful AbilityInputID for given Ability because the UASSGameplayAbility was null"), ANSI_TO_TCHAR(__FUNCTION__));
 	}
 
 
