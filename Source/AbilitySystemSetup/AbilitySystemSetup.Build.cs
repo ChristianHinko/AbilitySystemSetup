@@ -18,7 +18,7 @@ public class AbilitySystemSetup : ModuleRules
 				"GameplayTasks",
 				"GameplayTags",
 				"NetCore", // for push model
-				"HelperLibraries",
+				"GameCore",
 				"DeveloperSettings"
 			}
 		);

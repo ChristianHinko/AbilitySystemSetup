@@ -4,7 +4,7 @@
 #include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
-#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_ActorHelpers.h"
+#include "BlueprintFunctionLibraries/GCBlueprintFunctionLibrary_ActorHelpers.h"
 
 
 
@@ -14,7 +14,7 @@ void FASSGameplayAbilityActorInfo::InitFromActor(AActor* InOwnerActor, AActor* I
 
 
     // Get the Controller
-    Controller = UHLBlueprintFunctionLibrary_ActorHelpers::GetTypedOwnerIncludingSelfCasted<AController>(InOwnerActor);
+    Controller = UGCBlueprintFunctionLibrary_ActorHelpers::GetTypedOwnerIncludingSelfCasted<AController>(InOwnerActor);
 
     // Get our ASC
     ASSAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(InAbilitySystemComponent);
