@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/ASSAbilitySystemComponent.h"
 #include "ASSActor_Example.generated.h"
 
+
+class UAbilitySystemComponent;
 class UASSActorComponent_AbilitySystemSetup;
+
+
 
 /**
  * Example implementation of an Actor initializing with an ASC by using the UASSActor_Example.
@@ -18,7 +21,7 @@ UCLASS()
 class ABILITYSYSTEMSETUP_API AASSActor_Example : public AActor, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
-	
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
 		TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
@@ -27,6 +30,7 @@ protected:
 
 public:
 	AASSActor_Example(const FObjectInitializer& ObjectInitializer);
+
 
 	UFUNCTION(BlueprintPure)
 		UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; }
