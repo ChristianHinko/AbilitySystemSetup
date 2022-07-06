@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/ASSGameplayAbility.h"
 
+#include "AbilitySystem/Types/ASSAbilityInputID.h"
+
 
 
 UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
@@ -13,7 +15,7 @@ UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitial
 	bServerRespectsRemoteAbilityCancellation = false;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnlyTermination;
 
-	AbilityInputID = 0; // Unset
+	AbilityInputID = static_cast<uint8>(EASSAbilityInputID::Unset);
 	bPassiveAbility = false;
 }
 
@@ -48,7 +50,7 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 {
 	// Safe event for on avatar set
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	if (AbilityInputID == 0)
+	if (AbilityInputID == static_cast<uint8>(EASSAbilityInputID::Unset))
 	{
 		UE_LOG(LogASSAbilitySetup, Error, TEXT("%s() Ability implementor forgot to set an AbilityInputID in the Ability's constructor. Go back and set it so we get Ability input events"), ANSI_TO_TCHAR(__FUNCTION__));
 		check(0);

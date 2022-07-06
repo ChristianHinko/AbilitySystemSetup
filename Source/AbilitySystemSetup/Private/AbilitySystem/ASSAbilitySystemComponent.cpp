@@ -4,8 +4,9 @@
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#include "AbilitySystem/Types/ASSAbilityInputID.h"
 #include "ASSDeveloperSettings_AbilitySystemSetup.h"
-#include "GameFramework\InputSettings.h"
+#include "GameFramework/InputSettings.h"
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "AbilitySystem/ASSGameplayAbility.h"
 
@@ -38,15 +39,10 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	const UEnum* AbilityInputIDEnum = FindObject<UEnum>(ANY_PACKAGE, *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 	if (AbilityInputIDEnum)
 	{
-		// Ensure this UEnum has proper enum setup! (i.e. enum ``Unset`` and enum ``NoInput`` as the first 2)
-		if (AbilityInputIDEnum->GetNameStringByValue(0) != TEXT("Unset") || AbilityInputIDEnum->GetNameStringByIndex(0) != TEXT("Unset"))
+		if (AbilityInputIDEnum->GetValueByIndex(0) != static_cast<uint8>(EASSAbilityInputID::MAX))
 		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is missing the ``Unset`` enum. Go to your %s definition and make sure you have ``Unset`` as the first enum (and make sure the value is 0). This is important for us to be able to detect when someone forgets to set an Ability's input ID (it's good to give all Abilities an input ID)"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
-			check(0);
-		}
-		if (AbilityInputIDEnum->GetNameStringByValue(1) != TEXT("NoInput") || AbilityInputIDEnum->GetNameStringByIndex(1) != TEXT("NoInput"))
-		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is missing the ``NoInput`` enum. Go to your %s definition and make sure you have ``NoInput`` as the second enum (and make sure the value is 1). This enum allows you to state that an Ability does not use input binding"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
+			FString MaxEnumerationString = StaticEnum<EASSAbilityInputID>()->GetNameByIndex(StaticEnum<EASSAbilityInputID>()->NumEnums() - 1).ToString();
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is not extending the base ``%s`` enum. Go to your %s definition and make sure your first enumeration's value starts at %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(StaticEnum<EASSAbilityInputID>()->GetFName().ToString()), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *MaxEnumerationString);
 			check(0);
 		}
 	}
@@ -84,7 +80,7 @@ void UASSAbilitySystemComponent::InitializeComponent()
 
 	// Ensure the enum matches Action Mappings!
 	{
-		int32 ExpectedEnumIndex = 2; // what this current ActionName's index should be in the AbilityInputID UEnum
+		int32 ExpectedEnumIndex = 0; // what this current ActionName's index should be in the AbilityInputID UEnum
 		for (const FName& ActionName : ActionNames)
 		{
 			if (ActionName == ConfirmTargetInputActionName || ActionName == CancelTargetInputActionName)
@@ -99,7 +95,7 @@ void UASSAbilitySystemComponent::InitializeComponent()
 				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your %s UEnum is not matched up with your Action Mappings list in DefaultInput.ini - Expected ``%s`` enum at the %s spot in %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()), *FString::FromInt(ExpectedEnumIndex), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
 				check(0);
 			}
-			if (AbilityInputIDEnum->GetValueByName(ActionName) != ExpectedEnumIndex)
+			if (AbilityInputIDEnum->GetValueByName(ActionName) != AbilityInputIDEnum->GetValueByIndex(0) + ExpectedEnumIndex)
 			{
 				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("%s::%s has defined a numeric value for itself. These enums should provide no numeric use and are purely to represent Action Mappings. Leave the enum at the default determined value. Even if you did do it this way, the Ability System's input events won't work that way"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()));
 				check(0);
@@ -128,7 +124,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(AbilitySpec.Ability);
 	if (IsValid(ASSAbility))
 	{
-		//if (ASSAbility->AbilityInputID != 1)
+		//if (ASSAbility->AbilityInputID != static_cast<uint8>(EASSAbilityInputID::NoInput))
 		//{
 			// Take the configured InputID from the Ability
 			AbilitySpec.InputID = static_cast<int32>(ASSAbility->AbilityInputID);

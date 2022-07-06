@@ -6,20 +6,14 @@
 
 
 
-#if 0
 /**
- * AbilityInputID enum =@REVIEW MARKER@=
+ * Base AbilityInputID enum for your game to extend.
  * 
- * Enum that makes GAS aware of which Abilities are binded to which input in your project settings. Recommended spot to include this would be in your game's custom PCH (Precompiled Header). This
- * is so that you don't always have to include the file your input enum is in when writing an Ability (since our workflow enforces setting an input enum value in constructor of each Ability).
- * 
- * The enums ``Unset`` at ``0`` and ``NoInput`` at ``1`` are MANDITORY in your enum so that the Ability can enforce good practice. We have a system so that if an Ability's Input ID is Unset, it will throw an assertion,
- * forcing you to give each Ability an Input ID. This is good practice since using AbilityInputIDs integrates stuff more into GAS.
- * 
- * Do not forget to update your enum whenever you modify the inputs in your DefaultInput.ini. They must match exactly.
+ * This base enum provides the enumerations ``Unset`` and ``NoInput``. This is to check if an Ability's Input ID is Unset and force you
+ * to explicitly specify an input ID for every Ability.
  */
 UENUM()
-enum EASSAbilityInputID // NOTE: i would want to use an enum class here but there is no implicit conversion with them. And our base ASSGameplayAbility has to store AbilityInputID as an integer so explicitly casting would be a pain.
+enum class EASSAbilityInputID : uint8
 {
 	/** This means the Ability implementor forgot to set an AbilityInputID in their Ability's constructor (``Unset`` is every Ability's default value) */
 	Unset,
@@ -27,31 +21,6 @@ enum EASSAbilityInputID // NOTE: i would want to use an enum class here but ther
 	NoInput,
 
 
-	Run,
-	Jump,
-	Crouch,
-
-	Interact,
-	DropItem,
-
-	PrimaryFire,
-	SecondaryFire,
-	Reload,
-
-	FirstItem,
-	SecondItem,
-	ThirdItem,
-	FourthItem,
-	FifthItem,
-	SwitchWeapon,
-	NextItem,
-	PreviousItem,
-
-	Pause,
-	ScoreSheet,
-
-
-	// MAX
+	/** Use this value as your first enumeration in your game's enum (extending this enum) */
 	MAX					UMETA(Hidden)
 };
-#endif
