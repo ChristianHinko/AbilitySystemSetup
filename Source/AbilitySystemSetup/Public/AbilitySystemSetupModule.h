@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Modules/ModuleInterface.h"
 
 //#include "AbilitySystemSetup.generated.h" // if we ever need reflection in here
 
@@ -14,7 +13,7 @@
 /**
  * 
  */
-class FAbilitySystemSetupModule : public IModuleInterface
+class FAbilitySystemSetupModule : public FDefaultModuleImpl
 {
 public:
 	virtual bool IsGameModule() const override
