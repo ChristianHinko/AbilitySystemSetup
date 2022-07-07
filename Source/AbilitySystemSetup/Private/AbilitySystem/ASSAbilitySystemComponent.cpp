@@ -31,7 +31,6 @@ void UASSAbilitySystemComponent::InitializeComponent()
 
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST) // editor only section to enforce good workflow
 	const UASSDeveloperSettings_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UASSDeveloperSettings_AbilitySystemSetup>();
-	const UInputSettings* InputSettings = UInputSettings::GetInputSettings();
 
 
 
@@ -41,8 +40,8 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	{
 		if (AbilityInputIDEnum->GetValueByIndex(0) != static_cast<uint8>(EASSAbilityInputID::MAX))
 		{
-			FString MaxEnumerationString = StaticEnum<EASSAbilityInputID>()->GetNameByIndex(StaticEnum<EASSAbilityInputID>()->NumEnums() - 1).ToString();
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is not extending the base ``%s`` enum. Go to your %s definition and make sure your first enumeration's value starts at %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(StaticEnum<EASSAbilityInputID>()->GetFName().ToString()), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *MaxEnumerationString);
+			const FName MaxEnumerationName = StaticEnum<EASSAbilityInputID>()->GetNameByIndex(StaticEnum<EASSAbilityInputID>()->NumEnums() - 1);
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is not extending the base ``%s`` enum. Go to your %s definition and make sure your first enumeration's value starts at %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(StaticEnum<EASSAbilityInputID>()->GetFName().ToString()), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(MaxEnumerationName.ToString()));
 			check(0);
 		}
 	}
@@ -55,16 +54,14 @@ void UASSAbilitySystemComponent::InitializeComponent()
 
 
 
-
-
 	// Our input action names (includes speech mappings)
 	TArray<FName> ActionNames;
-	InputSettings->GetActionNames(ActionNames);
+	UInputSettings::GetInputSettings()->GetActionNames(ActionNames);
 
 	const FName& ConfirmTargetInputActionName = FName(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName);
 	const FName& CancelTargetInputActionName = FName(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName);
 
-	// Ensure the Confirm and Cancel Target input actions exist! (Check to see if ConfirmTargetInputActionName and CancelTargetInputActionName in the plugin settings are real inputs)
+	// Ensure that the Confirm and Cancel Target input actions exist! (Check to see if ConfirmTargetInputActionName and CancelTargetInputActionName in the plugin settings are real inputs)
 	if (ActionNames.Contains(ConfirmTargetInputActionName) == false)
 	{
 		UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your ConfirmTarget input action!"), *(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName));
@@ -77,32 +74,21 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	}
 
 
-
-	// Ensure the enum matches Action Mappings!
+	// Ensure that the enumerations exist in the Action Mappings!
+	for (int32 i = 0; i < AbilityInputIDEnum->NumEnums(); ++i)
 	{
-		int32 ExpectedEnumIndex = 0; // what this current ActionName's index should be in the AbilityInputID UEnum
-		for (const FName& ActionName : ActionNames)
+		if (AbilityInputIDEnum->ContainsExistingMax() && i == AbilityInputIDEnum->NumEnums() - 1)
 		{
-			if (ActionName == ConfirmTargetInputActionName || ActionName == CancelTargetInputActionName)
-			{
-				// Ignore our ConfirmTarget and CancelTarget actions - these are not part of the AbilityInputID UEnum
-				continue;
-			}
+			// Ignore the MAX enumeration
+			continue;
+		}
 
-
-			if (AbilityInputIDEnum->GetIndexByName(ActionName) != ExpectedEnumIndex)
-			{
-				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your %s UEnum is not matched up with your Action Mappings list in DefaultInput.ini - Expected ``%s`` enum at the %s spot in %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()), *FString::FromInt(ExpectedEnumIndex), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName));
-				check(0);
-			}
-			if (AbilityInputIDEnum->GetValueByName(ActionName) != AbilityInputIDEnum->GetValueByIndex(0) + ExpectedEnumIndex)
-			{
-				UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("%s::%s has defined a numeric value for itself. These enums should provide no numeric use and are purely to represent Action Mappings. Leave the enum at the default determined value. Even if you did do it this way, the Ability System's input events won't work that way"), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(ActionName.ToString()));
-				check(0);
-			}
-
-
-			++ExpectedEnumIndex;
+		const FString FullEnumerationName = AbilityInputIDEnum->GetNameByIndex(i).ToString();
+		const FName EnumerationName = FName(FullEnumerationName.RightChop(FullEnumerationName.Find(TEXT("::")) + 2));
+		if (ActionNames.Contains(EnumerationName) == false)
+		{
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your input action!"), *(EnumerationName.ToString()));
+			check(0);
 		}
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
