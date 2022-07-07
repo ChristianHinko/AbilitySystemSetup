@@ -100,9 +100,9 @@ public:
 	bool IsInitializedWithASC() const { return bInitialized; }
 
 protected:
-	// BEGIN UActorComponent interface
+	//  BEGIN UActorComponent interface
 	virtual void OnRegister() override;
-	// END UActorComponent interface
+	//  END UActorComponent interface
 
 private:
 	/** Makes the input events work for GAS */

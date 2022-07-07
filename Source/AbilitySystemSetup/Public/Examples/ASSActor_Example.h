@@ -36,8 +36,8 @@ public:
 		UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; }
 
 protected:
-	// BEGIN AActor Interface
+	//  BEGIN AActor Interface
 	virtual void PostInitializeComponents() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	// END AActor Interface
+	//  END AActor Interface
 };

@@ -130,7 +130,7 @@ void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec
 	Super::OnGiveAbility(AbilitySpec);
 }
 
-#pragma region Input Binding
+//  BEGIN Input Binding
 /*
 	this is the same thing as the Super exept it doesn't force the Confirm/Cancel binding to confirm/cancel the target actor directly.
 	We added a bool (bDoNotAutoConfirmAndCancelFromGASBindings) - set this to false to if you want Confirm/Cancel bindings to directly confirm / cancel the target actors.
@@ -255,7 +255,7 @@ void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 InputID)
 		}
 	}
 }
-#pragma endregion
+//  END Input Binding
 
 
 void UASSAbilitySystemComponent::FullReset()

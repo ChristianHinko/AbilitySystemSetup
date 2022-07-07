@@ -86,7 +86,7 @@ bool UASSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 
 void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	//BEGIN Copied from Super (for Blueprint support)
+	//  BEGIN Copied from Super (for Blueprint support)
 	if (bHasBlueprintActivate)
 	{
 		// A Blueprinted ActivateAbility function must call CommitAbility somewhere in its execution chain.
@@ -107,7 +107,7 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 			EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 		}
 	}
-	//END Copied from Super (for Blueprint support)
+	//  END Copied from Super (for Blueprint support)
 }
 
 void UASSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
