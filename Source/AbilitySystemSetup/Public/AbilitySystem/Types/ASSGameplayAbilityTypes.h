@@ -21,15 +21,15 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayAbilityActorInfo : public FGameplayAbi
 {
 	GENERATED_BODY()
 
-    /** The Controller associated with the owning actor. Shouldn't be null */
-    UPROPERTY(BlueprintReadOnly, Category = "ASSActorInfo")
-        TWeakObjectPtr<AController> Controller;
+	/** The Controller associated with the owning actor. Shouldn't be null */
+	UPROPERTY(BlueprintReadOnly, Category = "ASSActorInfo")
+		TWeakObjectPtr<AController> Controller;
 
-    /** Our ASC. Shouldn't be null. */
-    UPROPERTY(BlueprintReadOnly, Category = "ASSActorInfo")
-        TWeakObjectPtr<UASSAbilitySystemComponent> ASSAbilitySystemComponent;
+	/** Our ASC. Shouldn't be null. */
+	UPROPERTY(BlueprintReadOnly, Category = "ASSActorInfo")
+		TWeakObjectPtr<UASSAbilitySystemComponent> ASSAbilitySystemComponent;
 
 
-    virtual void InitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent) override;
-    virtual void ClearActorInfo() override;
+	virtual void InitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent) override;
+	virtual void ClearActorInfo() override;
 };
