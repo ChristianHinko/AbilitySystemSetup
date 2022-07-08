@@ -40,8 +40,8 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	{
 		if (AbilityInputIDEnum->GetValueByIndex(0) != static_cast<uint8>(EASSAbilityInputID::MAX))
 		{
-			const FName MaxEnumerationName = StaticEnum<EASSAbilityInputID>()->GetNameByIndex(StaticEnum<EASSAbilityInputID>()->NumEnums() - 1);
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is not extending the base ``%s`` enum. Go to your %s definition and make sure your first enumeration's value starts at %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(StaticEnum<EASSAbilityInputID>()->GetFName().ToString()), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(MaxEnumerationName.ToString()));
+			const FName MaxEnumeratorName = StaticEnum<EASSAbilityInputID>()->GetNameByIndex(StaticEnum<EASSAbilityInputID>()->NumEnums() - 1);
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("Your ``%s`` UEnum is not extending the base ``%s`` enum. Go to your %s definition and make sure your first enumerator's value starts at %s."), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(StaticEnum<EASSAbilityInputID>()->GetFName().ToString()), *(AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName), *(MaxEnumeratorName.ToString()));
 			check(0);
 		}
 	}
@@ -74,20 +74,19 @@ void UASSAbilitySystemComponent::InitializeComponent()
 	}
 
 
-	// Ensure that the enumerations exist in the Action Mappings!
+	// Ensure that the enumerators exist in the Action Mappings!
 	for (int32 i = 0; i < AbilityInputIDEnum->NumEnums(); ++i)
 	{
 		if (AbilityInputIDEnum->ContainsExistingMax() && i == AbilityInputIDEnum->NumEnums() - 1)
 		{
-			// Ignore the MAX enumeration
+			// Ignore the MAX enumerator
 			continue;
 		}
 
-		const FString FullEnumerationName = AbilityInputIDEnum->GetNameByIndex(i).ToString();
-		const FName EnumerationName = FName(FullEnumerationName.RightChop(FullEnumerationName.Find(TEXT("::")) + 2));
-		if (ActionNames.Contains(EnumerationName) == false)
+		const FString EnumeratorNameString = AbilityInputIDEnum->GetNameStringByIndex(i);
+		if (ActionNames.Contains(FName(EnumeratorNameString)) == false)
 		{
-			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your input action!"), *(EnumerationName.ToString()));
+			UE_LOG(LogAbilitySystemInputEnumMappingsSafetyChecks, Error, TEXT("The ``%s`` input action does not exist in your Action Mappings list in DefaultInput.ini - Ensure correct spelling for the name of your input action!"), *EnumeratorNameString);
 			check(0);
 		}
 	}

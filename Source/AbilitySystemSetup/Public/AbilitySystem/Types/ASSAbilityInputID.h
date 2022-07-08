@@ -9,7 +9,7 @@
 /**
  * Base AbilityInputID enum for your game to extend.
  * 
- * This base enum provides the enumerations ``Unset`` and ``NoInput``. This is to check if an Ability's Input ID is Unset and force you
+ * This base enum provides the enumerators ``Unset`` and ``NoInput``. This is to check if an Ability's Input ID is Unset and force you
  * to explicitly specify an input ID for every Ability.
  */
 UENUM()
@@ -21,6 +21,6 @@ enum class EASSAbilityInputID : uint8
 	NoInput,
 
 
-	/** Use this value as your first enumeration in your game's enum (extending this enum) */
+	/** Use this as the value of the first enumerator in your game's enum (extending this enum) */
 	MAX					UMETA(Hidden)
 };
