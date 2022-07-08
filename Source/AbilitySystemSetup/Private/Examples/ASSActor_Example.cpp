@@ -11,7 +11,7 @@
 AASSActor_Example::AASSActor_Example(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	SetReplicates(true);
+	bReplicates = true;
 
 	AbilitySystemComponent = CreateDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
