@@ -11,4 +11,5 @@ UASSDeveloperSettings_AbilitySystemSetup::UASSDeveloperSettings_AbilitySystemSet
 	, ConfirmTargetInputActionName(TEXT("ConfirmTarget"))
 	, CancelTargetInputActionName(TEXT("CancelTarget"))
 {
+	CategoryName = TEXT("Plugins");
 }
