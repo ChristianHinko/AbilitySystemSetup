@@ -14,5 +14,4 @@ DEFINE_LOG_CATEGORY(LogASSTargetActorSetup)
 DEFINE_LOG_CATEGORY(LogASSAbilitySet)
 DEFINE_LOG_CATEGORY(LogASSSetupComponent)
 
-
-DEFINE_LOG_CATEGORY(LogAbilitySystemInputEnumMappingsSafetyChecks)
+DEFINE_LOG_CATEGORY(LogASSAbilitySystemInputSetup)

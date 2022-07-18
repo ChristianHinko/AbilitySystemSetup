@@ -4,7 +4,6 @@
 #include "Examples/ASSCharacter_Example.h"
 
 #include "Subobjects/ASSActorComponent_AbilitySystemSetup.h"
-#include "ASSDeveloperSettings_AbilitySystemSetup.h"
 #include "GameFramework/PlayerState.h"
 
 
@@ -97,32 +96,11 @@ void AASSCharacter_Example::SetupPlayerInputComponent(UInputComponent* PlayerInp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-
-	const UASSDeveloperSettings_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<UASSDeveloperSettings_AbilitySystemSetup>();
-
-	PlayerInputComponent->BindAction(FName(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName), IE_Pressed, this, &ThisClass::OnConfirmTargetPressed);
-	PlayerInputComponent->BindAction(FName(AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName), IE_Released, this, &ThisClass::OnConfirmTargetReleased);
-
-	PlayerInputComponent->BindAction(FName(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName), IE_Pressed, this, &ThisClass::OnCancelTargetPressed);
-	PlayerInputComponent->BindAction(FName(AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName), IE_Released, this, &ThisClass::OnCancelTargetReleased);
-
-
 	AbilitySystemSetupComponent->SetupPlayerInputComponent(PlayerInputComponent);
 }
+void AASSCharacter_Example::DestroyPlayerInputComponent()
+{
+	Super::DestroyPlayerInputComponent();
 
-
-void AASSCharacter_Example::OnConfirmTargetPressed()
-{
-	GetAbilitySystemComponent()->LocalInputConfirm();
-}
-void AASSCharacter_Example::OnConfirmTargetReleased()
-{
-}
-
-void AASSCharacter_Example::OnCancelTargetPressed()
-{
-	GetAbilitySystemComponent()->LocalInputCancel();
-}
-void AASSCharacter_Example::OnCancelTargetReleased()
-{
+	AbilitySystemSetupComponent->DestroyPlayerInputComponent();
 }

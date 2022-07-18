@@ -10,6 +10,8 @@
 
 
 class UAbilitySystemComponent;
+struct FGameplayTag;
+class UInputAction;
 
 
 
@@ -41,6 +43,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitySystemSetupDelegate, UAbilitySystemC
  *			- Call HandleControllerChanged() after the Super call
  *		- SetupPlayerInputComponent()
  *			- Call SetupPlayerInputComponent() after the Super call at the end of the function
+ *		- DestroyPlayerInputComponent()
+ *			- Call DestroyPlayerInputComponent() after the Super call at the end of the function
  * 
  * 
  * Recomended places for initialization and uninitialization:
@@ -89,6 +93,8 @@ public:
 	void HandleControllerChanged();
 	/** Called at the end of your Pawn's SetupPlayerInputComponent() event */
 	void SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent);
+	/** Called at the end of your Pawn's DestroyPlayerInputComponent() event */
+	void DestroyPlayerInputComponent();
 
 
 	/** Broadcasted when the Ability System is set up and ready to go */
@@ -104,9 +110,10 @@ protected:
 	virtual void OnRegister() override;
 	//  END UActorComponent interface
 
+	void OnPressedInputAction(const FGameplayTag InInputActionTag) const;
+	void OnReleasedInputAction(const FGameplayTag InInputActionTag) const;
+
 private:
-	/** Makes the input events work for GAS */
-	void BindAbilitySystemInput(UInputComponent* InInputComponent);
 	/** Broadcasts event to allow external sources to cleanup any Loose Gameplay Tags they were managing */
 	void RemoveLooseAvatarRelatedTags();
 
@@ -121,8 +128,10 @@ private:
 	TArray<FASSAbilitySetGrantedHandles> GrantedHandles;
 	/** Indicates that the list of AbilitySets has been granted */
 	uint8 bGrantedAbilitySets : 1;
-	/** Indicates that input has already been binded with the Ability System */
-	uint8 bAbilitySystemInputBinded : 1;
 	/** Indicates that we are initialized with an Ability System Component */
 	uint8 bInitialized : 1;
+
+	// Store our binding handles so that, if a runtime Input Action gets removed during the game, we can unbind from it.
+	TMap<TWeakObjectPtr<const UInputAction>, uint32> PressedInputActionBindingHandles;
+	TMap<TWeakObjectPtr<const UInputAction>, uint32> ReleasedInputActionBindingHandles;
 };

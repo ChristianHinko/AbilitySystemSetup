@@ -21,10 +21,6 @@ public:
 	UASSGameplayAbility(const FObjectInitializer& ObjectInitializer);
 
 
-	// Every Gameplay Ability must have this assigned to something in their constructor so we know what InputID to give the Ability Spec in ASSAbilitySystemComponent::OnGiveAbility(). If the Ability doesn't have an input associated with it, it can be assigned to NoInput.
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-		uint8 AbilityInputID;
-
 	/** Passive abilities are auto activated on given */
 	uint8 bPassiveAbility : 1;
 

@@ -53,6 +53,17 @@ public:
 
 
 	/**
+	 * Tell Ability System that Ability input has been pressed.
+	 * Similar to UAbilitySystemComponent::AbilityLocalInputPressed() but without InputID enum nonsense.
+	 */
+	static void AbilityLocalInputPressedForSpec(UAbilitySystemComponent* InASC, FGameplayAbilitySpec& InGameplayAbilitySpec, const bool bAllowAbilityActivation = true);
+	/**
+	 * Tell Ability System that Ability input has been pressed.
+	 * Similar to UAbilitySystemComponent::AbilityLocalInputReleased() but without InputID enum nonsense.
+	 */
+	static void AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* InASC, FGameplayAbilitySpec& InGameplayAbilitySpec);
+
+	/**
 	 * UAbilitySystemComponent::TargetConfirm() but modified to only confirm targeting on
 	 * the Target Actors associated with the given InAbility.
 	 */

@@ -15,5 +15,4 @@ DECLARE_LOG_CATEGORY_EXTERN(LogASSTargetActorSetup, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySet, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogASSSetupComponent, Log, All)
 
-
-DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemInputEnumMappingsSafetyChecks, Log, All)
+DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemInputSetup, Log, All)

@@ -29,6 +29,14 @@
 		{
 			"Name": "GameCore",
 			"Enabled": true
+		},
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "InputSetup",
+			"Enabled": true
 		}
 	]
 }
