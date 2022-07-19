@@ -22,11 +22,15 @@ void FAbilitySystemSetupModule::StartupModule()
 void FAbilitySystemSetupModule::ShutdownModule()
 {
 	// Remove this plugin's Input Actions
-	UISDeveloperSettings_InputSetup* InputSetupDeveloperSettings = GetMutableDefault<UISDeveloperSettings_InputSetup>();
-	if (IsValid(InputSetupDeveloperSettings))
+	const UClass* InputSetupDeveloperSettingsClass = UISDeveloperSettings_InputSetup::StaticClass();
+	if (InputSetupDeveloperSettingsClass->HasAnyFlags(EObjectFlags::RF_BeginDestroyed | EObjectFlags::RF_FinishDestroyed) == false)
 	{
-		InputSetupDeveloperSettings->RemoveRuntimeInputAction(ASSNativeGameplayTags::InputAction_ConfirmTarget);
-		InputSetupDeveloperSettings->RemoveRuntimeInputAction(ASSNativeGameplayTags::InputAction_CancelTarget);
+		UISDeveloperSettings_InputSetup* InputSetupDeveloperSettings = Cast<UISDeveloperSettings_InputSetup>(InputSetupDeveloperSettingsClass->GetDefaultObject(false));
+		if (IsValid(InputSetupDeveloperSettings))
+		{
+			InputSetupDeveloperSettings->RemoveRuntimeInputAction(ASSNativeGameplayTags::InputAction_ConfirmTarget);
+			InputSetupDeveloperSettings->RemoveRuntimeInputAction(ASSNativeGameplayTags::InputAction_CancelTarget);
+		}
 	}
 }
 
