@@ -3,13 +3,7 @@ Provides a reusable base Ability System that extends Epic\'s Gameplay Ability Sy
 
 Collaborators: ChristianHinko, brian2524
 
-Current engine version: 5.0.2
-
-## Setup
-![Plugin Project Settings](/Images/Readme/PluginProjectSettings.png)
-
-Go to your project settings to configure game-specific data required for GAS setup.
-The plugin will ensure that entered values are correct and notify you if they aren\'t
+Current engine version: 5.0.3
 
 ## Key Features
 - **Plugin Settings** - Configurable settings that appear in your project settings
