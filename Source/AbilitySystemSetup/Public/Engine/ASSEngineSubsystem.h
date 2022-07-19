@@ -18,7 +18,7 @@ class ABILITYSYSTEMSETUP_API UASSEngineSubsystem : public UEngineSubsystem
 	GENERATED_BODY()
 	
 public:
-	//BEGIN USubsystem Interface
+	//  BEGIN USubsystem Interface
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	//END USubsystem Interface
+	//  END USubsystem Interface
 };

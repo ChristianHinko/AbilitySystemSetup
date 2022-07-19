@@ -10,37 +10,31 @@
 
 
 /**
- * Base FGameplayEffectContext struct. Nothing different from parent yet
+ * Base FGameplayEffectContext struct
  */
 USTRUCT()
 struct ABILITYSYSTEMSETUP_API FASSGameplayEffectContext : public FGameplayEffectContext
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    FASSGameplayEffectContext();
+	FASSGameplayEffectContext();
 
-    /** Returns the actual struct used for serialization, subclasses must override this! */
-    virtual UScriptStruct* GetScriptStruct() const override
-    {
-        return StaticStruct();
-    }
+	virtual UScriptStruct* GetScriptStruct() const override { return StaticStruct(); }
 
-    /** Creates a copy of this context, used to duplicate for later modifications */
-    virtual FASSGameplayEffectContext* Duplicate() const override
-    {
-        FASSGameplayEffectContext* NewContext = new FASSGameplayEffectContext();
-        *NewContext = *this;
-        NewContext->AddActors(Actors);
-        if (GetHitResult())
-        {
-            // Does a deep copy of the hit result
-            NewContext->AddHitResult(*GetHitResult(), true);
-        }
-        return NewContext;
-    }
+	virtual FASSGameplayEffectContext* Duplicate() const override
+	{
+		FASSGameplayEffectContext* NewContext = new FASSGameplayEffectContext(); // allocate our version
+		*NewContext = *this;
+		if (GetHitResult())
+		{
+			// Does a deep copy of the hit result
+			NewContext->AddHitResult(*GetHitResult(), true);
+		}
+		return NewContext;
+	}
 
-    virtual bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess) override;
+	virtual bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess) override;
 };
 
 template<>
@@ -49,6 +43,6 @@ struct TStructOpsTypeTraits<FASSGameplayEffectContext> : public TStructOpsTypeTr
 	enum
 	{
 		WithNetSerializer = true,
-		WithCopy = true		// Necessary so that TSharedPtr<FHitResult> Data is copied around
+		WithCopy = true
 	};
 };

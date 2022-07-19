@@ -10,16 +10,17 @@ public class AbilitySystemSetup : ModuleRules
 		PrivatePCHHeaderFile = "Private/AbilitySystemSetupPrivatePCH.h";
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "CoreUObject", "Engine" });
+
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
-				"CoreUObject",
-				"Engine",
 				"GameplayAbilities",
 				"GameplayTasks",
 				"GameplayTags",
 				"NetCore", // for push model
-				"HelperLibraries",
-				"DeveloperSettings"
+				"GameCore",
+				"EnhancedInput",
+				"InputSetup"
 			}
 		);
 	}

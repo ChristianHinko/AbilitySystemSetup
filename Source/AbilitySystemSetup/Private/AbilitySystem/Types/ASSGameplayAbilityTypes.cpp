@@ -4,26 +4,26 @@
 #include "AbilitySystem/Types/ASSGameplayAbilityTypes.h"
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
-#include "BlueprintFunctionLibraries/HLBlueprintFunctionLibrary_ActorHelpers.h"
+#include "BlueprintFunctionLibraries/GCBlueprintFunctionLibrary_ActorHelpers.h"
 
 
 
 void FASSGameplayAbilityActorInfo::InitFromActor(AActor* InOwnerActor, AActor* InAvatarActor, UAbilitySystemComponent* InAbilitySystemComponent)
 {
-    Super::InitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
+	Super::InitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
 
 
-    // Get the Controller
-    Controller = UHLBlueprintFunctionLibrary_ActorHelpers::GetTypedOwnerIncludingSelfCasted<AController>(InOwnerActor);
+	// Get the Controller
+	Controller = UGCBlueprintFunctionLibrary_ActorHelpers::GetTypedOwnerIncludingSelfCasted<AController>(InOwnerActor);
 
-    // Get our ASC
-    ASSAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(InAbilitySystemComponent);
+	// Get our ASC
+	ASSAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(InAbilitySystemComponent);
 }
 
 void FASSGameplayAbilityActorInfo::ClearActorInfo()
 {
-    Super::ClearActorInfo();
+	Super::ClearActorInfo();
 
-    Controller = nullptr;
-    ASSAbilitySystemComponent = nullptr;
+	Controller = nullptr;
+	ASSAbilitySystemComponent = nullptr;
 }

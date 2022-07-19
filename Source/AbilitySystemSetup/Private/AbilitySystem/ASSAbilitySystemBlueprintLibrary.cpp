@@ -108,6 +108,44 @@ void UASSAbilitySystemBlueprintLibrary::GiveAbilities(UAbilitySystemComponent* I
 	}
 }
 
+void UASSAbilitySystemBlueprintLibrary::AbilityLocalInputPressedForSpec(UAbilitySystemComponent* InASC, FGameplayAbilitySpec& InGameplayAbilitySpec, const bool bAllowAbilityActivation)
+{
+	InGameplayAbilitySpec.InputPressed = true;
+	if (InGameplayAbilitySpec.IsActive())
+	{
+		if (InGameplayAbilitySpec.Ability->bReplicateInputDirectly && InASC->IsOwnerActorAuthoritative() == false)
+		{
+			InASC->ServerSetInputPressed(InGameplayAbilitySpec.Handle);
+		}
+
+		InASC->AbilitySpecInputPressed(InGameplayAbilitySpec);
+
+		InASC->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, InGameplayAbilitySpec.Handle, InGameplayAbilitySpec.ActivationInfo.GetActivationPredictionKey());
+	}
+	else
+	{
+		if (bAllowAbilityActivation)
+		{
+			InASC->TryActivateAbility(InGameplayAbilitySpec.Handle);
+		}
+	}
+}
+void UASSAbilitySystemBlueprintLibrary::AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* InASC, FGameplayAbilitySpec& InGameplayAbilitySpec)
+{
+	InGameplayAbilitySpec.InputPressed = false;
+	if (InGameplayAbilitySpec.IsActive())
+	{
+		if (InGameplayAbilitySpec.Ability->bReplicateInputDirectly && InASC->IsOwnerActorAuthoritative() == false)
+		{
+			InASC->ServerSetInputReleased(InGameplayAbilitySpec.Handle);
+		}
+
+		InASC->AbilitySpecInputReleased(InGameplayAbilitySpec);
+
+		InASC->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, InGameplayAbilitySpec.Handle, InGameplayAbilitySpec.ActivationInfo.GetActivationPredictionKey());
+	}
+}
+
 void UASSAbilitySystemBlueprintLibrary::TargetConfirmByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility)
 {
 	// Callbacks may modify the spawned target actor array so iterate over a copy instead

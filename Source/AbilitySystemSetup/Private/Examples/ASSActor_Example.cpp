@@ -3,13 +3,17 @@
 
 #include "Examples\ASSActor_Example.h"
 
+#include "AbilitySystem/ASSAbilitySystemComponent.h"
 #include "Subobjects/ASSActorComponent_AbilitySystemSetup.h"
 
-AASSActor_Example::AASSActor_Example(const FObjectInitializer& ObjectInitializer)
-{
-	SetReplicates(true);
 
-	AbilitySystemComponent = CreateDefaultSubobject<UASSAbilitySystemComponent>(TEXT("ActorASC"));
+
+AASSActor_Example::AASSActor_Example(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	bReplicates = true;
+
+	AbilitySystemComponent = CreateDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
 
 	// No possessing this actor allows for Minimal replication mode
@@ -18,13 +22,10 @@ AASSActor_Example::AASSActor_Example(const FObjectInitializer& ObjectInitializer
 	MinNetUpdateFrequency = NetUpdateFrequency;
 
 
-
-
-
-
 	// Create setup component for the ASC
 	AbilitySystemSetupComponent = CreateDefaultSubobject<UASSActorComponent_AbilitySystemSetup>(TEXT("AbilitySystemSetupComponent"));
 }
+
 
 void AASSActor_Example::PostInitializeComponents()
 {
@@ -32,6 +33,7 @@ void AASSActor_Example::PostInitializeComponents()
 
 	AbilitySystemSetupComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
 }
+
 void AASSActor_Example::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	AbilitySystemSetupComponent->UninitializeAbilitySystemComponent();

@@ -4,16 +4,12 @@
 #include "Subobjects/ASSActorComponent_AbilitySystemSetup.h"
 
 #include "Net/UnrealNetwork.h"
-#include "AbilitySystemInterface.h"
-#include "Abilities/GameplayAbility.h"
-#include "GameFramework/PlayerController.h"
 #include "Components/InputComponent.h"
-#include "AbilitySystem/ASSAbilitySystemComponent.h"
-#include "ASSDeveloperSettings_AbilitySystemSetup.h"
-#include "AbilitySystemGlobals.h"
+#include "ISDeveloperSettings_InputSetup.h"
+#include "EnhancedInputComponent.h"
+#include "InputAction.h"
+#include "InputTriggers.h"
 #include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
-
-#include "Kismet/KismetSystemLibrary.h"
 
 
 
@@ -22,7 +18,6 @@ UASSActorComponent_AbilitySystemSetup::UASSActorComponent_AbilitySystemSetup(con
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	bAbilitySystemInputBinded = false;
 	bInitialized = false;
 }
 void UASSActorComponent_AbilitySystemSetup::OnRegister()
@@ -84,16 +79,6 @@ void UASSActorComponent_AbilitySystemSetup::InitializeAbilitySystemComponent(UAb
 
 	AbilitySystemComponent = InASC;
 	AbilitySystemComponent->InitAbilityActorInfo(InASC->GetOwnerActor(), NewAvatarToUse);
-
-	const APawn* OwningPawn = Cast<APawn>(GetOwner());
-	if (IsValid(OwningPawn) && OwningPawn->IsPlayerControlled())
-	{
-		// Bind Player input to the AbilitySystemComponent.
-		// Called from both SetupPlayerInputComponent() and SetUpAbilitySystemComponent() because of a potential race condition where the Player Controller might
-		// call ClientRestart() which calls SetupPlayerInputComponent() before the Player State is repped to the client so the Player State would be null in SetupPlayerInputComponent().
-		// Conversely, the Player State might be repped before the Player Controller calls ClientRestart() so the Actor's Input Component would be null in OnRep_PlayerState().
-		BindAbilitySystemInput(OwningPawn->InputComponent);
-	}
 
 	// Grant Abilities, Active Effects, and Attribute Sets
 	if (GetOwnerRole() == ROLE_Authority)
@@ -163,61 +148,147 @@ void UASSActorComponent_AbilitySystemSetup::UninitializeAbilitySystemComponent()
 
 void UASSActorComponent_AbilitySystemSetup::HandleControllerChanged()
 {
-	if (AbilitySystemComponent.IsValid() == false)
+	if (AbilitySystemComponent.IsValid())
+	{
+		if (AbilitySystemComponent->GetAvatarActor() == GetOwner())
+		{
+			check(AbilitySystemComponent->AbilityActorInfo->OwnerActor == AbilitySystemComponent->GetOwnerActor());	// the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
+
+			AbilitySystemComponent->RefreshAbilityActorInfo(); // update our ActorInfo's PlayerController
+		}
+		else
+		{
+			UE_LOG(LogASSSetupComponent, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
+		}
+	}
+	else
 	{
 		// In the case of ASC being on the PlayerState, this is expected to hit on the client for initial possessions (Controller gets replicated before PlayerState)
-		return;
 	}
-	if (AbilitySystemComponent->GetAvatarActor() != GetOwner())
-	{
-		UE_LOG(LogASSSetupComponent, Error, TEXT("%s() Tried RefreshAbilityActorInfo(), but the actor with this component was not the avatar actor"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-	ensure(AbilitySystemComponent->AbilityActorInfo->OwnerActor == AbilitySystemComponent->GetOwnerActor());	// ensure that the owner of the AbilitySystemComponent matches the OwnerActor from the ActorInfo
-
-
-	AbilitySystemComponent->RefreshAbilityActorInfo();		// update our ActorInfo's PlayerController
 }
 
+//  BEGIN Input setup
 void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent)
 {
-	// Called in SetupPlayerInputComponent() because of a potential race condition.
-	BindAbilitySystemInput(InPlayerInputComponent);
-}
-void UASSActorComponent_AbilitySystemSetup::BindAbilitySystemInput(UInputComponent* InInputComponent)
-{
-	if (!IsValid(InInputComponent))
+	// Bind to all Input Actions so we can tell the ability system when ability inputs have been pressed/released
+	const UISDeveloperSettings_InputSetup* InputSetupDeveloperSettings = GetDefault<UISDeveloperSettings_InputSetup>();
+	if (IsValid(InputSetupDeveloperSettings))
 	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	if (!IsValid(ASC))
-	{
-		return;
-	}
-
-	if (!bAbilitySystemInputBinded)
-	{
-		const UASSDeveloperSettings_AbilitySystemSetup* AbilitySystemSetupDeveloperSettings = GetDefault<const UASSDeveloperSettings_AbilitySystemSetup>();
-		if (!IsValid(AbilitySystemSetupDeveloperSettings))
+		// Bind to all known Input Actions
+		UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(InPlayerInputComponent);
+		if (IsValid(PlayerEnhancedInputComponent))
 		{
-			UE_LOG(LogASSSetupComponent, Error, TEXT("%s() No valid pointer to UASSDeveloperSettings_AbilitySystemSetup when trying to get the name of the confirm and cancel input action names and the Ability Input Id Enum Name."), ANSI_TO_TCHAR(__FUNCTION__), *GetName());
-			check(0);
+			TMap<FGameplayTag, TSoftObjectPtr<const UInputAction>> InputActionTagMap = InputSetupDeveloperSettings->GetInputActions();
+			for (const TPair<FGameplayTag, TSoftObjectPtr<const UInputAction>> TagInputActionPair : InputActionTagMap)
+			{
+				const UInputAction* InputAction = TagInputActionPair.Value.LoadSynchronous();
+				if (IsValid(InputAction))
+				{
+					const uint32 PressedBindingHandle = PlayerEnhancedInputComponent->BindAction(InputAction, ETriggerEvent::Started, this, &ThisClass::OnPressedInputAction, TagInputActionPair.Key).GetHandle();
+					const uint32 ReleasedBindingHandle = PlayerEnhancedInputComponent->BindAction(InputAction, ETriggerEvent::Completed, this, &ThisClass::OnReleasedInputAction, TagInputActionPair.Key).GetHandle();
+
+					PressedInputActionBindingHandles.Add(InputAction, PressedBindingHandle);
+					ReleasedInputActionBindingHandles.Add(InputAction, ReleasedBindingHandle);
+				}
+			}
 		}
 
-		ASC->BindAbilityActivationToInputComponent(InInputComponent,
-			FGameplayAbilityInputBinds(
-				AbilitySystemSetupDeveloperSettings->ConfirmTargetInputActionName,			// name of our confirm input from the project settings
-				AbilitySystemSetupDeveloperSettings->CancelTargetInputActionName,			// name of our cancel input from the project settings
-				AbilitySystemSetupDeveloperSettings->AbilityInputIDEnumName					// name of our GAS input enum that gives the names of the rest of our inputs in the project settings
-			)
+
+		// When Input Actions are added during the game, bind to them.
+		InputSetupDeveloperSettings->OnRuntimeInputActionAdded.AddWeakLambda(this,
+			[this](const TPair<FGameplayTag, TSoftObjectPtr<const UInputAction>>& InTagInputActionPair)
+			{
+				UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
+				if (IsValid(PlayerEnhancedInputComponent))
+				{
+					const UInputAction* InputAction = InTagInputActionPair.Value.LoadSynchronous();
+					if (IsValid(InputAction))
+					{
+						const uint32 PressedBindingHandle = PlayerEnhancedInputComponent->BindAction(InputAction, ETriggerEvent::Started, this, &ThisClass::OnPressedInputAction, InTagInputActionPair.Key).GetHandle();
+						const uint32 ReleasedBindingHandle = PlayerEnhancedInputComponent->BindAction(InputAction, ETriggerEvent::Completed, this, &ThisClass::OnReleasedInputAction, InTagInputActionPair.Key).GetHandle();
+
+						PressedInputActionBindingHandles.Add(InputAction, PressedBindingHandle);
+						ReleasedInputActionBindingHandles.Add(InputAction, ReleasedBindingHandle);
+
+						UE_LOG(LogASSAbilitySystemInputSetup, Log, TEXT("%s() Binding to new runtime-added Input Action [%s] for calling GAS input events."), ANSI_TO_TCHAR(__FUNCTION__), *(InTagInputActionPair.Key.ToString()));
+					}
+				}
+			}
 		);
+		// When Input Actions are removed during the game, unbind from them.
+		InputSetupDeveloperSettings->OnRuntimeInputActionRemoved.AddWeakLambda(this,
+			[this](const TPair<FGameplayTag, TSoftObjectPtr<const UInputAction>>& InTagInputActionPair)
+			{
+				UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
+				if (IsValid(PlayerEnhancedInputComponent))
+				{
+					const UInputAction* InputAction = InTagInputActionPair.Value.LoadSynchronous();
+					if (IsValid(InputAction))
+					{
+						if (const uint32* PressedHandle = PressedInputActionBindingHandles.Find(InputAction))
+						{
+							PlayerEnhancedInputComponent->RemoveBindingByHandle(*PressedHandle);
+							PressedInputActionBindingHandles.Remove(InputAction);
+						}
+						if (const uint32* ReleasedHandle = ReleasedInputActionBindingHandles.Find(InputAction))
+						{
+							PlayerEnhancedInputComponent->RemoveBindingByHandle(*ReleasedHandle);
+							PressedInputActionBindingHandles.Remove(InputAction);
+						}
 
-		bAbilitySystemInputBinded = true; // only run this function only once
+						UE_LOG(LogASSAbilitySystemInputSetup, Log, TEXT("%s() Input Action [%s] removed at runtime. Unbinding function that triggers GAS input events."), ANSI_TO_TCHAR(__FUNCTION__), *(InTagInputActionPair.Key.ToString()));
+					}
+				}
+			}
+		);
 	}
-
 }
+void UASSActorComponent_AbilitySystemSetup::DestroyPlayerInputComponent()
+{
+	// The InputComponent is destroyed which means all of its bindings are destroyed too. So update our handle lists.
+	PressedInputActionBindingHandles.Empty();
+	ReleasedInputActionBindingHandles.Empty();
+}
+
+void UASSActorComponent_AbilitySystemSetup::OnPressedInputAction(const FGameplayTag InInputActionTag) const
+{
+	if (AbilitySystemComponent.IsValid())
+	{
+		TArray<FGameplayAbilitySpec*> GameplayAbilitySpecs;
+		AbilitySystemComponent->GetActivatableGameplayAbilitySpecsByAllMatchingTags(InInputActionTag.GetSingleTagContainer(), GameplayAbilitySpecs, false);
+		for (FGameplayAbilitySpec* GameplayAbilitySpecPtr : GameplayAbilitySpecs)
+		{
+			// Tell ASC about ability input pressed
+			const bool bAllowAbilityActivation = GameplayAbilitySpecPtr->Ability->AbilityTags.HasTag(ASSNativeGameplayTags::Ability_Type_DisableAutoActivationFromInput) == false;
+			UASSAbilitySystemBlueprintLibrary::AbilityLocalInputPressedForSpec(AbilitySystemComponent.Get(), *GameplayAbilitySpecPtr, bAllowAbilityActivation);
+		}
+
+		if (InInputActionTag == ASSNativeGameplayTags::InputAction_ConfirmTarget)
+		{
+			// Tell ASC about Confirm pressed
+			AbilitySystemComponent->LocalInputConfirm();
+		}
+		if (InInputActionTag == ASSNativeGameplayTags::InputAction_CancelTarget)
+		{
+			// Tell ASC about Cancel pressed
+			AbilitySystemComponent->LocalInputCancel();
+		}
+	}
+}
+void UASSActorComponent_AbilitySystemSetup::OnReleasedInputAction(const FGameplayTag InInputActionTag) const
+{
+	if (AbilitySystemComponent.IsValid())
+	{
+		TArray<FGameplayAbilitySpec*> GameplayAbilitySpecs;
+		AbilitySystemComponent->GetActivatableGameplayAbilitySpecsByAllMatchingTags(InInputActionTag.GetSingleTagContainer(), GameplayAbilitySpecs, false);
+		for (FGameplayAbilitySpec* GameplayAbilitySpecPtr : GameplayAbilitySpecs)
+		{
+			// Tell ASC about ability input released
+			UASSAbilitySystemBlueprintLibrary::AbilityLocalInputReleasedForSpec(AbilitySystemComponent.Get(), *GameplayAbilitySpecPtr);
+		}
+	}
+}
+//  END Input setup
 
 void UASSActorComponent_AbilitySystemSetup::RemoveLooseAvatarRelatedTags()
 {

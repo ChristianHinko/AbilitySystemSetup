@@ -7,10 +7,10 @@
 
 namespace ASSNativeGameplayTags
 {
-#if 0
-	// Ability Tags
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Fire,											TEXT("Ability.Fire"))
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Reload,											TEXT("Ability.Reload"))
-	UE_DEFINE_GAMEPLAY_TAG(Ability_ADS,												TEXT("Ability.ADS"))
-#endif
+	// Ability
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Type_DisableAutoActivationFromInput,						TEXT("Ability.Type.DisableAutoActivationFromInput"))
+
+	// Input Actions
+	UE_DEFINE_GAMEPLAY_TAG(InputAction_ConfirmTarget,										TEXT("InputAction.ConfirmTarget"))
+	UE_DEFINE_GAMEPLAY_TAG(InputAction_CancelTarget,										TEXT("InputAction.CancelTarget"))
 }

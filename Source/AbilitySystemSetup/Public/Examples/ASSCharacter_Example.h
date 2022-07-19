@@ -34,25 +34,16 @@ public:
 protected:
 	virtual void PreInitializeComponents();
 
-	//BEGIN APawn Interface
+	//  BEGIN APawn Interface
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 	virtual void OnRep_PlayerState() override;
 	virtual void OnRep_Controller() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	//END APawn Interface
+	virtual void DestroyPlayerInputComponent() override;
+	//  END APawn Interface
 
-	//BEGIN AbilitySystemSetupDelegate
+	//  BEGIN AbilitySystemSetupDelegate
 	virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent* ASC);
-	//END AbilitySystemSetupDelegate
-
-
-	//BEGIN Input actions
-	virtual void OnConfirmTargetPressed();
-	virtual void OnConfirmTargetReleased();
-
-	virtual void OnCancelTargetPressed();
-	virtual void OnCancelTargetReleased();
-	//END Input actions
-
+	//  END AbilitySystemSetupDelegate
 };

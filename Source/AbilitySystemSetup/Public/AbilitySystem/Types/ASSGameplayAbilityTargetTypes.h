@@ -17,11 +17,8 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayAbilityTargetData : public FGameplayAb
 {
 	GENERATED_BODY()
 
-		
 	FASSGameplayAbilityTargetData();
 
-	virtual UScriptStruct* GetScriptStruct() const override
-	{
-		return StaticStruct();
-	}
+
+	virtual UScriptStruct* GetScriptStruct() const override { return StaticStruct(); }
 };
