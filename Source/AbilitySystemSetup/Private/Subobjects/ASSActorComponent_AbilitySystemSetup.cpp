@@ -265,12 +265,12 @@ void UASSActorComponent_AbilitySystemSetup::OnPressedInputAction(const FGameplay
 
 		if (InInputActionTag == ASSNativeGameplayTags::InputAction_ConfirmTarget)
 		{
-			// Tell ASC about confirm pressed
+			// Tell ASC about Confirm pressed
 			AbilitySystemComponent->LocalInputConfirm();
 		}
 		if (InInputActionTag == ASSNativeGameplayTags::InputAction_CancelTarget)
 		{
-			// Tell ASC about cancel pressed
+			// Tell ASC about Cancel pressed
 			AbilitySystemComponent->LocalInputCancel();
 		}
 	}
