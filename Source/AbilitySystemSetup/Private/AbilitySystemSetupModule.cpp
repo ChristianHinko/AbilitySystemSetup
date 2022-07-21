@@ -3,7 +3,7 @@
 
 #include "AbilitySystemSetupModule.h"
 
-#include "ISDeveloperSettings_InputSetup.h"
+#include "ISEngineSubsystem_InputActions.h"
 
 
 
@@ -11,27 +11,11 @@
 
 void FAbilitySystemSetupModule::StartupModule()
 {
-	// Add this plugin's Input Actions
-	UISDeveloperSettings_InputSetup* InputSetupDeveloperSettings = GetMutableDefault<UISDeveloperSettings_InputSetup>();
-	if (IsValid(InputSetupDeveloperSettings))
-	{
-		InputSetupDeveloperSettings->AddRuntimeInputAction(ASSNativeGameplayTags::InputAction_ConfirmTarget, TSoftObjectPtr<const UInputAction>(FSoftObjectPath(TEXT("/AbilitySystemSetup/Input/IA_ConfirmTarget.IA_ConfirmTarget"))));
-		InputSetupDeveloperSettings->AddRuntimeInputAction(ASSNativeGameplayTags::InputAction_CancelTarget, TSoftObjectPtr<const UInputAction>(FSoftObjectPath(TEXT("/AbilitySystemSetup/Input/IA_CancelTarget.IA_CancelTarget"))));
-	}
+
 }
 void FAbilitySystemSetupModule::ShutdownModule()
 {
-	// Remove this plugin's Input Actions
-	const UClass* InputSetupDeveloperSettingsClass = UISDeveloperSettings_InputSetup::StaticClass();
-	if (InputSetupDeveloperSettingsClass->HasAnyFlags(EObjectFlags::RF_BeginDestroyed | EObjectFlags::RF_FinishDestroyed) == false)
-	{
-		UISDeveloperSettings_InputSetup* InputSetupDeveloperSettings = Cast<UISDeveloperSettings_InputSetup>(InputSetupDeveloperSettingsClass->GetDefaultObject(false));
-		if (IsValid(InputSetupDeveloperSettings))
-		{
-			InputSetupDeveloperSettings->RemoveRuntimeInputAction(ASSNativeGameplayTags::InputAction_ConfirmTarget);
-			InputSetupDeveloperSettings->RemoveRuntimeInputAction(ASSNativeGameplayTags::InputAction_CancelTarget);
-		}
-	}
+
 }
 
 #undef LOCTEXT_NAMESPACE

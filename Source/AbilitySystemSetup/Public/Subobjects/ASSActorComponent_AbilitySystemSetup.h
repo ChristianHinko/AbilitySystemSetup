@@ -131,7 +131,7 @@ private:
 	/** Indicates that we are initialized with an Ability System Component */
 	uint8 bInitialized : 1;
 
-	// Store our binding handles so that, if a runtime Input Action gets removed during the game, we can unbind from it.
+	// Store our binding handles so that, if a plugin Input Action gets removed during the game, we can unbind from it.
 	TMap<TWeakObjectPtr<const UInputAction>, uint32> PressedInputActionBindingHandles;
 	TMap<TWeakObjectPtr<const UInputAction>, uint32> ReleasedInputActionBindingHandles;
 };

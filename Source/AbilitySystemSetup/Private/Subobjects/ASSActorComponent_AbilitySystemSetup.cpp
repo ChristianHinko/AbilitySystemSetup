@@ -5,7 +5,7 @@
 
 #include "Net/UnrealNetwork.h"
 #include "Components/InputComponent.h"
-#include "ISDeveloperSettings_InputSetup.h"
+#include "ISEngineSubsystem_InputActions.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "InputTriggers.h"
@@ -171,17 +171,17 @@ void UASSActorComponent_AbilitySystemSetup::HandleControllerChanged()
 void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent)
 {
 	// Bind to all Input Actions so we can tell the ability system when ability inputs have been pressed/released
-	const UISDeveloperSettings_InputSetup* InputSetupDeveloperSettings = GetDefault<UISDeveloperSettings_InputSetup>();
-	if (IsValid(InputSetupDeveloperSettings))
+	const UISEngineSubsystem_InputActions* InputActionsSubsystem = GEngine->GetEngineSubsystem<UISEngineSubsystem_InputActions>();
+	if (IsValid(InputActionsSubsystem))
 	{
 		// Bind to all known Input Actions
 		UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(InPlayerInputComponent);
 		if (IsValid(PlayerEnhancedInputComponent))
 		{
-			TMap<FGameplayTag, TSoftObjectPtr<const UInputAction>> InputActionTagMap = InputSetupDeveloperSettings->GetInputActions();
-			for (const TPair<FGameplayTag, TSoftObjectPtr<const UInputAction>> TagInputActionPair : InputActionTagMap)
+			TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>> InputActionTagMap = InputActionsSubsystem->GetInputActions();
+			for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>> TagInputActionPair : InputActionTagMap)
 			{
-				const UInputAction* InputAction = TagInputActionPair.Value.LoadSynchronous();
+				const UInputAction* InputAction = TagInputActionPair.Value.Get();
 				if (IsValid(InputAction))
 				{
 					const uint32 PressedBindingHandle = PlayerEnhancedInputComponent->BindAction(InputAction, ETriggerEvent::Started, this, &ThisClass::OnPressedInputAction, TagInputActionPair.Key).GetHandle();
@@ -195,13 +195,13 @@ void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComp
 
 
 		// When Input Actions are added during the game, bind to them.
-		InputSetupDeveloperSettings->OnRuntimeInputActionAdded.AddWeakLambda(this,
-			[this](const TPair<FGameplayTag, TSoftObjectPtr<const UInputAction>>& InTagInputActionPair)
+		InputActionsSubsystem->OnPluginInputActionAdded.AddWeakLambda(this,
+			[this](const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& InTagInputActionPair)
 			{
 				UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
 				if (IsValid(PlayerEnhancedInputComponent))
 				{
-					const UInputAction* InputAction = InTagInputActionPair.Value.LoadSynchronous();
+					const UInputAction* InputAction = InTagInputActionPair.Value.Get();
 					if (IsValid(InputAction))
 					{
 						const uint32 PressedBindingHandle = PlayerEnhancedInputComponent->BindAction(InputAction, ETriggerEvent::Started, this, &ThisClass::OnPressedInputAction, InTagInputActionPair.Key).GetHandle();
@@ -210,19 +210,19 @@ void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComp
 						PressedInputActionBindingHandles.Add(InputAction, PressedBindingHandle);
 						ReleasedInputActionBindingHandles.Add(InputAction, ReleasedBindingHandle);
 
-						UE_LOG(LogASSAbilitySystemInputSetup, Log, TEXT("%s() Binding to new runtime-added Input Action [%s] for calling GAS input events."), ANSI_TO_TCHAR(__FUNCTION__), *(InTagInputActionPair.Key.ToString()));
+						UE_LOG(LogASSAbilitySystemInputSetup, Log, TEXT("%s() Binding to new plugin-added Input Action [%s] for calling GAS input events."), ANSI_TO_TCHAR(__FUNCTION__), *(InTagInputActionPair.Key.ToString()));
 					}
 				}
 			}
 		);
 		// When Input Actions are removed during the game, unbind from them.
-		InputSetupDeveloperSettings->OnRuntimeInputActionRemoved.AddWeakLambda(this,
-			[this](const TPair<FGameplayTag, TSoftObjectPtr<const UInputAction>>& InTagInputActionPair)
+		InputActionsSubsystem->OnPluginInputActionRemoved.AddWeakLambda(this,
+			[this](const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& InTagInputActionPair)
 			{
 				UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
 				if (IsValid(PlayerEnhancedInputComponent))
 				{
-					const UInputAction* InputAction = InTagInputActionPair.Value.LoadSynchronous();
+					const UInputAction* InputAction = InTagInputActionPair.Value.Get();
 					if (IsValid(InputAction))
 					{
 						if (const uint32* PressedHandle = PressedInputActionBindingHandles.Find(InputAction))
@@ -236,7 +236,7 @@ void UASSActorComponent_AbilitySystemSetup::SetupPlayerInputComponent(UInputComp
 							PressedInputActionBindingHandles.Remove(InputAction);
 						}
 
-						UE_LOG(LogASSAbilitySystemInputSetup, Log, TEXT("%s() Input Action [%s] removed at runtime. Unbinding function that triggers GAS input events."), ANSI_TO_TCHAR(__FUNCTION__), *(InTagInputActionPair.Key.ToString()));
+						UE_LOG(LogASSAbilitySystemInputSetup, Log, TEXT("%s() Plugin Input Action [%s] removed. Unbinding function that triggers GAS input events."), ANSI_TO_TCHAR(__FUNCTION__), *(InTagInputActionPair.Key.ToString()));
 					}
 				}
 			}
