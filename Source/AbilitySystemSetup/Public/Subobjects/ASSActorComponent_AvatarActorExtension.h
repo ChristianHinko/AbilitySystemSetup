@@ -52,9 +52,9 @@ public:
 		TArray<TSubclassOf<UASSAbilitySet>> AbilitySets;
 
 	/** Sets the Avatar Actor with the ASC */
-	void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC);
+	virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC);
 	/** Clears the Avatar Actor from the ASC */
-	void UninitializeAbilitySystemComponent();
+	virtual void UninitializeAbilitySystemComponent();
 
 	/** Broadcasted when the Ability System is set up and ready to go */
 	FAvatarExtensionDelegate OnInitializeAbilitySystemComponentDelegate;

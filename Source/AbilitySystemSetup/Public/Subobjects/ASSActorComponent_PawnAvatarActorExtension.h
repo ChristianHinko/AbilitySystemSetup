@@ -62,6 +62,8 @@ public:
 	/** Called at the end of your Pawn's DestroyPlayerInputComponent() event */
 	void DestroyPlayerInputComponent();
 
+	virtual void UninitializeAbilitySystemComponent() override;
+
 protected:
 	//  BEGIN UActorComponent interface
 	virtual void OnRegister() override;

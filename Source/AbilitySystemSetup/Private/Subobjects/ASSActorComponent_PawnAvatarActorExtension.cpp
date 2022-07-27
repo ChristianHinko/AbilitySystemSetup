@@ -136,6 +136,30 @@ void UASSActorComponent_PawnAvatarActorExtension::DestroyPlayerInputComponent()
 	ReleasedInputActionBindingHandles.Empty();
 }
 
+void UASSActorComponent_PawnAvatarActorExtension::UninitializeAbilitySystemComponent()
+{
+
+
+	Super::UninitializeAbilitySystemComponent();
+
+	check(GetOwner()); // we need our owner in order to remove our bindings from its input component
+	UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
+	if (IsValid(PlayerEnhancedInputComponent))
+	{
+		for (const TPair<TWeakObjectPtr<const UInputAction>, uint32>& PressedInputActionBindingHandle : PressedInputActionBindingHandles)
+		{
+			PlayerEnhancedInputComponent->RemoveBindingByHandle(PressedInputActionBindingHandle.Value);
+		}
+		PressedInputActionBindingHandles.Empty();
+
+		for (const TPair<TWeakObjectPtr<const UInputAction>, uint32>& ReleasedInputActionBindingHandle : ReleasedInputActionBindingHandles)
+		{
+			PlayerEnhancedInputComponent->RemoveBindingByHandle(ReleasedInputActionBindingHandle.Value);
+		}
+		ReleasedInputActionBindingHandles.Empty();
+	}
+}
+
 void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGameplayTag InInputActionTag) const
 {
 	if (AbilitySystemComponent.IsValid())
