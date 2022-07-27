@@ -4,7 +4,7 @@
 #include "Examples\ASSActor_Example.h"
 
 #include "AbilitySystem/ASSAbilitySystemComponent.h"
-#include "Subobjects/ASSActorComponent_AbilitySystemSetup.h"
+#include "Subobjects/ASSActorComponent_AvatarActorExtension.h"
 
 
 
@@ -22,8 +22,8 @@ AASSActor_Example::AASSActor_Example(const FObjectInitializer& ObjectInitializer
 	MinNetUpdateFrequency = NetUpdateFrequency;
 
 
-	// Create setup component for the ASC
-	AbilitySystemSetupComponent = CreateDefaultSubobject<UASSActorComponent_AbilitySystemSetup>(TEXT("AbilitySystemSetupComponent"));
+	// Create the avatar actor extension component to assist in setting us up with the ASC
+	AvatarActorExtensionComponent = CreateDefaultSubobject<UASSActorComponent_AvatarActorExtension>(TEXT("AvatarActorExtensionComponent"));
 }
 
 
@@ -31,12 +31,12 @@ void AASSActor_Example::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	AbilitySystemSetupComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
+	AvatarActorExtensionComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
 }
 
 void AASSActor_Example::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	AbilitySystemSetupComponent->UninitializeAbilitySystemComponent();
+	AvatarActorExtensionComponent->UninitializeAbilitySystemComponent();
 
 	Super::EndPlay(EndPlayReason);
 }

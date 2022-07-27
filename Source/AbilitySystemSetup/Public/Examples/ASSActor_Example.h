@@ -5,16 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "AbilitySystemInterface.h"
+
 #include "ASSActor_Example.generated.h"
 
 
 class UAbilitySystemComponent;
-class UASSActorComponent_AbilitySystemSetup;
+class UASSActorComponent_AvatarActorExtension;
 
 
 
 /**
- * Example implementation of an Actor initializing with an ASC by using the UASSActor_Example.
+ * Example implementation of an Actor initializing with an ASC by using the ASSActorComponent_AvatarActorExtension.
  * Feel free to subclass if lazy.
  */
 UCLASS()
@@ -24,9 +25,9 @@ class ABILITYSYSTEMSETUP_API AASSActor_Example : public AActor, public IAbilityS
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-		TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+		TObjectPtr<UASSActorComponent_AvatarActorExtension> AvatarActorExtensionComponent;
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-		TObjectPtr<UASSActorComponent_AbilitySystemSetup> AbilitySystemSetupComponent;
+		TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 public:
 	AASSActor_Example(const FObjectInitializer& ObjectInitializer);
