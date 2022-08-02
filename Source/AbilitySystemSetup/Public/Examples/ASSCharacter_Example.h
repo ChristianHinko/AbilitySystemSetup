@@ -10,11 +10,11 @@
 #include "ASSCharacter_Example.generated.h"
 
 
-class UASSActorComponent_AbilitySystemSetup;
+class UASSActorComponent_PawnAvatarActorExtension;
 
 
 /**
- * Example implementation of a Character initializing with an ASC by using the UASSActor_Example.
+ * Example implementation of a Character initializing with an ASC by using the ASSActorComponent_AvatarActorExtension.
  * Feel free to subclass if lazy.
  */
 UCLASS()
@@ -24,7 +24,7 @@ class ABILITYSYSTEMSETUP_API AASSCharacter_Example : public ACharacter, public I
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-		TObjectPtr<UASSActorComponent_AbilitySystemSetup> AbilitySystemSetupComponent;
+		TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent;
 
 public:
 	AASSCharacter_Example(const FObjectInitializer& ObjectInitializer);
@@ -43,7 +43,7 @@ protected:
 	virtual void DestroyPlayerInputComponent() override;
 	//  END APawn Interface
 
-	//  BEGIN AbilitySystemSetupDelegate
+	//  BEGIN AvatarExtensionDelegate
 	virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent* ASC);
-	//  END AbilitySystemSetupDelegate
+	//  END AvatarExtensionDelegate
 };
