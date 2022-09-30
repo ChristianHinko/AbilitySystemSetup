@@ -6,7 +6,6 @@ Collaborators: ChristianHinko, brian2524
 Current engine version: 5.0.3
 
 ## Key Features
-- **Plugin Settings** - Configurable settings that appear in your project settings
 - **Ability Sets** - Grants Abilities, Effects, and Attribute Sets as a group to an `AbilitySystemComponent`, providing an output handle for tracking.
 - **Ability System Setup Component** - Provides common GAS initialization/uninitialization logic with `AbilitySets` that are granted while initialized.
 	- Supports any `AbilitySystemComponent` location
