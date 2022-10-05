@@ -22,15 +22,15 @@ class UInputAction;
  * 
  * Required callsites:
  *		PossessedBy()
- *			- Call HandleControllerChanged() after the Super call
+ *			- Call OnOwnerControllerChanged() after the Super call
  *		UnPossessed()
- *			- Call HandleControllerChanged() after the Super call
+ *			- Call OnOwnerControllerChanged() after the Super call
  *		OnRep_Controller()
- *			- Call HandleControllerChanged() after the Super call
+ *			- Call OnOwnerControllerChanged() after the Super call
  *		SetupPlayerInputComponent()
- *			- Call SetupPlayerInputComponent() after the Super call at the end of the function
+ *			- Call OnOwnerSetupPlayerInputComponent() after the Super call at the end of the function
  *		DestroyPlayerInputComponent()
- *			- Call DestroyPlayerInputComponent() after the Super call at the end of the function
+ *			- Call OnOwnerDestroyPlayerInputComponent() after the Super call at the end of the function
  * 
  * 
  * Recomended callsites for Pawn with ASC on the Player State:
@@ -56,11 +56,11 @@ public:
 
 
 	/** Called by the owning pawn when the Pawn's Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller() */
-	void HandleControllerChanged();
+	void OnOwnerControllerChanged();
 	/** Called at the end of your Pawn's SetupPlayerInputComponent() event */
-	void SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent);
+	void OnOwnerSetupPlayerInputComponent(UInputComponent* InPlayerInputComponent);
 	/** Called at the end of your Pawn's DestroyPlayerInputComponent() event */
-	void DestroyPlayerInputComponent();
+	void OnOwnerDestroyPlayerInputComponent();
 
 	virtual void UninitializeAbilitySystemComponent() override;
 

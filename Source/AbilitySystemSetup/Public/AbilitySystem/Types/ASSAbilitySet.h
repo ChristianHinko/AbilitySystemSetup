@@ -39,7 +39,7 @@ protected:
 		TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };
 
