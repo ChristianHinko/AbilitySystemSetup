@@ -46,10 +46,10 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 
-	AASSGameplayAbilityWorldReticle* SpawnWorldReticle(const FVector& Location, const FRotator& Rotation);
+	AASSGameplayAbilityWorldReticle* SpawnWorldReticle(const FVector& InLocation, const FRotator& InRotation);
 
 	/** List of spawned World Reticle actors */
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TArray<TObjectPtr<AGameplayAbilityWorldReticle>> SpawnedWorldReticles;
 
 	virtual void DestroyWorldReticles();

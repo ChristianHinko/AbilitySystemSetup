@@ -69,7 +69,7 @@ protected:
 	//  END UActorComponent interface
 
 	/** The initialized ASC */
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 private:
