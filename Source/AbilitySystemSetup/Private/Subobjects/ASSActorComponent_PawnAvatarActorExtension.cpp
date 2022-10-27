@@ -64,7 +64,7 @@ void UASSActorComponent_PawnAvatarActorExtension::SetupPlayerInputComponent(UInp
 		UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(InPlayerInputComponent);
 		if (IsValid(PlayerEnhancedInputComponent))
 		{
-			TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>> InputActionTagMap = InputActionsSubsystem->GetInputActions();
+			const TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>>& InputActionTagMap = InputActionsSubsystem->GetInputActions();
 			for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>> TagInputActionPair : InputActionTagMap)
 			{
 				const UInputAction* InputAction = TagInputActionPair.Value.Get();
