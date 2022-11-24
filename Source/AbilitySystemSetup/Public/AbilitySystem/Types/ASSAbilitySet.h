@@ -31,11 +31,11 @@ public:
 	void RemoveFromAbilitySystemComponent();
 
 protected:
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 
 
