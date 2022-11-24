@@ -32,11 +32,17 @@ void AASSGameplayAbilityTargetActor::DisableTargetActor() // when we are being d
 }
 
 
-AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnWorldReticle(const FVector& Location, const FRotator& Rotation)
+AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnWorldReticle(const FVector& InLocation, const FRotator& InRotation)
 {
 	if (ReticleClass)
 	{
-		AASSGameplayAbilityWorldReticle* SpawnedWorldReticle = GetWorld()->SpawnActor<AASSGameplayAbilityWorldReticle>(ReticleClass, Location, Rotation);
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.ObjectFlags |= RF_Transient;
+		SpawnParameters.Owner = this;
+
+		FTransform SpawnTransform = FTransform(InRotation, InLocation, FVector::OneVector);
+
+		AASSGameplayAbilityWorldReticle* SpawnedWorldReticle = GetWorld()->SpawnActor<AASSGameplayAbilityWorldReticle>(ReticleClass, SpawnTransform, SpawnParameters);
 		if (IsValid(SpawnedWorldReticle))
 		{
 			SpawnedWorldReticle->ASSInitializeReticle(this, MasterPC, ASSReticleParams);

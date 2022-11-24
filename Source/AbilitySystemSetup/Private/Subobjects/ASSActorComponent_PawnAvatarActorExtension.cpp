@@ -32,7 +32,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnRegister()
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 }
 
-void UASSActorComponent_PawnAvatarActorExtension::HandleControllerChanged()
+void UASSActorComponent_PawnAvatarActorExtension::OnOwnerControllerChanged()
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -54,7 +54,7 @@ void UASSActorComponent_PawnAvatarActorExtension::HandleControllerChanged()
 }
 
 //  BEGIN Input setup
-void UASSActorComponent_PawnAvatarActorExtension::SetupPlayerInputComponent(UInputComponent* InPlayerInputComponent)
+void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputComponent(UInputComponent* InPlayerInputComponent)
 {
 	// Bind to all Input Actions so we can tell the ability system when ability inputs have been pressed/released
 	const UISEngineSubsystem_InputActions* InputActionsSubsystem = GEngine->GetEngineSubsystem<UISEngineSubsystem_InputActions>();
@@ -64,7 +64,7 @@ void UASSActorComponent_PawnAvatarActorExtension::SetupPlayerInputComponent(UInp
 		UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(InPlayerInputComponent);
 		if (IsValid(PlayerEnhancedInputComponent))
 		{
-			TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>> InputActionTagMap = InputActionsSubsystem->GetInputActions();
+			const TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>>& InputActionTagMap = InputActionsSubsystem->GetInputActions();
 			for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>> TagInputActionPair : InputActionTagMap)
 			{
 				const UInputAction* InputAction = TagInputActionPair.Value.Get();
@@ -129,7 +129,7 @@ void UASSActorComponent_PawnAvatarActorExtension::SetupPlayerInputComponent(UInp
 		);
 	}
 }
-void UASSActorComponent_PawnAvatarActorExtension::DestroyPlayerInputComponent()
+void UASSActorComponent_PawnAvatarActorExtension::OnOwnerDestroyPlayerInputComponent()
 {
 	// The InputComponent is destroyed which means all of its bindings are destroyed too. So update our handle lists.
 	PressedInputActionBindingHandles.Empty();

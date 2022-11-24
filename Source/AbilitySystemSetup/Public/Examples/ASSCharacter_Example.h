@@ -13,6 +13,7 @@
 class UASSActorComponent_PawnAvatarActorExtension;
 
 
+
 /**
  * Example implementation of a Character initializing with an ASC by using the ASSActorComponent_AvatarActorExtension.
  * Feel free to subclass if lazy.

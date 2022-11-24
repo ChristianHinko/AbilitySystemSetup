@@ -39,13 +39,13 @@ protected:
 		TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };
 
 
 /**
- * Non-mutable "ability set" for granting Gameplay Abilities, Gameplay Effects, and Attribute Sets.
+ * Defines a group for GAS related clases with funtionality to grant them (Abilities, Effects and Attribute Sets)
  */
 UCLASS(Blueprintable, Const)
 class ABILITYSYSTEMSETUP_API UASSAbilitySet : public UObject

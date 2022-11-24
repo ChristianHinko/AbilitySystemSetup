@@ -16,7 +16,7 @@ UCLASS()
 class ABILITYSYSTEMSETUP_API UASSGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
-	
+
 public:
 	UASSGameplayAbility(const FObjectInitializer& ObjectInitializer);
 

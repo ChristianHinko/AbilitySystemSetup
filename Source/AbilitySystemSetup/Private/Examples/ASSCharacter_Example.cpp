@@ -36,7 +36,7 @@ UAbilitySystemComponent* AASSCharacter_Example::GetAbilitySystemComponent() cons
 void AASSCharacter_Example::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	PawnAvatarActorExtensionComponent->HandleControllerChanged(); // this doesn't do anything in this case because our ASC is not initialized yet but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly
+	PawnAvatarActorExtensionComponent->OnOwnerControllerChanged(); // this doesn't do anything in this case because our ASC is not initialized yet but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly
 
 	PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
 }
@@ -46,7 +46,7 @@ void AASSCharacter_Example::UnPossessed()
 
 
 	Super::UnPossessed();
-	PawnAvatarActorExtensionComponent->HandleControllerChanged(); // this doesn't do anything in this case because our ASC is uninitialized but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly
+	PawnAvatarActorExtensionComponent->OnOwnerControllerChanged(); // this doesn't do anything in this case because our ASC is uninitialized but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly
 }
 
 void AASSCharacter_Example::OnRep_PlayerState()
@@ -72,7 +72,7 @@ void AASSCharacter_Example::OnRep_PlayerState()
 void AASSCharacter_Example::OnRep_Controller()
 {
 	Super::OnRep_Controller();
-	PawnAvatarActorExtensionComponent->HandleControllerChanged();
+	PawnAvatarActorExtensionComponent->OnOwnerControllerChanged();
 }
 
 
@@ -90,11 +90,11 @@ void AASSCharacter_Example::SetupPlayerInputComponent(UInputComponent* PlayerInp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PawnAvatarActorExtensionComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	PawnAvatarActorExtensionComponent->OnOwnerSetupPlayerInputComponent(PlayerInputComponent);
 }
 void AASSCharacter_Example::DestroyPlayerInputComponent()
 {
 	Super::DestroyPlayerInputComponent();
 
-	PawnAvatarActorExtensionComponent->DestroyPlayerInputComponent();
+	PawnAvatarActorExtensionComponent->OnOwnerDestroyPlayerInputComponent();
 }
