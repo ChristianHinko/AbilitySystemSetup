@@ -93,7 +93,7 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		}
 		else
 		{
-			UE_LOG(LogAbilitySystem, Warning, TEXT("Ability %s expects event data but none is being supplied. Use Activate Ability instead of Activate Ability From Event."), *GetName());
+			UE_LOG(LogASSAbilitySetup, Warning, TEXT("Ability %s expects event data but none is being supplied. Use Activate Ability instead of Activate Ability From Event."), *GetName());
 			bool bReplicateEndAbility = false;
 			bool bWasCancelled = true;
 			EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);

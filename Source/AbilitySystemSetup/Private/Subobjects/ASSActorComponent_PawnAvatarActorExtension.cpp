@@ -160,7 +160,7 @@ void UASSActorComponent_PawnAvatarActorExtension::UninitializeAbilitySystemCompo
 	}
 }
 
-void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGameplayTag InInputActionTag) const
+void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGameplayTag InInputActionTag)
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -185,7 +185,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGa
 		}
 	}
 }
-void UASSActorComponent_PawnAvatarActorExtension::OnReleasedInputAction(const FGameplayTag InInputActionTag) const
+void UASSActorComponent_PawnAvatarActorExtension::OnReleasedInputAction(const FGameplayTag InInputActionTag)
 {
 	if (AbilitySystemComponent.IsValid())
 	{

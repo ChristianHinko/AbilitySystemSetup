@@ -69,8 +69,8 @@ protected:
 	virtual void OnRegister() override;
 	//  END UActorComponent interface
 
-	void OnPressedInputAction(const FGameplayTag InInputActionTag) const;
-	void OnReleasedInputAction(const FGameplayTag InInputActionTag) const;
+	void OnPressedInputAction(const FGameplayTag InInputActionTag);
+	void OnReleasedInputAction(const FGameplayTag InInputActionTag);
 
 private:
 	// Store our binding handles so that, if a plugin Input Action gets removed during the game, we can unbind from it.

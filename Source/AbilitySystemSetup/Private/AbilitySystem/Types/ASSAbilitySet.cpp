@@ -39,7 +39,7 @@ void FASSAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 			// Remove Attribute Sets
 			for (UAttributeSet* AttributeSet : GrantedAttributeSets)
 			{
-				AbilitySystemComponent->GetSpawnedAttributes_Mutable().Remove(AttributeSet);
+				AbilitySystemComponent->RemoveSpawnedAttribute(AttributeSet);
 			}
 
 			AbilitySystemComponent->ForceReplication();
