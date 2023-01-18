@@ -56,7 +56,7 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 	}
 	if (AbilityTags.HasTag(ISNativeGameplayTags::InputAction) == false)
 	{
-		UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't activated by tag you can suppress this with InputAction.None tag."), ANSI_TO_TCHAR(__FUNCTION__));
+		UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't intended to be activated by input you can suppress this with InputAction.None tag."), ANSI_TO_TCHAR(__FUNCTION__));
 		check(0);
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
