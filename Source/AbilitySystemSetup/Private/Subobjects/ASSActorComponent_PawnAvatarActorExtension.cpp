@@ -65,7 +65,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
 		if (IsValid(PlayerEnhancedInputComponent))
 		{
 			const TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>>& InputActionTagMap = InputActionsSubsystem->GetInputActions();
-			for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>> TagInputActionPair : InputActionTagMap)
+			for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& TagInputActionPair : InputActionTagMap)
 			{
 				const UInputAction* InputAction = TagInputActionPair.Value.Get();
 				if (IsValid(InputAction))
