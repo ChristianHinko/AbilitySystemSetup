@@ -93,7 +93,8 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 			{
 				if (IsValid(AbilitySet))
 				{
-					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(InASC, GetOwner(), GrantedHandles.AddDefaulted_GetRef());
+					FASSAbilitySetGrantedHandles& NewAbilitySetGrantedHandles = GrantedHandles.AddDefaulted_GetRef(); // currently is empty but we will give this its proper data next
+					AbilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(InASC, GetOwner(), NewAbilitySetGrantedHandles); // grant AbilitySet as well as give the newly added handle its proper data
 				}
 			}
 			bGrantedAbilitySets = true;
