@@ -1,11 +1,8 @@
 # AbilitySystemSetup
+
 This is a C++ plugin extending Epic's Gameplay Ability System, providing a foundation and an efficient workflow for using it. Its goals are to speed up development, eliminate boilerplate code, and provide good design.
 
-
-
-Collaborators: ChristianHinko, brian2524
-
-Current engine version: 5.1.0
+Collaborators: ChristianHinko, brian2524.
 
 ## Key Features
 - **Ability Sets** - Grants Abilities, Effects, and Attribute Sets as a group to an `AbilitySystemComponent`, providing an output handle for tracking.
