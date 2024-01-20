@@ -12,7 +12,7 @@ AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle(const FObjectIn
 }
 
 
-void AASSGameplayAbilityWorldReticle::ASSInitializeReticle(AActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters)
+void AASSGameplayAbilityWorldReticle::ASSInitializeReticle(AGameplayAbilityTargetActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters)
 {
 	check(InTargetingActor);
 
