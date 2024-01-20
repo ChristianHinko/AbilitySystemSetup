@@ -16,7 +16,7 @@ UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer&
 void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	if (!IsValid(AbilitySpec.SourceObject))
+	if (AbilitySpec.SourceObject.IsValid() == false)
 	{
 		UE_LOG(LogASSAbilitySystemComponentSetup, Warning, TEXT("%s() SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability"), ANSI_TO_TCHAR(__FUNCTION__));
 		check(0);
@@ -44,7 +44,7 @@ void UASSAbilitySystemComponent::FullReset()
 		}
 
 		//	Remove Attribute Sets
-		GetSpawnedAttributes_Mutable().Empty();
+		RemoveAllSpawnedAttributes();
 	}
 
 

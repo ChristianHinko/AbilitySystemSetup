@@ -45,7 +45,7 @@ AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnWorldRetic
 		AASSGameplayAbilityWorldReticle* SpawnedWorldReticle = GetWorld()->SpawnActor<AASSGameplayAbilityWorldReticle>(ReticleClass, SpawnTransform, SpawnParameters);
 		if (IsValid(SpawnedWorldReticle))
 		{
-			SpawnedWorldReticle->ASSInitializeReticle(this, MasterPC, ASSReticleParams);
+			SpawnedWorldReticle->ASSInitializeReticle(this, PrimaryPC, ASSReticleParams);
 			SpawnedWorldReticle->SetActorHiddenInGame(true);
 			SpawnedWorldReticles.Add(SpawnedWorldReticle);
 
