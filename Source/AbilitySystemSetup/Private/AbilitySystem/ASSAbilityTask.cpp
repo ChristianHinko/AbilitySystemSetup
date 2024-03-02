@@ -6,7 +6,7 @@
 
 
 UASSAbilityTask::UASSAbilityTask(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
 
 }

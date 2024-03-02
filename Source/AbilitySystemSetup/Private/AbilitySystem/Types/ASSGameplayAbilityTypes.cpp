@@ -10,20 +10,20 @@
 
 void FASSGameplayAbilityActorInfo::InitFromActor(AActor* InOwnerActor, AActor* InAvatarActor, UAbilitySystemComponent* InAbilitySystemComponent)
 {
-	Super::InitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
+    Super::InitFromActor(InOwnerActor, InAvatarActor, InAbilitySystemComponent);
 
 
-	// Get the Controller
-	Controller = GCUtils::ObjectTraversal::GetTypedSelfOrOwnerActor<AController>(InOwnerActor);
+    // Get the Controller
+    Controller = GCUtils::ObjectTraversal::GetTypedSelfOrOwnerActor<AController>(InOwnerActor);
 
-	// Get our ASC
-	ASSAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(InAbilitySystemComponent);
+    // Get our ASC
+    ASSAbilitySystemComponent = Cast<UASSAbilitySystemComponent>(InAbilitySystemComponent);
 }
 
 void FASSGameplayAbilityActorInfo::ClearActorInfo()
 {
-	Super::ClearActorInfo();
+    Super::ClearActorInfo();
 
-	Controller = nullptr;
-	ASSAbilitySystemComponent = nullptr;
+    Controller = nullptr;
+    ASSAbilitySystemComponent = nullptr;
 }

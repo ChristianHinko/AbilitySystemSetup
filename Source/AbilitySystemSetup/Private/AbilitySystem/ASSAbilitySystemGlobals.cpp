@@ -10,7 +10,7 @@
 
 
 UASSAbilitySystemGlobals::UASSAbilitySystemGlobals(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
 
 }
@@ -18,14 +18,14 @@ UASSAbilitySystemGlobals::UASSAbilitySystemGlobals(const FObjectInitializer& Obj
 
 FGameplayAbilityActorInfo* UASSAbilitySystemGlobals::AllocAbilityActorInfo() const
 {
-	return new FASSGameplayAbilityActorInfo();
+    return new FASSGameplayAbilityActorInfo();
 }
 FGameplayEffectContext* UASSAbilitySystemGlobals::AllocGameplayEffectContext() const
 {
-	return new FASSGameplayEffectContext();
+    return new FASSGameplayEffectContext();
 }
 
 //void UASSAbilitySystemGlobals::AllocAttributeSetInitter()
 //{
-//	GlobalAttributeSetInitter = TSharedPtr<FAttributeSetInitter>(new FASSAttributeSetInitter());
+//    GlobalAttributeSetInitter = TSharedPtr<FAttributeSetInitter>(new FASSAttributeSetInitter());
 //}

@@ -12,10 +12,10 @@
  */
 namespace ASSNativeGameplayTags
 {
-	// Ability
-	ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Type_DisableAutoActivationFromInput)
+    // Ability
+    ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Type_DisableAutoActivationFromInput)
 
-	// Input Actions
-	ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_ConfirmTarget)
-	ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_CancelTarget)
+    // Input Actions
+    ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_ConfirmTarget)
+    ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_CancelTarget)
 }

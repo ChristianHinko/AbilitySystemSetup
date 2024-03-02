@@ -15,7 +15,7 @@
 USTRUCT(BlueprintType)
 struct FASSWorldReticleParameters : public FWorldReticleParameters
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 
 };
@@ -26,16 +26,16 @@ struct FASSWorldReticleParameters : public FWorldReticleParameters
 UCLASS(Blueprintable, notplaceable)
 class ABILITYSYSTEMSETUP_API AASSGameplayAbilityWorldReticle : public AGameplayAbilityWorldReticle
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+    
 public:
-	AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer);
+    AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer);
 
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Category = "Reticle")
-		FASSWorldReticleParameters ASSParameters;
+    UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"), Category = "Reticle")
+        FASSWorldReticleParameters ASSParameters;
 
-	virtual void ASSInitializeReticle(AGameplayAbilityTargetActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters);
+    virtual void ASSInitializeReticle(AGameplayAbilityTargetActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters);
 
 protected:
 

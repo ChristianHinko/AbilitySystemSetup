@@ -15,11 +15,11 @@
 UCLASS()
 class ABILITYSYSTEMSETUP_API UASSGameplayCueManager : public UGameplayCueManager
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual bool ShouldAsyncLoadRuntimeObjectLibraries() const override;
+    virtual bool ShouldAsyncLoadRuntimeObjectLibraries() const override;
 
-	virtual void FlushPendingCues() override;
+    virtual void FlushPendingCues() override;
 
 };

@@ -15,15 +15,15 @@
 UCLASS()
 class ABILITYSYSTEMSETUP_API UASSAbilitySystemGlobals : public UAbilitySystemGlobals
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UASSAbilitySystemGlobals(const FObjectInitializer& ObjectInitializer);
+    UASSAbilitySystemGlobals(const FObjectInitializer& ObjectInitializer);
 
 
-	virtual FGameplayAbilityActorInfo* AllocAbilityActorInfo() const override;
-	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
+    virtual FGameplayAbilityActorInfo* AllocAbilityActorInfo() const override;
+    virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
 
-	//virtual void AllocAttributeSetInitter() override;
+    //virtual void AllocAttributeSetInitter() override;
 
 };

@@ -29,24 +29,24 @@
 USTRUCT(BlueprintType)
 struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTargetDataFilter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	FASSGameplayTargetDataFilter();
+    FASSGameplayTargetDataFilter();
 
 
-	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override final;
-	/**
-	 * Override ASSFilterPassesForActor() instead because FASSGameplayTargetDataFilter marks FilterPassesForActor() as final. The reason for this is
-	 * we always need this implementation to run before any child implementations.
-	 */
-	virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const;
+    virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override final;
+    /**
+     * Override ASSFilterPassesForActor() instead because FASSGameplayTargetDataFilter marks FilterPassesForActor() as final. The reason for this is
+     * we always need this implementation to run before any child implementations.
+     */
+    virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const;
 
-	/**
-	 * Exclusively accept Actors that implement the IAbilitySystemInterface.
-	 * NOTE: This setting is not affected by bReverseFilter
-	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
-		bool bOnlyAcceptAbilitySystemInterfaces;
+    /**
+     * Exclusively accept Actors that implement the IAbilitySystemInterface.
+     * NOTE: This setting is not affected by bReverseFilter
+     */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
+        bool bOnlyAcceptAbilitySystemInterfaces;
 
 };
 
@@ -64,17 +64,17 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 USTRUCT(BlueprintType)
 struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter_MultiFilter : public FASSGameplayTargetDataFilter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	FASSGameplayTargetDataFilter_MultiFilter();
+    FASSGameplayTargetDataFilter_MultiFilter();
 
 
-	virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const override;
+    virtual bool ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const override;
 
-	/** Whitelist */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
-		TArray<TSubclassOf<AActor>> RequiredActorClasses;
-	/** Blacklist */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
-		TArray<TSubclassOf<AActor>> FilteredActorClasses;
+    /** Whitelist */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
+        TArray<TSubclassOf<AActor>> RequiredActorClasses;
+    /** Blacklist */
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Filter")
+        TArray<TSubclassOf<AActor>> FilteredActorClasses;
 };

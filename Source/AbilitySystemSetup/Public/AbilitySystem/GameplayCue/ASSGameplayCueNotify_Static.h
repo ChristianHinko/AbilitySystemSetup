@@ -15,9 +15,9 @@
 UCLASS()
 class ABILITYSYSTEMSETUP_API UASSGameplayCueNotify_Static : public UGameplayCueNotify_Static
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UASSGameplayCueNotify_Static();
+    UASSGameplayCueNotify_Static();
 
 };

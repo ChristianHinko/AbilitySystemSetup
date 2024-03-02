@@ -23,24 +23,24 @@ struct FActiveGameplayEffectHandle;
 USTRUCT()
 struct ABILITYSYSTEMSETUP_API FASSAbilitySetGrantedHandles
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	friend class UASSAbilitySet;
+    friend class UASSAbilitySet;
 public:
-	/** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
-	void RemoveFromAbilitySystemComponent();
+    /** Remove granted Attribute Sets, remove granted Effects, and clear granted Abilities (e.g. death of Avatar Actor) */
+    void RemoveFromAbilitySystemComponent();
 
 protected:
-	UPROPERTY(Transient)
-		TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
-	UPROPERTY(Transient)
-		TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
-	UPROPERTY(Transient)
-		TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
+    UPROPERTY(Transient)
+        TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
+    UPROPERTY(Transient)
+        TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
+    UPROPERTY(Transient)
+        TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 
 
-	UPROPERTY(Transient)
-		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+    UPROPERTY(Transient)
+        TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };
 
 
@@ -50,23 +50,23 @@ protected:
 UCLASS(Blueprintable, Const)
 class ABILITYSYSTEMSETUP_API UASSAbilitySet : public UObject
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	/** Grants the Ability Set while outputing handles that can be used later for removal */
-	void GrantToAbilitySystemComponent(UAbilitySystemComponent* InASC, UObject* InSourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const;
+    /** Grants the Ability Set while outputing handles that can be used later for removal */
+    void GrantToAbilitySystemComponent(UAbilitySystemComponent* InASC, UObject* InSourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const;
 
 protected:
-	/** Abilities to give on grant NOTE: These Abilities are given a level of 1 */
-	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
-		TArray<const TSubclassOf<UGameplayAbility>> GrantedAbilities;
+    /** Abilities to give on grant NOTE: These Abilities are given a level of 1 */
+    UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+        TArray<const TSubclassOf<UGameplayAbility>> GrantedAbilities;
 
-	/** Effects to apply on grant (e.g. GE_InitCharacter, GE_HealthRegen) NOTE: These Effects are assigned a level of 1 */
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-		TArray<const TSubclassOf<UGameplayEffect>> GrantedEffects;
+    /** Effects to apply on grant (e.g. GE_InitCharacter, GE_HealthRegen) NOTE: These Effects are assigned a level of 1 */
+    UPROPERTY(EditDefaultsOnly, Category = "Effects")
+        TArray<const TSubclassOf<UGameplayEffect>> GrantedEffects;
 
-	/** Attribute Sets to create and add on grant */
-	UPROPERTY(EditDefaultsOnly, Category = "AttributeSets")
-		TArray<const TSubclassOf<UAttributeSet>> GrantedAttributeSets;
+    /** Attribute Sets to create and add on grant */
+    UPROPERTY(EditDefaultsOnly, Category = "AttributeSets")
+        TArray<const TSubclassOf<UAttributeSet>> GrantedAttributeSets;
 
 };

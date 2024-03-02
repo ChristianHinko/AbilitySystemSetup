@@ -29,57 +29,57 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAvatarExtensionDelegate, UAbilitySystemComp
  * 
  * 
  * ----------------------------------
- *				Setup
+ *                Setup
  * ----------------------------------
  * 
  * Recomended callsites for initialization and uninitialization:
- *			PostInitializeComponents()
- *				- Call InitializeAbilitySystemComponent() after the Super call
- *			EndPlay()
- *				- Call UninitializeAbilitySystemComponent() before the Super call
+ *            PostInitializeComponents()
+ *                - Call InitializeAbilitySystemComponent() after the Super call
+ *            EndPlay()
+ *                - Call UninitializeAbilitySystemComponent() before the Super call
  */
 UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
 class ABILITYSYSTEMSETUP_API UASSActorComponent_AvatarActorExtension : public UActorComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UASSActorComponent_AvatarActorExtension(const FObjectInitializer& ObjectInitializer);
+    UASSActorComponent_AvatarActorExtension(const FObjectInitializer& ObjectInitializer);
 
 
-	/** Ability sets to grant to this avatar's ability system. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySets")
-		TArray<TSubclassOf<UASSAbilitySet>> AbilitySets;
+    /** Ability sets to grant to this avatar's ability system. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySets")
+        TArray<TSubclassOf<UASSAbilitySet>> AbilitySets;
 
-	/** Sets the Avatar Actor with the ASC */
-	virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC);
-	/** Clears the Avatar Actor from the ASC */
-	virtual void UninitializeAbilitySystemComponent();
+    /** Sets the Avatar Actor with the ASC */
+    virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent* InASC);
+    /** Clears the Avatar Actor from the ASC */
+    virtual void UninitializeAbilitySystemComponent();
 
-	/** Broadcasted when the Ability System is set up and ready to go */
-	FAvatarExtensionDelegate OnInitializeAbilitySystemComponentDelegate;
-	/** Server and client event for removing all Loose AvatarActor-related Tags. */
-	FAvatarExtensionDelegate RemoveLooseAvatarRelatedTagsDelegate;
+    /** Broadcasted when the Ability System is set up and ready to go */
+    FAvatarExtensionDelegate OnInitializeAbilitySystemComponentDelegate;
+    /** Server and client event for removing all Loose AvatarActor-related Tags. */
+    FAvatarExtensionDelegate RemoveLooseAvatarRelatedTagsDelegate;
 
-	bool IsInitializedWithASC() const { return bInitialized; }
+    bool IsInitializedWithASC() const { return bInitialized; }
 
 protected:
-	//  BEGIN UActorComponent interface
-	virtual void OnRegister() override;
-	//  END UActorComponent interface
+    //  BEGIN UActorComponent interface
+    virtual void OnRegister() override;
+    //  END UActorComponent interface
 
-	/** The initialized ASC */
-	UPROPERTY(Transient)
-		TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+    /** The initialized ASC */
+    UPROPERTY(Transient)
+        TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 private:
-	/** Broadcasts event to allow external sources to cleanup any Loose Gameplay Tags they were managing */
-	void RemoveLooseAvatarRelatedTags();
+    /** Broadcasts event to allow external sources to cleanup any Loose Gameplay Tags they were managing */
+    void RemoveLooseAvatarRelatedTags();
 
-	/** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
-	TArray<FASSAbilitySetGrantedHandles> GrantedHandles;
-	/** Indicates that the list of AbilitySets has been granted */
-	uint8 bGrantedAbilitySets : 1;
-	/** Indicates that we are initialized with an Ability System Component */
-	uint8 bInitialized : 1;
+    /** Abilities, Active Effects, and Attribute Sets to keep track of so we can clean them up from our ASC on UnPossess */
+    TArray<FASSAbilitySetGrantedHandles> GrantedHandles;
+    /** Indicates that the list of AbilitySets has been granted */
+    uint8 bGrantedAbilitySets : 1;
+    /** Indicates that we are initialized with an Ability System Component */
+    uint8 bInitialized : 1;
 };

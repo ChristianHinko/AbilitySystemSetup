@@ -7,5 +7,5 @@
 
 AASSGameplayCueNotify_Actor::AASSGameplayCueNotify_Actor()
 {
-	//bAutoDestroyOnRemove = true;
+    //bAutoDestroyOnRemove = true;
 }

@@ -7,15 +7,15 @@
 
 bool UASSGameplayCueManager::ShouldAsyncLoadRuntimeObjectLibraries() const
 {
-	// Idea: maybe check this machines memory specs to determine this ret val
+    // Idea: maybe check this machines memory specs to determine this ret val
 
 
-	return false;
+    return false;
 }
 
 void UASSGameplayCueManager::FlushPendingCues()
 {
-	Super::FlushPendingCues();
+    Super::FlushPendingCues();
 
 
 }
