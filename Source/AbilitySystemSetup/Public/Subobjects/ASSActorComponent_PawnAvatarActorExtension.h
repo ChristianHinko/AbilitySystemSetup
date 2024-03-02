@@ -15,11 +15,11 @@ class UInputAction;
 
 /**
  * Pawn version that handles updating GAS during controller changes and sets up GAS input events.
- * 
+ *
  * ----------------------------------
  *                Setup
  * ----------------------------------
- * 
+ *
  * Required callsites:
  *        PossessedBy()
  *            - Call OnOwnerControllerChanged() after the Super call
@@ -31,8 +31,8 @@ class UInputAction;
  *            - Call OnOwnerSetupPlayerInputComponent() after the Super call at the end of the function
  *        DestroyPlayerInputComponent()
  *            - Call OnOwnerDestroyPlayerInputComponent() after the Super call at the end of the function
- * 
- * 
+ *
+ *
  * Recomended callsites for Pawn with ASC on the Player State:
  *        PossessedBy()
  *            - Call InitializeAbilitySystemComponent() after the Super call
@@ -42,7 +42,7 @@ class UInputAction;
  *            - If IsPlayerControlled()
  *                - Call InitializeAbilitySystemComponent() after the Super call IF we have a valid Player State
  *                - Call UninitializeAbilitySystemComponent() after the Super call IF we do not have a valid Player State
- * 
+ *
  * Recomended callsites for Pawn with ASC on itself:
  *        See ASSActorComponent_AvatarActorExtension for setup
  */

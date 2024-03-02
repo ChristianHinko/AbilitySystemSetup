@@ -15,7 +15,7 @@ class AASSGameplayAbilityWorldReticle;
 
 /**
  * Base Target Actor class.
- * 
+ *
  * Can be disabled and re-enabled across multiple Ability Task activations.
  * Has array of spawned World Reticles.
  */
@@ -44,7 +44,7 @@ public:
 
 protected:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-    
+
 
     AASSGameplayAbilityWorldReticle* SpawnWorldReticle(const FVector& InLocation, const FRotator& InRotation);
 

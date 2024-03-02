@@ -36,9 +36,9 @@ protected:
 
 /**
  * Our custom FAttributeSetInitter.
- * 
+ *
  * Optional struct some games may find useful. Not implemented.
- * 
+ *
  * Possible reasons to use an FAttributeSetInitter
  *  - Curve tables defining descrete attribute values for each ASC level (this would use FAttributeSetInitterDiscreteLevels)
  *    - We can maybe use this for Curves with infinite scaling as you level up

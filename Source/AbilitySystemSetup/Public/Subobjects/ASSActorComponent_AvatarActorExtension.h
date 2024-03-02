@@ -19,19 +19,19 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FAvatarExtensionDelegate, UAbilitySystemComp
 /**
  * Provides common GAS initialization/uninitialization logic with Ability Sets granted while initialized.
  * This component is to be used by avatar actors only.
- * 
- * For initialization, it sets us up as the AvatarActor for the ASC and grants Ability Sets (allowing you to choose 
- * starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it ungrants the granted Ability Sets, 
+ *
+ * For initialization, it sets us up as the AvatarActor for the ASC and grants Ability Sets (allowing you to choose
+ * starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it ungrants the granted Ability Sets,
  * gives external sources an opportunity to remove Loose Gameplay Tags (this is the only manual cleanup),
  * and disassociates us from the ASC.
- * 
+ *
  * This component does not automate anything. You have to manually call on provided functions for anything to happen......
- * 
- * 
+ *
+ *
  * ----------------------------------
  *                Setup
  * ----------------------------------
- * 
+ *
  * Recomended callsites for initialization and uninitialization:
  *            PostInitializeComponents()
  *                - Call InitializeAbilitySystemComponent() after the Super call

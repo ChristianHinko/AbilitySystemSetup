@@ -10,7 +10,7 @@
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API UASSEngineSubsystem : public UEngineSubsystem

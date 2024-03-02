@@ -16,7 +16,7 @@ UCLASS()
 class ABILITYSYSTEMSETUP_API UASSAbilityTask : public UAbilityTask
 {
     GENERATED_BODY()
-    
+
 public:
     UASSAbilityTask(const FObjectInitializer& ObjectInitializer);
 

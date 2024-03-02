@@ -27,7 +27,7 @@ UCLASS(Blueprintable, notplaceable)
 class ABILITYSYSTEMSETUP_API AASSGameplayAbilityWorldReticle : public AGameplayAbilityWorldReticle
 {
     GENERATED_BODY()
-    
+
 public:
     AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer);
 
