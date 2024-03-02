@@ -40,7 +40,7 @@ void UASSActorComponent_PawnAvatarActorExtension::UninitializeAbilitySystemCompo
 {
     Super::UninitializeAbilitySystemComponent();
 
-    checkf(GetOwner(), TEXT("Can't remove our bindings from owner's input component as owner is NULL.")); // TODO @techdebt: Is this even important to do? If owner got destroyed then its input component was probably also destroyed? So why are we unbinding?
+    checkf(GetOwner(), TEXT("Can't remove our bindings from owner's input component as owner is NULL."));
     UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
     if (IsValid(playerEnhancedInputComponent))
     {
