@@ -31,7 +31,8 @@ void AASSActor_Example::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
 
-    AvatarActorExtensionComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
+    check(AbilitySystemComponent);
+    AvatarActorExtensionComponent->InitializeAbilitySystemComponent(*AbilitySystemComponent);
 }
 
 void AASSActor_Example::EndPlay(const EEndPlayReason::Type EndPlayReason)

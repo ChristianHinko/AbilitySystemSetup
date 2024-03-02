@@ -38,7 +38,9 @@ void AASSCharacter_Example::PossessedBy(AController* NewController)
     Super::PossessedBy(NewController);
     PawnAvatarActorExtensionComponent->OnOwnerControllerChanged(); // this doesn't do anything in this case because our ASC is not initialized yet but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly
 
-    PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
+    UAbilitySystemComponent* asc = GetAbilitySystemComponent();
+    check(asc);
+    PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(*asc);
 }
 void AASSCharacter_Example::UnPossessed()
 {
@@ -59,7 +61,9 @@ void AASSCharacter_Example::OnRep_PlayerState()
         if (IsValid(GetPlayerState()))
         {
             // We have a Player State so initialize its ASC
-            PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(GetAbilitySystemComponent());
+            UAbilitySystemComponent* asc = GetAbilitySystemComponent();
+            check(asc);
+            PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(*asc);
         }
         else
         {
@@ -76,12 +80,12 @@ void AASSCharacter_Example::OnRep_Controller()
 }
 
 
-void AASSCharacter_Example::OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent* ASC)
+void AASSCharacter_Example::OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent& ASC)
 {
 #if 0
-    ASC->SetLooseGameplayTagCount(Tag_MovementModeSwimming, 0);    // sets swimming tag count to 0
-    ASC->RemoveLooseGameplayTag(Tag_MovementModeSwimming);        // decrements swimming tag count
-    ASC->RemoveLooseGameplayTag(Tag_MovementModeSwimming, 2);    // decrements swimming tag count by 2
+    ASC.SetLooseGameplayTagCount(Tag_MovementModeSwimming, 0);    // sets swimming tag count to 0
+    ASC.RemoveLooseGameplayTag(Tag_MovementModeSwimming);        // decrements swimming tag count
+    ASC.RemoveLooseGameplayTag(Tag_MovementModeSwimming, 2);    // decrements swimming tag count by 2
 #endif
 }
 
@@ -90,7 +94,8 @@ void AASSCharacter_Example::SetupPlayerInputComponent(UInputComponent* PlayerInp
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    PawnAvatarActorExtensionComponent->OnOwnerSetupPlayerInputComponent(PlayerInputComponent);
+    check(PlayerInputComponent);
+    PawnAvatarActorExtensionComponent->OnOwnerSetupPlayerInputComponent(*PlayerInputComponent);
 }
 void AASSCharacter_Example::DestroyPlayerInputComponent()
 {

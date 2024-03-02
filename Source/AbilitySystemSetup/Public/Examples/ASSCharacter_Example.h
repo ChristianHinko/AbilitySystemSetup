@@ -45,6 +45,6 @@ protected:
     //  END APawn Interface
 
     //  BEGIN AvatarExtensionDelegate
-    virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent* ASC);
+    virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent& ASC);
     //  END AvatarExtensionDelegate
 };
