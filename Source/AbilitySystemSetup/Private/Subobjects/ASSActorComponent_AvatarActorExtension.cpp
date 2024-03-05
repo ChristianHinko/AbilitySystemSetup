@@ -110,49 +110,55 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 }
 void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent()
 {
+    UAbilitySystemComponent* asc = AbilitySystemComponent.Get();
+    if (!asc)
+    {
+        GC_LOG(this,
+            LogASSAvatarActorExtensionComponent,
+            Log,
+            TEXT("Tried uninitializing ASC for actor [%s], but there's no ASC to uninitialize. "));
+        return;
+    }
+
+    if (!ensureAlways(asc->GetAvatarActor() == GetOwner()))
+    {
+        GC_LOG(this,
+            LogASSAvatarActorExtensionComponent,
+            Error,
+            TEXT("Tried uninitializing the ASC for actor [%s], but the actor wasn't the avatar actor."));
+        return;
+    }
+
     bInitialized = false;
 
-    if (UAbilitySystemComponent* asc = AbilitySystemComponent.Get())
+    // Cancel ongoing stuff
+    asc->CancelAbilities(nullptr, nullptr);
+    asc->RemoveAllGameplayCues();
+
+
+    // Remove granted AbilitySets
+    if (GetOwnerRole() == ROLE_Authority)
     {
-        if (asc->GetAvatarActor() == GetOwner())
+        for (FASSAbilitySetGrantedHandles grantHandle : GrantedHandles)
         {
-            // Cancel ongoing stuff
-            asc->CancelAbilities(nullptr, nullptr);
-            asc->RemoveAllGameplayCues();
-
-
-            // Remove granted AbilitySets
-            if (GetOwnerRole() == ROLE_Authority)
-            {
-                for (FASSAbilitySetGrantedHandles grantHandle : GrantedHandles)
-                {
-                    grantHandle.RemoveFromAbilitySystemComponent();
-                }
-            }
-
-            // Remove Loose Gameplay Tags
-            RemoveLooseAvatarRelatedTags(*asc);
-
-
-            // Clear the AvatarActor from the ASC
-            if (IsValid(asc->GetOwnerActor()))
-            {
-                // Clear our avatar actor from it (this will re-init other actor info as well)
-                asc->SetAvatarActor(nullptr);
-            }
-            else
-            {
-                // Clear ALL actor info because don't even have an owner actor for some reason
-                asc->ClearActorInfo();
-            }
+            grantHandle.RemoveFromAbilitySystemComponent();
         }
-        else
-        {
-            GC_LOG(this,
-                LogASSAvatarActorExtensionComponent,
-                Error,
-                TEXT("Tried uninitializing the ASC when the actor with this component was not the avatar actor"));
-        }
+    }
+
+    // Remove Loose Gameplay Tags
+    RemoveLooseAvatarRelatedTags(*asc);
+
+
+    // Clear the AvatarActor from the ASC
+    if (asc->GetOwnerActor())
+    {
+        // Clear our avatar actor from it (this will re-init other actor info as well)
+        asc->SetAvatarActor(nullptr);
+    }
+    else
+    {
+        // Clear ALL actor info because don't even have an owner actor for some reason
+        asc->ClearActorInfo();
     }
 
     AbilitySystemComponent = nullptr;

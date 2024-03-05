@@ -80,20 +80,20 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
     // Bind to all Input Actions so we can tell the ability system when ability inputs have been pressed/released
     check(GEngine);
     UISEngineSubsystem_ObjectReferenceLibrary* inputSetupObjectReferenceLibrary = GEngine->GetEngineSubsystem<UISEngineSubsystem_ObjectReferenceLibrary>();
-    if (!IsValid(inputSetupObjectReferenceLibrary))
+    if (!ensureAlways(IsValid(inputSetupObjectReferenceLibrary)))
     {
         return;
     }
 
     // Bind to all known Input Actions
     UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(&inPlayerInputComponent);
-    if (IsValid(playerEnhancedInputComponent))
+    if (ensureAlways(IsValid(playerEnhancedInputComponent)))
     {
         const TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>>& inputActionTagMap = inputSetupObjectReferenceLibrary->GetAllInputActions();
         for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& tagInputActionPair : inputActionTagMap)
         {
             const UInputAction* inputAction = tagInputActionPair.Value.Get();
-            if (IsValid(inputAction))
+            if (ensureAlways(IsValid(inputAction)))
             {
                 BindInputAction(*playerEnhancedInputComponent, *inputAction, tagInputActionPair.Key);
             }
@@ -105,8 +105,9 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
     inputSetupObjectReferenceLibrary->OnInputActionAdded.AddWeakLambda(this,
             [this](const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& inTagInputActionPair)
             {
+                check(GetOwner());
                 UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
-                if (IsValid(playerEnhancedInputComponent))
+                if (ensureAlways(IsValid(playerEnhancedInputComponent)))
                 {
                     const UInputAction* inputAction = inTagInputActionPair.Value.Get();
                     if (IsValid(inputAction))
@@ -121,6 +122,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
     inputSetupObjectReferenceLibrary->OnInputActionRemoved.AddWeakLambda(this,
             [this](const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& inTagInputActionPair)
             {
+                check(GetOwner());
                 UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
                 if (IsValid(playerEnhancedInputComponent))
                 {
