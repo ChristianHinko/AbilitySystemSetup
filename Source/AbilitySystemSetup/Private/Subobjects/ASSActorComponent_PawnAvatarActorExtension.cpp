@@ -64,7 +64,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerControllerChanged()
                 LogASSPawnAvatarActorExtensionComponent,
                 Error,
                 TEXT("Tried ")
-                GC_CSTRINGIZE(UAbilitySystemComponent::RefreshAbilityActorInfo())
+                GC_STRING_LITERALIZE(UAbilitySystemComponent::RefreshAbilityActorInfo())
                 TEXT(", but the actor with this component was not the avatar actor."));
         }
     }
