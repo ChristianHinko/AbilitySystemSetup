@@ -5,7 +5,7 @@
 
 #include "AbilitySystem/Types/ASSAbilitySet.h"
 #include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
-#include "GCLog.h"
+#include "GCUtils_Log.h"
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 #include "Subobjects/ASSActorComponent_PawnAvatarActorExtension.h"
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)

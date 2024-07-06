@@ -8,7 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
-#include "GCLog.h"
+#include "GCUtils_Log.h"
 
 DEFINE_LOG_CATEGORY(LogASSPawnAvatarActorExtensionComponent)
 
