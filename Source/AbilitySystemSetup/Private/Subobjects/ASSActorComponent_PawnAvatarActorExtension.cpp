@@ -26,7 +26,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnRegister()
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
     if (GetOwner()->IsA<APawn>() == false)
     {
-        GC_LOG(this,
+        GC_LOG_UOBJECT(this,
             LogASSPawnAvatarActorExtensionComponent,
             Error,
             TEXT("Incorrect usage of this component. Component owner [%s] is not a Pawn."),
@@ -60,7 +60,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerControllerChanged()
         }
         else
         {
-            GC_LOG(this,
+            GC_LOG_UOBJECT(this,
                 LogASSPawnAvatarActorExtensionComponent,
                 Error,
                 TEXT("Tried ")
@@ -151,7 +151,7 @@ void UASSActorComponent_PawnAvatarActorExtension::BindInputAction(UEnhancedInput
     PressedInputActionBindingHandles.Add(&inInputAction, pressedBindingHandle);
     ReleasedInputActionBindingHandles.Add(&inInputAction, releasedBindingHandle);
 
-    GC_LOG(this, LogASSAbilitySystemInputSetup, Log, TEXT("Binding to newly added input action [%s] for calling GAS input events."), *inInputActionTag.ToString());
+    GC_LOG_UOBJECT(this, LogASSAbilitySystemInputSetup, Log, TEXT("Binding to newly added input action [%s] for calling GAS input events."), *inInputActionTag.ToString());
 }
 
 void UASSActorComponent_PawnAvatarActorExtension::UnBindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag)
@@ -167,7 +167,7 @@ void UASSActorComponent_PawnAvatarActorExtension::UnBindInputAction(UEnhancedInp
         PressedInputActionBindingHandles.Remove(&inInputAction);
     }
 
-    GC_LOG(this, LogASSAbilitySystemInputSetup, Log, TEXT("Input action [%s] removed. Stopping the calling of GAS input events."), *inInputActionTag.ToString());
+    GC_LOG_UOBJECT(this, LogASSAbilitySystemInputSetup, Log, TEXT("Input action [%s] removed. Stopping the calling of GAS input events."), *inInputActionTag.ToString());
 }
 
 void UASSActorComponent_PawnAvatarActorExtension::UnBindAllInputActions(UEnhancedInputComponent& inPlayerEnhancedInputComponent)

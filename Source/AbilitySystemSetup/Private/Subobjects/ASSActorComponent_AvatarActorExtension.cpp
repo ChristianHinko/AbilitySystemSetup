@@ -27,7 +27,7 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
     if (GetOwner()->IsA<APawn>() && this->IsA<UASSActorComponent_PawnAvatarActorExtension>() == false)
     {
-        GC_LOG(this, LogASSAvatarActorExtensionComponent, Error, TEXT("Incorrect usage of this component. Use the pawn specific version: [%s]. Component owner is a Pawn: [%s]"), TNameOf<UASSActorComponent_PawnAvatarActorExtension>::GetName(), *GetNameSafe(GetOwner()));
+        GC_LOG_UOBJECT(this, LogASSAvatarActorExtensionComponent, Error, TEXT("Incorrect usage of this component. Use the pawn specific version: [%s]. Component owner is a Pawn: [%s]"), TNameOf<UASSActorComponent_PawnAvatarActorExtension>::GetName(), *GetNameSafe(GetOwner()));
         check(0);
     }
 
@@ -35,7 +35,7 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
     GetOwner()->GetComponents(ThisClass::StaticClass(), avatarActorExtensionComponents);
     if (avatarActorExtensionComponents.Num() > 1)
     {
-        GC_LOG(this, LogASSAvatarActorExtensionComponent, Error, TEXT("No more than one [%s] is allowed. Component owner: [%s]"), TNameOf<UASSActorComponent_AvatarActorExtension>::GetName(), *GetNameSafe(GetOwner()));
+        GC_LOG_UOBJECT(this, LogASSAvatarActorExtensionComponent, Error, TEXT("No more than one [%s] is allowed. Component owner: [%s]"), TNameOf<UASSActorComponent_AvatarActorExtension>::GetName(), *GetNameSafe(GetOwner()));
         check(0);
     }
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -46,13 +46,13 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 {
     if (AbilitySystemComponent == &inASC)
     {
-        GC_LOG(this, LogASSAvatarActorExtensionComponent, Verbose, TEXT("Called again after already being initialized - no need to proceed"));
+        GC_LOG_UOBJECT(this, LogASSAvatarActorExtensionComponent, Verbose, TEXT("Called again after already being initialized - no need to proceed"));
         return;
     }
     // Resolve edge case: You forgot to uninitialize the inASC before initializing a new one
     if (bInitialized || AbilitySystemComponent.IsValid())
     {
-        GC_LOG(this,
+        GC_LOG_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
             Warning,
             TEXT("Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."));
@@ -61,7 +61,7 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 
     AActor* currentAvatar = inASC.GetAvatarActor(); // the passed in ASC's old avatar
     AActor* newAvatarToUse = GetOwner();            // new avatar for the passed in ASC
-    GC_LOG(this,
+    GC_LOG_UOBJECT(this,
         LogASSAvatarActorExtensionComponent,
         Verbose,
         TEXT("Setting up ASC [%s] on actor [%s] with owner [%s] and avatar actor [%s]"), *inASC.GetName(), *GetNameSafe(newAvatarToUse), *GetNameSafe(inASC.GetOwnerActor()), *GetNameSafe(currentAvatar));
@@ -75,7 +75,7 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
             {
                 // Our old avatar actor forgot to uninitialize the ASC    OR    our old avatar actor hasn't been destroyed by replication yet during respawn
                 // We will uninitialize the ASC from the old avatar before initializing it with this new avatar
-                GC_CLOG(this,
+                GC_CLOG_UOBJECT(this,
                     GetOwnerRole() == ROLE_Authority,
                     LogASSAvatarActorExtensionComponent,
                     Warning,
@@ -113,7 +113,7 @@ void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent
     UAbilitySystemComponent* asc = AbilitySystemComponent.Get();
     if (!asc)
     {
-        GC_LOG(this,
+        GC_LOG_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
             Log,
             TEXT("Tried uninitializing ASC for actor [%s], but there's no ASC to uninitialize. "));
@@ -122,7 +122,7 @@ void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent
 
     if (!ensureAlways(asc->GetAvatarActor() == GetOwner()))
     {
-        GC_LOG(this,
+        GC_LOG_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
             Error,
             TEXT("Tried uninitializing the ASC for actor [%s], but the actor wasn't the avatar actor."));
