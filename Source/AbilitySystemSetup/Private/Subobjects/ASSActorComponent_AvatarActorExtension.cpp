@@ -27,7 +27,11 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
     if (GetOwner()->IsA<APawn>() && this->IsA<UASSActorComponent_PawnAvatarActorExtension>() == false)
     {
-        GC_LOG_UOBJECT(this, LogASSAvatarActorExtensionComponent, Error, TEXT("Incorrect usage of this component. Use the pawn specific version: [%s]. Component owner is a Pawn: [%s]"), TNameOf<UASSActorComponent_PawnAvatarActorExtension>::GetName(), *GetNameSafe(GetOwner()));
+        GC_LOG_STR_UOBJECT(this,
+            LogASSAvatarActorExtensionComponent,
+            Error,
+            GCUtils::Materialize(TStringBuilder<512>()) << TEXT("Incorrect usage of this component. Use the pawn specific version: [") << TNameOf<UASSActorComponent_PawnAvatarActorExtension>::GetName() << TEXT("]. Component owner is a Pawn: [") << GCUtils::String::GetUObjectNameSafe(GetOwner()) << TEXT("].")
+            );
         check(0);
     }
 
@@ -35,7 +39,11 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
     GetOwner()->GetComponents(ThisClass::StaticClass(), avatarActorExtensionComponents);
     if (avatarActorExtensionComponents.Num() > 1)
     {
-        GC_LOG_UOBJECT(this, LogASSAvatarActorExtensionComponent, Error, TEXT("No more than one [%s] is allowed. Component owner: [%s]"), TNameOf<UASSActorComponent_AvatarActorExtension>::GetName(), *GetNameSafe(GetOwner()));
+        GC_LOG_STR_UOBJECT(this,
+            LogASSAvatarActorExtensionComponent,
+            Error,
+            GCUtils::Materialize(TStringBuilder<512>()) << TEXT("No more than one [") << TNameOf<UASSActorComponent_AvatarActorExtension>::GetName() << TEXT("] is allowed. Component owner: [") << GCUtils::String::GetUObjectNameSafe(GetOwner()) << TEXT("].")
+            );
         check(0);
     }
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -46,25 +54,31 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 {
     if (AbilitySystemComponent == &inASC)
     {
-        GC_LOG_UOBJECT(this, LogASSAvatarActorExtensionComponent, Verbose, TEXT("Called again after already being initialized - no need to proceed"));
+        GC_LOG_STR_UOBJECT(this,
+            LogASSAvatarActorExtensionComponent,
+            Verbose,
+            TEXT("Called again after already being initialized - no need to proceed.")
+            );
         return;
     }
     // Resolve edge case: You forgot to uninitialize the inASC before initializing a new one
     if (bInitialized || AbilitySystemComponent.IsValid())
     {
-        GC_LOG_UOBJECT(this,
+        GC_LOG_STR_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
             Warning,
-            TEXT("Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."));
+            TEXT("Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff.")
+            );
         UninitializeAbilitySystemComponent();
     }
 
     AActor* currentAvatar = inASC.GetAvatarActor(); // the passed in ASC's old avatar
     AActor* newAvatarToUse = GetOwner();            // new avatar for the passed in ASC
-    GC_LOG_UOBJECT(this,
+    GC_LOG_STR_UOBJECT(this,
         LogASSAvatarActorExtensionComponent,
         Verbose,
-        TEXT("Setting up ASC [%s] on actor [%s] with owner [%s] and avatar actor [%s]"), *inASC.GetName(), *GetNameSafe(newAvatarToUse), *GetNameSafe(inASC.GetOwnerActor()), *GetNameSafe(currentAvatar));
+        GCUtils::Materialize(TStringBuilder<512>()) << TEXT("Setting up ASC [") << inASC.GetFName() << TEXT("] on actor [") << GCUtils::String::GetUObjectNameSafe(newAvatarToUse) << TEXT("] with owner [") << GCUtils::String::GetUObjectNameSafe(inASC.GetOwnerActor()) << TEXT("] and avatar actor [") << GCUtils::String::GetUObjectNameSafe(currentAvatar) << TEXT("].")
+        );
 
     // Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client)
     if (currentAvatar != nullptr && currentAvatar != newAvatarToUse) // If we are switching avatars (there was previously one in use)
@@ -75,11 +89,12 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
             {
                 // Our old avatar actor forgot to uninitialize the ASC    OR    our old avatar actor hasn't been destroyed by replication yet during respawn
                 // We will uninitialize the ASC from the old avatar before initializing it with this new avatar
-                GC_CLOG_UOBJECT(this,
-                    GetOwnerRole() == ROLE_Authority,
+                GC_CLOG_STR_UOBJECT(this,
+                    GetOwnerRole() == ROLE_Authority, // Only on the Authority because we can be certain there is something wrong if the server gets here (regardless this log should catch our attention and get us to fix it).
                     LogASSAvatarActorExtensionComponent,
                     Warning,
-                    TEXT("Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff."));    // only on the Authority because we can be certain there is something wrong if the server gets here (regardless this log should catch our attention and get us to fix it)
+                    TEXT("Looks like you forgot to uninitialize the ASC before initializing a new one. Maybe you forgot to uninitialize on UnPossessed() - this will probably cause unwanted side-effects such as Gameplay Effects lingering after UnPossessed(). We are uninitializing the ASC for you before initializing the new one BUT you should manually do this instead to prevent lingering stuff.")
+                    );
                 previous->UninitializeAbilitySystemComponent(); // kick out the old avatar from the ASC
             }
         }
@@ -113,19 +128,21 @@ void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent
     UAbilitySystemComponent* asc = AbilitySystemComponent.Get();
     if (!asc)
     {
-        GC_LOG_UOBJECT(this,
+        GC_LOG_STR_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
             Log,
-            TEXT("Tried uninitializing ASC for actor [%s], but there's no ASC to uninitialize. "));
+            GCUtils::Materialize(TStringBuilder<256>()) << TEXT("Tried uninitializing ASC for actor [") << GCUtils::String::GetUObjectNameSafe(GetOwner()) << TEXT("], but there's no ASC to uninitialize.")
+            );
         return;
     }
 
     if (!ensureAlways(asc->GetAvatarActor() == GetOwner()))
     {
-        GC_LOG_UOBJECT(this,
+        GC_LOG_STR_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
             Error,
-            TEXT("Tried uninitializing the ASC for actor [%s], but the actor wasn't the avatar actor."));
+            GCUtils::Materialize(TStringBuilder<256>()) << TEXT("Tried uninitializing the ASC for actor [") << GCUtils::String::GetUObjectNameSafe(GetOwner()) << TEXT("], but the actor wasn't the avatar actor.")
+            );
         return;
     }
 
