@@ -23,8 +23,8 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
     Super::OnRegister();
 
     check(GetOwner());
-
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+    
+#if !NO_LOGGING || DO_CHECK
     if (GetOwner()->IsA<APawn>() && this->IsA<UASSActorComponent_PawnAvatarActorExtension>() == false)
     {
         GC_LOG_STR_UOBJECT(this,
@@ -46,22 +46,24 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
             );
         check(0);
     }
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#endif // !NO_LOGGING || DO_CHECK
 }
 
 
 void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC)
 {
+    check(GetOwner());
+
     if (AbilitySystemComponent == &inASC)
     {
         GC_LOG_STR_UOBJECT(this,
             LogASSAvatarActorExtensionComponent,
-            Verbose,
-            TEXT("Called again after already being initialized - no need to proceed.")
+            Warning,
+            TEXT("Called again after already being initialized - no need to proceed. We should probably track down the reason this is being called even after it's already initialized.")
             );
         return;
     }
-    // Resolve edge case: You forgot to uninitialize the inASC before initializing a new one
+    // Resolve edge case: You forgot to uninitialize the inASC before initializing a new one.
     if (bInitialized || AbilitySystemComponent.IsValid())
     {
         GC_LOG_STR_UOBJECT(this,
@@ -72,7 +74,7 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
         UninitializeAbilitySystemComponent();
     }
 
-    AActor* currentAvatar = inASC.GetAvatarActor(); // the passed in ASC's old avatar
+    const AActor* currentAvatar = inASC.GetAvatarActor(); // the passed in ASC's old avatar
     AActor* newAvatarToUse = GetOwner();            // new avatar for the passed in ASC
     GC_LOG_STR_UOBJECT(this,
         LogASSAvatarActorExtensionComponent,
@@ -102,17 +104,17 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 
     inASC.InitAbilityActorInfo(inASC.GetOwnerActor(), newAvatarToUse);
 
-    // Grant Abilities, Active Effects, and Attribute Sets
+    // Grant abilities, effects, and attribute aets
     if (GetOwnerRole() == ROLE_Authority)
     {
         if (!bGrantedAbilitySets)
         {
             for (const TSubclassOf<UASSAbilitySet> abilitySet : AbilitySets)
             {
-                if (IsValid(abilitySet))
+                if (abilitySet)
                 {
-                    FASSAbilitySetGrantedHandles& newAbilitySetGrantedHandles = GrantedHandles.AddDefaulted_GetRef(); // currently is empty but we will give this its proper data next
-                    abilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(&inASC, GetOwner(), newAbilitySetGrantedHandles); // grant AbilitySet as well as give the newly added handle its proper data
+                    FASSAbilitySetGrantedHandles& newAbilitySetGrantedHandles = GrantedHandles.AddDefaulted_GetRef();
+                    abilitySet.GetDefaultObject()->GrantToAbilitySystemComponent(inASC, *GetOwner(), newAbilitySetGrantedHandles);
                 }
             }
             bGrantedAbilitySets = true;
@@ -125,6 +127,8 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
 }
 void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent()
 {
+    check(GetOwner());
+
     UAbilitySystemComponent* asc = AbilitySystemComponent.Get();
     if (!asc)
     {
@@ -146,14 +150,19 @@ void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent
         return;
     }
 
+    GC_LOG_FMT_UOBJECT(this,
+        LogASSAvatarActorExtensionComponent,
+        Log,
+        TEXT("Uninitializing ability system component [%s] for actor [%s]."), *asc->GetName(), *GetOwner()->GetName());
+
     bInitialized = false;
 
-    // Cancel ongoing stuff
+    // Cancel ongoing stuff.
     asc->CancelAbilities(nullptr, nullptr);
     asc->RemoveAllGameplayCues();
 
 
-    // Remove granted AbilitySets
+    // Remove granted ability sets.
     if (GetOwnerRole() == ROLE_Authority)
     {
         for (FASSAbilitySetGrantedHandles grantHandle : GrantedHandles)
@@ -162,19 +171,19 @@ void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent
         }
     }
 
-    // Remove Loose Gameplay Tags
+    // Remove loose gameplay tags.
     RemoveLooseAvatarRelatedTags(*asc);
 
 
-    // Clear the AvatarActor from the ASC
+    // Clear the avatar actor from the ASC
     if (asc->GetOwnerActor())
     {
-        // Clear our avatar actor from it (this will re-init other actor info as well)
+        // Clear our avatar actor from it (this will re-init other actor info as well).
         asc->SetAvatarActor(nullptr);
     }
     else
     {
-        // Clear ALL actor info because don't even have an owner actor for some reason
+        // Clear ALL actor info because don't even have an owner actor for some reason.
         asc->ClearActorInfo();
     }
 
