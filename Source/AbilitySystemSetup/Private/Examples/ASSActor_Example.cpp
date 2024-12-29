@@ -19,7 +19,7 @@ AASSActor_Example::AASSActor_Example(const FObjectInitializer& ObjectInitializer
     // No possessing this actor allows for Minimal replication mode
     AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
     // Havn't messed with testing a good MinNetUpdateFrequency for adaptive net update frequency yet so we will keep it at max for now
-    MinNetUpdateFrequency = NetUpdateFrequency;
+    SetMinNetUpdateFrequency(GetNetUpdateFrequency());
 
 
     // Create the avatar actor extension component to assist in setting us up with the ASC

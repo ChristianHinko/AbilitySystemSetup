@@ -120,6 +120,7 @@ void UASSAbilitySystemBlueprintLibrary::AbilityLocalInputPressedForSpec(UAbility
 
         InASC->AbilitySpecInputPressed(InGameplayAbilitySpec);
 
+        // TODO: Stop using `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and not per-instance.
         InASC->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, InGameplayAbilitySpec.Handle, InGameplayAbilitySpec.ActivationInfo.GetActivationPredictionKey());
     }
     else
@@ -142,6 +143,7 @@ void UASSAbilitySystemBlueprintLibrary::AbilityLocalInputReleasedForSpec(UAbilit
 
         InASC->AbilitySpecInputReleased(InGameplayAbilitySpec);
 
+        // TODO: Stop using `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and not per-instance.
         InASC->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, InGameplayAbilitySpec.Handle, InGameplayAbilitySpec.ActivationInfo.GetActivationPredictionKey());
     }
 }

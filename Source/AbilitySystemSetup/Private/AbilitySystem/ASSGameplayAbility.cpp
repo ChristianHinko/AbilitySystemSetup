@@ -23,6 +23,9 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
 {
     Super::OnAvatarSet(ActorInfo, Spec);
 
+    // TODO: Try to remove usage of `EGameplayAbilityInstancingPolicy::NonInstanced`. This code looks like it
+    // might be unnecessary now too since non-instanced is deprecated.
+
     // Fix the engine accidently calling OnAvatarSet() on CDO instead of calling it on the instances
     if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && !IsInstantiated())
     {
@@ -49,12 +52,12 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 {
     // Safe event for on avatar set
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-    if (AbilityTags.IsEmpty())
+    if (GetAssetTags().IsEmpty())
     {
         UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
         check(0);
     }
-    if (AbilityTags.HasTag(ISNativeGameplayTags::InputAction) == false)
+    if (GetAssetTags().HasTag(ISNativeGameplayTags::InputAction) == false)
     {
         UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't intended to be activated by input you can suppress this with InputAction.None tag."), ANSI_TO_TCHAR(__FUNCTION__));
         check(0);
@@ -149,6 +152,7 @@ void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorI
         return;
     }
 
+    // TODO: Try to remove usage of `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and non-instance only.
     const bool bIsPredicting = (InSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
     if (InActorInfo && !InSpec.IsActive() && !bIsPredicting)
     {

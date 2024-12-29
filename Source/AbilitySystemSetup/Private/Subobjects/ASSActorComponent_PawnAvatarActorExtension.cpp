@@ -201,19 +201,20 @@ void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGa
         asc->GetActivatableGameplayAbilitySpecsByAllMatchingTags(inInputActionTag.GetSingleTagContainer(), GameplayAbilitySpecs, false);
         for (FGameplayAbilitySpec* GameplayAbilitySpecPtr : GameplayAbilitySpecs)
         {
-            // Tell ASC about ability input pressed
-            const bool bAllowAbilityActivation = GameplayAbilitySpecPtr->Ability->AbilityTags.HasTag(ASSNativeGameplayTags::Ability_Type_DisableAutoActivationFromInput) == false;
+            // Tell ASC about ability input pressed.
+            check(GameplayAbilitySpecPtr->Ability);
+            const bool bAllowAbilityActivation = GameplayAbilitySpecPtr->Ability->GetAssetTags().HasTag(ASSNativeGameplayTags::Ability_Type_DisableAutoActivationFromInput) == false;
             UASSAbilitySystemBlueprintLibrary::AbilityLocalInputPressedForSpec(asc, *GameplayAbilitySpecPtr, bAllowAbilityActivation);
         }
 
         if (inInputActionTag == ASSNativeGameplayTags::InputAction_ConfirmTarget)
         {
-            // Tell ASC about Confirm pressed
+            // Tell ASC about Confirm pressed.
             asc->LocalInputConfirm();
         }
         if (inInputActionTag == ASSNativeGameplayTags::InputAction_CancelTarget)
         {
-            // Tell ASC about Cancel pressed
+            // Tell ASC about Cancel pressed.
             asc->LocalInputCancel();
         }
     }
@@ -226,7 +227,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnReleasedInputAction(const FG
         asc->GetActivatableGameplayAbilitySpecsByAllMatchingTags(inInputActionTag.GetSingleTagContainer(), GameplayAbilitySpecs, false);
         for (FGameplayAbilitySpec* GameplayAbilitySpecPtr : GameplayAbilitySpecs)
         {
-            // Tell ASC about ability input released
+            // Tell ASC about ability input released.
             UASSAbilitySystemBlueprintLibrary::AbilityLocalInputReleasedForSpec(asc, *GameplayAbilitySpecPtr);
         }
     }
