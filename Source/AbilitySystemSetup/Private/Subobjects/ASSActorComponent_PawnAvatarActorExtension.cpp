@@ -23,13 +23,13 @@ void UASSActorComponent_PawnAvatarActorExtension::OnRegister()
     Super::OnRegister();
 
 
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#if !NO_LOGGING || DO_CHECK
     if (GetOwner()->IsA<APawn>() == false)
     {
         GC_LOG_STR_UOBJECT(this,
             LogASSPawnAvatarActorExtensionComponent,
             Error,
-            GCUtils::Materialize(TStringBuilder<256>()) << TEXT("Incorrect usage of this component. Component owner [") << GCUtils::String::GetUObjectNameSafe(GetOwner()) << TEXT("] is not a Pawn.")
+            WriteToString<256>(TEXT("Incorrect usage of this component. Component owner ["), GCUtils::String::GetUObjectNameSafe(GetOwner()), TEXT("] is not a Pawn."))
             );
         check(0);
     }
@@ -58,6 +58,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerControllerChanged()
 
             asc->RefreshAbilityActorInfo(); // Update our ActorInfo's PlayerController
         }
+#if !NO_LOGGING
         else
         {
             GC_LOG_STR_UOBJECT(this,
@@ -66,6 +67,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerControllerChanged()
                 GCUtils::Materialize(TStringBuilder<256>()) << TEXT("Tried `") << GET_FUNCTION_NAME_CHECKED(UAbilitySystemComponent, RefreshAbilityActorInfo) << TEXT("()`, but the actor with this component was not the avatar actor.")
                 );
         }
+#endif
     }
     else
     {
@@ -150,9 +152,8 @@ void UASSActorComponent_PawnAvatarActorExtension::BindInputAction(UEnhancedInput
     PressedInputActionBindingHandles.Add(&inInputAction, pressedBindingHandle);
     ReleasedInputActionBindingHandles.Add(&inInputAction, releasedBindingHandle);
 
-    GC_CLOG_STR_UOBJECT(this,
-        true,
-        LogASSAbilitySystemInputSetup,
+    GC_LOG_STR_UOBJECT(this,
+        LogASSPawnAvatarActorExtensionComponent,
         Log,
         GCUtils::Materialize(TStringBuilder<256>()) << TEXT("Binding to newly added input action [") << inInputActionTag.GetTagName() << TEXT("] for calling GAS input events.")
         );
@@ -172,7 +173,7 @@ void UASSActorComponent_PawnAvatarActorExtension::UnBindInputAction(UEnhancedInp
     }
 
     GC_LOG_STR_UOBJECT(this,
-        LogASSAbilitySystemInputSetup,
+        LogASSPawnAvatarActorExtensionComponent,
         Log,
         GCUtils::Materialize(TStringBuilder<256>()) << TEXT("Input action [") << inInputActionTag.GetTagName() << TEXT("] removed. Stopping the calling of GAS input events.")
         );
