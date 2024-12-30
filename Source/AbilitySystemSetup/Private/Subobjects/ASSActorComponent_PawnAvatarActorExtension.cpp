@@ -78,61 +78,53 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerControllerChanged()
 //  BEGIN Input setup
 void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputComponent(UInputComponent& inPlayerInputComponent)
 {
-    // Bind to all Input Actions so we can tell the ability system when ability inputs have been pressed/released
+    // Bind to all input actions so we can inform the ability system when ability inputs have been pressed/released.
     check(GEngine);
-    UISEngineSubsystem_ObjectReferenceLibrary* inputSetupObjectReferenceLibrary = GEngine->GetEngineSubsystem<UISEngineSubsystem_ObjectReferenceLibrary>();
-    if (!ensureAlways(IsValid(inputSetupObjectReferenceLibrary)))
-    {
-        return;
-    }
+    UISEngineSubsystem_ObjectReferenceLibrary& inputSetupAssetSubsystem = UISEngineSubsystem_ObjectReferenceLibrary::GetChecked(*GEngine);
 
-    // Bind to all known Input Actions
+    // Bind to all currently-known input actions.
     UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(&inPlayerInputComponent);
     if (ensureAlways(IsValid(playerEnhancedInputComponent)))
     {
-        const TMap<FGameplayTag, TWeakObjectPtr<const UInputAction>>& inputActionTagMap = inputSetupObjectReferenceLibrary->GetAllInputActions();
-        for (const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& tagInputActionPair : inputActionTagMap)
+        const TMap<FGameplayTag, TObjectPtr<const UInputAction>>& tagToInputActionMap = inputSetupAssetSubsystem.GetAllInputActions();
+        for (const TPair<FGameplayTag, TObjectPtr<const UInputAction>>& tagInputToActionPair : tagToInputActionMap)
         {
-            const UInputAction* inputAction = tagInputActionPair.Value.Get();
-            if (ensureAlways(IsValid(inputAction)))
-            {
-                BindInputAction(*playerEnhancedInputComponent, *inputAction, tagInputActionPair.Key);
-            }
+            const UInputAction* inputAction = tagInputToActionPair.Value;
+            check(inputAction);
+
+            BindInputAction(*playerEnhancedInputComponent, *inputAction, tagInputToActionPair.Key);
         }
     }
 
-
-    // When Input Actions are added during the game, bind to them.
-    inputSetupObjectReferenceLibrary->OnInputActionAdded.AddWeakLambda(this,
-            [this](const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& inTagInputActionPair)
+    // When input actions are registered during the game, bind to them.
+    inputSetupAssetSubsystem.OnInputActionRegisteredDelegate.AddWeakLambda(this,
+            [this](const FGameplayTag& inTag, const UInputAction& inInputAction)
             {
                 check(GetOwner());
+                ensure(GetOwner()->InputComponent);
+                ensure(IsValid(GetOwner()->InputComponent));
                 UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
-                if (ensureAlways(IsValid(playerEnhancedInputComponent)))
+                if (!ensure(IsValid(playerEnhancedInputComponent)))
                 {
-                    const UInputAction* inputAction = inTagInputActionPair.Value.Get();
-                    if (IsValid(inputAction))
-                    {
-                        BindInputAction(*playerEnhancedInputComponent, *inputAction, inTagInputActionPair.Key);
-                    }
+                    return;
                 }
+
+                BindInputAction(*playerEnhancedInputComponent, inInputAction, inTag);
             }
         );
 
-    // When Input Actions are removed during the game, unbind from them.
-    inputSetupObjectReferenceLibrary->OnInputActionRemoved.AddWeakLambda(this,
-            [this](const TPair<FGameplayTag, TWeakObjectPtr<const UInputAction>>& inTagInputActionPair)
+    // When input actions are unregistered during the game, unbind from them.
+    inputSetupAssetSubsystem.OnInputActionRegisteredDelegate.AddWeakLambda(this,
+            [this](const FGameplayTag& inTag, const UInputAction& inInputAction)
             {
                 check(GetOwner());
                 UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(GetOwner()->InputComponent);
                 if (IsValid(playerEnhancedInputComponent))
                 {
-                    const UInputAction* inputAction = inTagInputActionPair.Value.Get();
-                    if (IsValid(inputAction))
-                    {
-                        UnBindInputAction(*playerEnhancedInputComponent, *inputAction, inTagInputActionPair.Key);
-                    }
+                    return;
                 }
+
+                UnBindInputAction(*playerEnhancedInputComponent, inInputAction, inTag);
             }
         );
 }
