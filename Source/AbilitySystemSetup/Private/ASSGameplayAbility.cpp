@@ -2,7 +2,7 @@
 
 #include "ASSGameplayAbility.h"
 
-#include "Utilities/ISNativeGameplayTags.h"
+#include "ISNativeGameplayTags.h"
 
 UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)

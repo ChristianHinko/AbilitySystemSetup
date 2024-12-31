@@ -3,7 +3,7 @@
 #include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 
 #include "AbilitySystemComponent.h"
-#include "Subsystems/ISEngineSubsystem_ObjectReferenceLibrary.h"
+#include "ISEngineSubsystem_ObjectReferenceLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "ASSAbilitySystemBlueprintLibrary.h"
