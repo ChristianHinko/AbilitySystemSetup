@@ -4,7 +4,7 @@
 #include "AbilitySystem/ASSAttributeSet.h"
 
 #include "AbilitySystemComponent.h"
-#include "GameplayAbilities/Public/GameplayEffectExtension.h"
+#include "GameplayEffectExtension.h"
 
 
 
@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////
 
 UASSAttributeSet::UASSAttributeSet(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
 
 }
@@ -40,5 +40,5 @@ void FASSAttributeSetInitter::ApplyAttributeDefault(UAbilitySystemComponent* Abi
 
 TArray<float> FASSAttributeSetInitter::GetAttributeSetValues(UClass* AttributeSetClass, FProperty* AttributeProperty, FName GroupName) const
 {
-	return TArray<float>();
+    return TArray<float>();
 }

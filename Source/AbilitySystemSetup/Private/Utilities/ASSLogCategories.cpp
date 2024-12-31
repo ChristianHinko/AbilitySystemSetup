@@ -10,8 +10,3 @@ DEFINE_LOG_CATEGORY(LogAbilitySystemSetupModule)
 DEFINE_LOG_CATEGORY(LogASSAbilitySystemComponentSetup)
 DEFINE_LOG_CATEGORY(LogASSAbilitySetup)
 DEFINE_LOG_CATEGORY(LogASSTargetActorSetup)
-
-DEFINE_LOG_CATEGORY(LogASSAbilitySet)
-DEFINE_LOG_CATEGORY(LogASSAvatarExtensionComponent)
-
-DEFINE_LOG_CATEGORY(LogASSAbilitySystemInputSetup)

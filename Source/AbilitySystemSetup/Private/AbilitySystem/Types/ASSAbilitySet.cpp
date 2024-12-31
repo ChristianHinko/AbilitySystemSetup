@@ -4,9 +4,10 @@
 
 #include "AbilitySystem/Types/ASSAbilitySet.h"
 
+#include "GCUtils_Log.h"
 #include "AbilitySystemComponent.h"
 
-
+DEFINE_LOG_CATEGORY(LogASSAbilitySet)
 
 ///////////////////////////////////////
 /// FASSAbilitySetGrantedHandles
@@ -14,51 +15,58 @@
 
 void FASSAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 {
-	if (AbilitySystemComponent.IsValid())
-	{
-		if (AbilitySystemComponent->IsOwnerActorAuthoritative())
-		{
-			// Clear Abilities
-			for (const FGameplayAbilitySpecHandle& SpecHandle : AbilitySpecHandles)
-			{
-				if (SpecHandle.IsValid())
-				{
-					AbilitySystemComponent->ClearAbility(SpecHandle);
-				}
-			}
+    UAbilitySystemComponent* asc = AbilitySystemComponent.Get();
+    if (!asc)
+    {
+        GC_LOG_STR_NO_CONTEXT(LogASSAbilitySet, Log, TEXT("Ability system component no longer valid. No point in removing anything since it was probably destroyed already, so we'll just stop tracking them."));
+        Clear();
+        return;
+    }
 
-			// Remove Effects
-			for (const FActiveGameplayEffectHandle& ActiveHandle : ActiveEffectHandles)
-			{
-				if (ActiveHandle.IsValid())
-				{
-					AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveHandle);
-				}
-			}
+    if (!ensureAlways(asc->IsOwnerActorAuthoritative()))
+    {
+        GC_LOG_FMT_NO_CONTEXT(LogASSAbilitySet, Error, TEXT("Tried to remove granted sets from [%s] but we weren't the server. Not doing anything."), *GetNameSafe(asc));
+        return;
+    }
 
-			// Remove Attribute Sets
-			for (UAttributeSet* AttributeSet : GrantedAttributeSets)
-			{
-				AbilitySystemComponent->RemoveSpawnedAttribute(AttributeSet);
-			}
+    GC_LOG_STR_NO_CONTEXT(LogASSAbilitySet, Log, GCUtils::Materialize(TStringBuilder<128>()) << TEXT("Removing granted sets from [") << GCUtils::String::GetUObjectNameSafe(asc) << TEXT("]."));
 
-			AbilitySystemComponent->ForceReplication();
-		}
-		else
-		{
-			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to remove granted sets from %s without authority"), ANSI_TO_TCHAR(__FUNCTION__), *(AbilitySystemComponent->GetName()));
-		}
-	}
-	else
-	{
-		UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to remove granted sets from %s but AbilitySystemComponent was NULL"), ANSI_TO_TCHAR(__FUNCTION__), *(AbilitySystemComponent->GetName()));
-	}
+    // Clear Abilities.
+    for (const FGameplayAbilitySpecHandle& specHandle : AbilitySpecHandles)
+    {
+        if (specHandle.IsValid())
+        {
+            asc->ClearAbility(specHandle);
+        }
+    }
 
-	// Empty everything
-	AbilitySystemComponent = nullptr;
-	AbilitySpecHandles.Reset();
-	ActiveEffectHandles.Reset();
-	GrantedAttributeSets.Reset();
+    // Remove Effects.
+    for (const FActiveGameplayEffectHandle& activeHandle : ActiveEffectHandles)
+    {
+        if (activeHandle.IsValid())
+        {
+            asc->RemoveActiveGameplayEffect(activeHandle);
+        }
+    }
+
+    // Remove Attribute Sets.
+    for (UAttributeSet* attributeSet : GrantedAttributeSets)
+    {
+        asc->RemoveSpawnedAttribute(attributeSet);
+    }
+
+    asc->ForceReplication();
+
+    Clear();
+}
+
+void FASSAbilitySetGrantedHandles::Clear()
+{
+    // Empty everything.
+    AbilitySystemComponent = nullptr;
+    AbilitySpecHandles.Reset();
+    ActiveEffectHandles.Reset();
+    GrantedAttributeSets.Reset();
 }
 
 
@@ -70,76 +78,86 @@ void FASSAbilitySetGrantedHandles::RemoveFromAbilitySystemComponent()
 /// UASSAbilitySet
 ///////////////////////////////////////
 
-void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent* InASC, UObject* InSourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const
+void UASSAbilitySet::GrantToAbilitySystemComponent(UAbilitySystemComponent& InASC, UObject& InSourceObject, FASSAbilitySetGrantedHandles& OutGrantedHandles) const
 {
-	if (!IsValid(InASC))
-	{
-		UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to grant but ASC was NULL. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__));
-		return;
-	}
-	if (InASC->IsOwnerActorAuthoritative() == false)
-	{
-		UE_LOG(LogASSAbilitySet, Error, TEXT("%s() Tried to grant to %s without authority. Returning and doing nothing"), ANSI_TO_TCHAR(__FUNCTION__), *(InASC->GetName()));
-		return;
-	}
+    if (!InASC.GetOwnerActor())
+    {
+        GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Error, TEXT("Tried to grant to [%s] but its owning actor wasn't valid. Returning and doing nothing."), *InASC.GetName());
+        return;
+    }
+
+    if (!ensureAlways(InASC.IsOwnerActorAuthoritative()))
+    {
+        GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Error, TEXT("Tried to grant to [%s] but we weren't the server. Returning and doing nothing."), *InASC.GetName());
+        return;
+    }
 
 
-	// Inject the ASC
-	OutGrantedHandles.AbilitySystemComponent = InASC;
+    // Inject the ASC.
+    OutGrantedHandles.AbilitySystemComponent = &InASC;
 
-	// Grant our Attribute Sets
-	int AttributeSetIndex = 0;
-	for (const TSubclassOf<UAttributeSet> AttributeSetClass : GrantedAttributeSets)
-	{
-		if (!IsValid(AttributeSetClass))
-		{
-			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() GrantedAttributeSets[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AttributeSetIndex, *GetName());
-			continue;
-		}
+    // Grant our Attribute Sets.
+    uint16 attributeSetsGranted = 0;
+    for (const TSubclassOf<UAttributeSet> attributeSetClass : GrantedAttributeSets)
+    {
+        if (!attributeSetClass)
+        {
+            continue;
+        }
 
-		UAttributeSet* NewAttributeSet = NewObject<UAttributeSet>(InASC->GetOwnerActor(), AttributeSetClass);
-		InASC->AddAttributeSetSubobject(NewAttributeSet);
+        UAttributeSet* newAttributeSet = NewObject<UAttributeSet>(InASC.GetOwnerActor(), attributeSetClass);
+        InASC.AddAttributeSetSubobject(newAttributeSet);
 
-		OutGrantedHandles.GrantedAttributeSets.Add(NewAttributeSet);
+        OutGrantedHandles.GrantedAttributeSets.Add(newAttributeSet);
 
-		++AttributeSetIndex;
-	}
+        GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Log, TEXT("[%s] granted attrubute set [%s]."), *GetName(), *GetNameSafe(newAttributeSet));
 
-	InASC->ForceReplication();
+        ++attributeSetsGranted;
+    }
 
-	// Grant our Gameplay Effects
-	int EffectIndex = 0;
-	for (const TSubclassOf<UGameplayEffect> EffectClass : GrantedEffects)
-	{
-		if (!IsValid(EffectClass))
-		{
-			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() GrantedEffects[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), EffectIndex, *GetName());
-			continue;
-		}
+    GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Log, TEXT("[%s] granted a total of [%i] attrubute sets."), *GetName(), attributeSetsGranted);
 
-		FGameplayEffectContextHandle ContextHandle = InASC->MakeEffectContext();
-		ContextHandle.AddSourceObject(InSourceObject);
-		const FActiveGameplayEffectHandle ActiveHandle = InASC->ApplyGameplayEffectToSelf(EffectClass.GetDefaultObject(), /*, GetLevel()*/1, ContextHandle);
+    InASC.ForceReplication();
 
-		OutGrantedHandles.ActiveEffectHandles.Add(ActiveHandle);
+    // Grant our Gameplay Effects.
+    uint16 effectsGranted = 0;
+    for (const TSubclassOf<UGameplayEffect> effectClass : GrantedEffects)
+    {
+        if (!effectClass)
+        {
+            continue;
+        }
 
-		++EffectIndex;
-	}
+        FGameplayEffectContextHandle contextHandle = InASC.MakeEffectContext();
+        contextHandle.AddSourceObject(&InSourceObject);
+        const FActiveGameplayEffectHandle activeHandle = InASC.ApplyGameplayEffectToSelf(effectClass.GetDefaultObject(), /*, GetLevel()*/1, contextHandle);
 
-	// Grant our Gameplay Abilities
-	int AbilityIndex = 0;
-	for (const TSubclassOf<UGameplayAbility> AbilityClass : GrantedAbilities)
-	{
-		if (!IsValid(AbilityClass))
-		{
-			UE_LOG(LogASSAbilitySet, Error, TEXT("%s() GrantedAbilities[%d] on ASSAbilitySet [%s] is not valid."), ANSI_TO_TCHAR(__FUNCTION__), AbilityIndex, *GetName());
-			continue;
-		}
+        OutGrantedHandles.ActiveEffectHandles.Add(activeHandle);
 
-		const FGameplayAbilitySpecHandle SpecHandle = InASC->GiveAbility(FGameplayAbilitySpec(AbilityClass, /*, GetLevel()*/1, INDEX_NONE, InSourceObject));
+        GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Log, TEXT("[%s] granted effect [%s]."), *GetName(), *GetNameSafe(effectClass.GetDefaultObject()));
 
-		OutGrantedHandles.AbilitySpecHandles.Add(SpecHandle);
+        ++effectsGranted;
+    }
 
-		++AbilityIndex;
-	}
+    GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Log, TEXT("[%s] granted a total of [%i] effects."), *GetName(), effectsGranted);
+
+    // Grant our Gameplay Abilities.
+    uint16 abilitiesGranted = 0;
+    for (const TSubclassOf<UGameplayAbility> abilityClass : GrantedAbilities)
+    {
+        if (!abilityClass)
+        {
+            continue;
+        }
+
+        const FGameplayAbilitySpecHandle specHandle = InASC.GiveAbility(FGameplayAbilitySpec(abilityClass, /*, GetLevel()*/1, INDEX_NONE, &InSourceObject));
+
+        OutGrantedHandles.AbilitySpecHandles.Add(specHandle);
+
+        GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Log, TEXT("[%s] granted ability [%s]."), *GetName(), *GetNameSafe(abilityClass.GetDefaultObject()));
+
+        ++abilitiesGranted;
+    }
+
+    GC_LOG_FMT_UOBJECT(&InASC, LogASSAbilitySet, Log, TEXT("[%s] granted a total of [%i] abilities."), *GetName(), abilitiesGranted);
 }

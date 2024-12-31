@@ -15,14 +15,14 @@
 UCLASS()
 class ABILITYSYSTEMSETUP_API UASSAbilityTask_WaitTargetData : public UAbilityTask_WaitTargetData
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true", HideSpawnParms = "Instigator"), Category = "Ability|Tasks")
-		static UASSAbilityTask_WaitTargetData* ASSWaitTargetDataUsingActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor);
+    UFUNCTION(BlueprintCallable, meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true", HideSpawnParms = "Instigator"), Category = "Ability|Tasks")
+        static UASSAbilityTask_WaitTargetData* ASSWaitTargetDataUsingActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor);
 
 protected:
-	virtual void Activate() override;
+    virtual void Activate() override;
 
-	virtual void OnDestroy(bool AbilityEnded) override;
+    virtual void OnDestroy(bool AbilityEnded) override;
 };

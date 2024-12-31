@@ -9,13 +9,13 @@
 
 
 /**
- * 
+ *
  */
 class FAbilitySystemSetupModule : public FDefaultModuleImpl
 {
 protected:
-	//  BEGIN IModuleInterface Interface
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-	//  END IModuleInterface Interface
+    //  BEGIN IModuleInterface Interface
+    virtual void StartupModule() override;
+    virtual void ShutdownModule() override;
+    //  END IModuleInterface Interface
 };

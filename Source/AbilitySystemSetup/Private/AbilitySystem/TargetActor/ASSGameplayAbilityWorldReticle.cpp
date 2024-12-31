@@ -6,7 +6,7 @@
 
 
 AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
 
 }
@@ -14,9 +14,9 @@ AASSGameplayAbilityWorldReticle::AASSGameplayAbilityWorldReticle(const FObjectIn
 
 void AASSGameplayAbilityWorldReticle::ASSInitializeReticle(AGameplayAbilityTargetActor* InTargetingActor, APlayerController* InPlayerController, FASSWorldReticleParameters InASSParameters)
 {
-	check(InTargetingActor);
+    check(InTargetingActor);
 
-	ASSParameters = InASSParameters;
+    ASSParameters = InASSParameters;
 
-	InitializeReticle(InTargetingActor, InPlayerController, InASSParameters); // call at the end instead of beginning because of their call to OnParametersInitialized()
+    InitializeReticle(InTargetingActor, InPlayerController, InASSParameters); // call at the end instead of beginning because of their call to OnParametersInitialized()
 }

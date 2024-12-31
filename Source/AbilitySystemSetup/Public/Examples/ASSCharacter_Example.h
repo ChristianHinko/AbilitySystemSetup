@@ -21,30 +21,30 @@ class UASSActorComponent_PawnAvatarActorExtension;
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSCharacter_Example : public ACharacter, public IAbilitySystemInterface
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-		TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent;
+    UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
+        TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent;
 
 public:
-	AASSCharacter_Example(const FObjectInitializer& ObjectInitializer);
+    AASSCharacter_Example(const FObjectInitializer& ObjectInitializer);
 
-	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+    UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
-	virtual void PreInitializeComponents();
+    virtual void PreInitializeComponents();
 
-	//  BEGIN APawn Interface
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void UnPossessed() override;
-	virtual void OnRep_PlayerState() override;
-	virtual void OnRep_Controller() override;
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	virtual void DestroyPlayerInputComponent() override;
-	//  END APawn Interface
+    //  BEGIN APawn Interface
+    virtual void PossessedBy(AController* NewController) override;
+    virtual void UnPossessed() override;
+    virtual void OnRep_PlayerState() override;
+    virtual void OnRep_Controller() override;
+    virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+    virtual void DestroyPlayerInputComponent() override;
+    //  END APawn Interface
 
-	//  BEGIN AvatarExtensionDelegate
-	virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent* ASC);
-	//  END AvatarExtensionDelegate
+    //  BEGIN AvatarExtensionDelegate
+    virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent& ASC);
+    //  END AvatarExtensionDelegate
 };

@@ -11,8 +11,3 @@ DECLARE_LOG_CATEGORY_EXTERN(LogAbilitySystemSetupModule, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemComponentSetup, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySetup, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogASSTargetActorSetup, Log, All)
-
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySet, Log, All)
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAvatarExtensionComponent, Log, All)
-
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemInputSetup, Log, All)
