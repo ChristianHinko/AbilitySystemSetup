@@ -4,12 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
-#include "AbilitySystemInterface.h"
-#include "AbilitySystemComponent.h"
 
-#include "ASSGameplayAbilityTargetDataFilter.generated.h"
-
-
+#include "ASSGameplayTargetDataFilter.generated.h"
 
 /**
  * Base Target Data Filter.
@@ -50,13 +46,9 @@ struct ABILITYSYSTEMSETUP_API FASSGameplayTargetDataFilter : public FGameplayTar
 
 };
 
-
-
-
 /////////////////////////////////////////////////////////
 /// FASSGameplayTargetDataFilter_MultiFilter
 /////////////////////////////////////////////////////////
-
 
 /**
  * Target Data Filter that can filter by an array of Actor types

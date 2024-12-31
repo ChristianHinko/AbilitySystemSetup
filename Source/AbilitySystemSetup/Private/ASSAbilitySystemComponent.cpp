@@ -1,9 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "AbilitySystem/ASSAbilitySystemComponent.h"
-
-
+#include "ASSAbilitySystemComponent.h"
 
 UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
@@ -11,7 +8,6 @@ UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer&
     /** The linked Anim Instance that this component will play montages in. Use NAME_None for the main anim instance. (Havn't explored this much yet) */
     AffectedAnimInstanceTag = NAME_None;
 }
-
 
 void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {

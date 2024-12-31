@@ -1,9 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
-
-
+#include "ASSGameplayAbilityTargetActor.h"
 
 AASSGameplayAbilityTargetActor::AASSGameplayAbilityTargetActor(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
@@ -25,12 +22,12 @@ void AASSGameplayAbilityTargetActor::StartTargeting(UGameplayAbility* Ability) /
     // Ensure we are re-enabled in case we were re-used
     SetActorTickEnabled(true);
 }
+
 void AASSGameplayAbilityTargetActor::DisableTargetActor() // when we are being disabled
 {
     SetActorTickEnabled(false); // disable tick while we aren't being used
     DestroyWorldReticles(); // we should have a Reticle pooling system for this in the future
 }
-
 
 AASSGameplayAbilityWorldReticle* AASSGameplayAbilityTargetActor::SpawnWorldReticle(const FVector& InLocation, const FRotator& InRotation)
 {
@@ -79,11 +76,9 @@ void AASSGameplayAbilityTargetActor::DestroyWorldReticles()
     SpawnedWorldReticles.Empty();
 }
 
-
 void AASSGameplayAbilityTargetActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     DestroyWorldReticles();
-
 
     Super::EndPlay(EndPlayReason);
 }

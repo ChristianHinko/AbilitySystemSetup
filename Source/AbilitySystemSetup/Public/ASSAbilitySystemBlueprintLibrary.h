@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
 
 #include "ASSAbilitySystemBlueprintLibrary.generated.h"
 
-
+struct FASSGameplayTargetDataFilter;
+struct FASSGameplayTargetDataFilter_MultiFilter;
 
 /**
  * Base AbilitySystemBlueprintLibrary
@@ -87,7 +87,6 @@ public:
         static FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& InMultiFilter, AActor* InSelfActor);
 
 };
-
 
 template <class T>
 UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* InASC)

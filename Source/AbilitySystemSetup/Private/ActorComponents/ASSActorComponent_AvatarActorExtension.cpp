@@ -1,14 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
 
-#include "Subobjects/ASSActorComponent_AvatarActorExtension.h"
-
-#include "AbilitySystem/Types/ASSAbilitySet.h"
-#include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
+#include "Types/ASSAbilitySet.h"
+#include "ASSAbilitySystemBlueprintLibrary.h"
 #include "GCUtils_Log.h"
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-#include "Subobjects/ASSActorComponent_PawnAvatarActorExtension.h"
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#if !NO_LOGGING || DO_CHECK
+#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#endif // #if !NO_LOGGING || DO_CHECK
 
 DEFINE_LOG_CATEGORY(LogASSAvatarActorExtensionComponent)
 
@@ -23,7 +22,7 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
     Super::OnRegister();
 
     check(GetOwner());
-    
+
 #if !NO_LOGGING || DO_CHECK
     if (GetOwner()->IsA<APawn>() && this->IsA<UASSActorComponent_PawnAvatarActorExtension>() == false)
     {
@@ -48,7 +47,6 @@ void UASSActorComponent_AvatarActorExtension::OnRegister()
     }
 #endif // !NO_LOGGING || DO_CHECK
 }
-
 
 void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC)
 {
@@ -125,6 +123,7 @@ void UASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
     AbilitySystemComponent = &inASC;
     OnInitializeAbilitySystemComponentDelegate.Broadcast(inASC);
 }
+
 void UASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent()
 {
     check(GetOwner());

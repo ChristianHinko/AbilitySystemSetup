@@ -3,5 +3,5 @@
 #pragma once
 
 #include "EngineSharedPCH.h"
-#include "Utilities/ASSLogCategories.h"
-#include "Utilities/ASSNativeGameplayTags.h"
+#include "ASSLogCategories.h"
+#include "ASSNativeGameplayTags.h"

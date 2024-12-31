@@ -1,11 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "AbilitySystem/ASSGameplayAbility.h"
+#include "ASSGameplayAbility.h"
 
 #include "Utilities/ISNativeGameplayTags.h"
-
-
 
 UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
@@ -17,7 +14,6 @@ UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitial
 
     bPassiveAbility = false;
 }
-
 
 void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
@@ -48,6 +44,7 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
     ASSOnAvatarSet(ActorInfo, Spec);
     return;
 }
+
 void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
     // Safe event for on avatar set
@@ -130,6 +127,7 @@ void UASSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
     // End the ability
     Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
+
 void UASSGameplayAbility::ASSEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
     // Safe event for end ability

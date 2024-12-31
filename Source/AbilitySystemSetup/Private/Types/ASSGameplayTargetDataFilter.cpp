@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Types/ASSGameplayTargetDataFilter.h"
 
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
-
-
+#include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
 
 FASSGameplayTargetDataFilter::FASSGameplayTargetDataFilter()
 {
@@ -36,11 +36,11 @@ bool FASSGameplayTargetDataFilter::FilterPassesForActor(const AActor* ActorToBeF
 
     return ASSFilterPassesForActor(ActorToBeFiltered);
 }
+
 bool FASSGameplayTargetDataFilter::ASSFilterPassesForActor(const AActor* ActorToBeFiltered) const
 {
     return Super::FilterPassesForActor(ActorToBeFiltered);
 }
-
 
 /////////////////////////////////////////////////////////
 /// FASSGameplayTargetDataFilter_MultiFilter

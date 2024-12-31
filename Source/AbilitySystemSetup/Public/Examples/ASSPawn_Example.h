@@ -8,15 +8,12 @@
 
 #include "ASSPawn_Example.generated.h"
 
-
 class UASSActorComponent_PawnAvatarActorExtension;
 class UAbilitySystemComponent;
 
-
-
 /**
- * Example implementation of a pawn initializing with an ASC by using the UASSActorComponent_PawnAvatarActorExtension.
- * Feel free to subclass if lazy.
+ * @brief An example implementation of a pawn initializing with an ASC by using
+ *        the `UASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSPawn_Example : public APawn, public IAbilitySystemInterface
@@ -24,32 +21,36 @@ class ABILITYSYSTEMSETUP_API AASSPawn_Example : public APawn, public IAbilitySys
     GENERATED_BODY()
 
 public:
+
     AASSPawn_Example(const FObjectInitializer& objectInitializer);
+
+public:
+
+    // ~ IAbilitySystemInterface overrides.
+    virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+    // ~ IAbilitySystemInterface overrides.
 
 protected:
 
+    // ~ AActor overrides.
     virtual void PreInitializeComponents();
+    // ~ AActor overrides.
 
-    //  BEGIN APawn Interface
+    // ~ APawn overrides.
     virtual void PossessedBy(AController* newController) override;
     virtual void UnPossessed() override;
     virtual void OnRep_PlayerState() override;
     virtual void OnRep_Controller() override;
     virtual void SetupPlayerInputComponent(UInputComponent* playerInputComponent) override;
     virtual void DestroyPlayerInputComponent() override;
-    //  END APawn Interface
+    // ~ APawn overrides.
 
-    //  BEGIN AvatarExtensionDelegate
+    // ~ AvatarActorExtension delegate callbacks.
     virtual void OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent& asc);
-    //  END AvatarExtensionDelegate
-
-public:
-
-    UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+    // ~ AvatarActorExtension delegate callbacks.
 
 protected:
 
-    UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-    TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent;
-
+    UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
+    TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent = nullptr;
 };

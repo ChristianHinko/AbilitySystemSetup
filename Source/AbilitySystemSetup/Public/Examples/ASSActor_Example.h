@@ -8,37 +8,40 @@
 
 #include "ASSActor_Example.generated.h"
 
-
 class UAbilitySystemComponent;
 class UASSActorComponent_AvatarActorExtension;
 
-
-
 /**
- * Example implementation of an Actor initializing with an ASC by using the ASSActorComponent_AvatarActorExtension.
- * Feel free to subclass if lazy.
+ * @brief Example implementation of an Actor initializing with an ASC by using
+ *        the `UASSActorComponent_AvatarActorExtension`. Feel free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSActor_Example : public AActor, public IAbilitySystemInterface
 {
     GENERATED_BODY()
 
-protected:
-    UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-        TObjectPtr<UASSActorComponent_AvatarActorExtension> AvatarActorExtensionComponent;
-    UPROPERTY(VisibleAnywhere, Category = "AbilitySystem")
-        TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+public:
+
+    AASSActor_Example(const FObjectInitializer& inObjectInitializer);
 
 public:
-    AASSActor_Example(const FObjectInitializer& ObjectInitializer);
 
-
-    UFUNCTION(BlueprintPure)
-        UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; }
+    // ~ IAbilitySystemInterface overrides.
+    UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; }
+    // ~ IAbilitySystemInterface overrides.
 
 protected:
-    //  BEGIN AActor Interface
+
+    // ~ AActor overrides.
     virtual void PostInitializeComponents() override;
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-    //  END AActor Interface
+    virtual void EndPlay(const EEndPlayReason::Type inEndPlayReason) override;
+    // ~ AActor overrides.
+
+protected:
+
+    UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
+    TObjectPtr<UASSActorComponent_AvatarActorExtension> AvatarActorExtensionComponent = nullptr;
+
+    UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
+    TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
 };

@@ -1,12 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "AbilitySystem/AbilityTasks/ASSAbilityTask_WaitTargetData.h"
+#include "ASSAbilityTask_WaitTargetData.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetActor.h"
-
-
+#include "ASSGameplayAbilityTargetActor.h"
 
 UASSAbilityTask_WaitTargetData* UASSAbilityTask_WaitTargetData::ASSWaitTargetDataUsingActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor)
 {

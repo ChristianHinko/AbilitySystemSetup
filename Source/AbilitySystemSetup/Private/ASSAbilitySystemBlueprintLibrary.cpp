@@ -1,14 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
+#include "ASSAbilitySystemBlueprintLibrary.h"
 
 #include "AbilitySystemGlobals.h"
 #include "GameplayCueManager.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityTargetDataFilter.h"
-
-
+#include "Types/ASSGameplayTargetDataFilter.h"
+#include "AbilitySystemComponent.h"
 
 UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbilitySystemComponent* InASC, const TSubclassOf<UAttributeSet> InAttributeSetClass)
 {
@@ -29,15 +27,16 @@ UAttributeSet* UASSAbilitySystemBlueprintLibrary::GetAttributeSet(const UAbility
     return nullptr;
 }
 
-
 void UASSAbilitySystemBlueprintLibrary::ExecuteGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters)
 {
     UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), InGameplayCueTag, EGameplayCueEvent::Type::Executed, InGameplayCueParameters);
 }
+
 void UASSAbilitySystemBlueprintLibrary::AddGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters)
 {
     UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), InGameplayCueTag, EGameplayCueEvent::Type::OnActive, InGameplayCueParameters);
 }
+
 void UASSAbilitySystemBlueprintLibrary::RemoveGameplayCueLocal(const UAbilitySystemComponent* InASC, const FGameplayTag& InGameplayCueTag, const FGameplayCueParameters& InGameplayCueParameters)
 {
     UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(InASC->GetOwner(), InGameplayCueTag, EGameplayCueEvent::Type::Removed, InGameplayCueParameters);
@@ -131,6 +130,7 @@ void UASSAbilitySystemBlueprintLibrary::AbilityLocalInputPressedForSpec(UAbility
         }
     }
 }
+
 void UASSAbilitySystemBlueprintLibrary::AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* InASC, FGameplayAbilitySpec& InGameplayAbilitySpec)
 {
     InGameplayAbilitySpec.InputPressed = false;
@@ -176,6 +176,7 @@ void UASSAbilitySystemBlueprintLibrary::TargetConfirmByAbility(UAbilitySystemCom
         }
     }
 }
+
 void UASSAbilitySystemBlueprintLibrary::TargetCancelByAbility(UAbilitySystemComponent* InASC, const UGameplayAbility* InAbility)
 {
     // Callbacks may modify the spawned target actor array so iterate over a copy instead
@@ -205,6 +206,7 @@ FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeASSFilter
     FilterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(NewFilter);
     return FilterHandle;
 }
+
 FGameplayTargetDataFilterHandle UASSAbilitySystemBlueprintLibrary::MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& InMultiFilter, AActor* InSelfActor)
 {
     FGameplayTargetDataFilterHandle FilterHandle;

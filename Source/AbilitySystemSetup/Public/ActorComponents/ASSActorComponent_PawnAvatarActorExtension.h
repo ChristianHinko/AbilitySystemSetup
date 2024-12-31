@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subobjects/ASSActorComponent_AvatarActorExtension.h"
+#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
 
 #include "ASSActorComponent_PawnAvatarActorExtension.generated.h"
 

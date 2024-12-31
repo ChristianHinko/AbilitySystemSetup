@@ -1,8 +1,6 @@
-
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "AbilitySystem/Types/ASSAbilitySet.h"
+#include "Types/ASSAbilitySet.h"
 
 #include "GCUtils_Log.h"
 #include "AbilitySystemComponent.h"
@@ -68,11 +66,6 @@ void FASSAbilitySetGrantedHandles::Clear()
     ActiveEffectHandles.Reset();
     GrantedAttributeSets.Reset();
 }
-
-
-
-
-
 
 ///////////////////////////////////////
 /// UASSAbilitySet

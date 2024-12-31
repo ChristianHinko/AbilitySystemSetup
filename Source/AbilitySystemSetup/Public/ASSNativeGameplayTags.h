@@ -5,17 +5,15 @@
 #include "CoreMinimal.h"
 #include "NativeGameplayTags.h"
 
-
-
 /**
- * This module's Native Gameplay Tags wrapped in a namespace.
+ * This module's native gameplay tags wrapped in a namespace.
  */
 namespace ASSNativeGameplayTags
 {
-    // Ability
+    // Abilities.
     ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Type_DisableAutoActivationFromInput)
 
-    // Input Actions
+    // Input actions.
     ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_ConfirmTarget)
     ABILITYSYSTEMSETUP_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAction_CancelTarget)
 }

@@ -1,13 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "Subobjects/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 
 #include "AbilitySystemComponent.h"
 #include "Subsystems/ISEngineSubsystem_ObjectReferenceLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
-#include "AbilitySystem/ASSAbilitySystemBlueprintLibrary.h"
+#include "ASSAbilitySystemBlueprintLibrary.h"
 #include "GCUtils_Log.h"
 
 DEFINE_LOG_CATEGORY(LogASSPawnAvatarActorExtensionComponent)
@@ -15,7 +14,6 @@ DEFINE_LOG_CATEGORY(LogASSPawnAvatarActorExtensionComponent)
 UASSActorComponent_PawnAvatarActorExtension::UASSActorComponent_PawnAvatarActorExtension(const FObjectInitializer& inObjectInitializer)
     : Super(inObjectInitializer)
 {
-
 }
 
 void UASSActorComponent_PawnAvatarActorExtension::OnRegister()
@@ -212,6 +210,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGa
         }
     }
 }
+
 void UASSActorComponent_PawnAvatarActorExtension::OnReleasedInputAction(const FGameplayTag inInputActionTag)
 {
     if (UAbilitySystemComponent* asc = AbilitySystemComponent.Get())

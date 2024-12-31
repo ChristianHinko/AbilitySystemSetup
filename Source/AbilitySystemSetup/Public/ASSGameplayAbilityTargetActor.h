@@ -4,14 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "AbilitySystem/TargetActor/ASSGameplayAbilityWorldReticle.h"
+#include "ASSGameplayAbilityWorldReticle.h"
 
 #include "ASSGameplayAbilityTargetActor.generated.h"
 
-
 class AASSGameplayAbilityWorldReticle;
-
-
 
 /**
  * Base Target Actor class.
