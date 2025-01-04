@@ -6,7 +6,7 @@
 #include "ISEngineSubsystem_ObjectReferenceLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
-#include "ASSAbilitySystemBlueprintLibrary.h"
+#include "ASSUtils.h"
 #include "GCUtils_Log.h"
 
 DEFINE_LOG_CATEGORY(LogASSPawnAvatarActorExtensionComponent)
@@ -195,7 +195,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGa
             // Tell ASC about ability input pressed.
             check(GameplayAbilitySpecPtr->Ability);
             const bool bAllowAbilityActivation = GameplayAbilitySpecPtr->Ability->GetAssetTags().HasTag(ASSNativeGameplayTags::Ability_Type_DisableAutoActivationFromInput) == false;
-            UASSAbilitySystemBlueprintLibrary::AbilityLocalInputPressedForSpec(asc, *GameplayAbilitySpecPtr, bAllowAbilityActivation);
+            ASSUtils::AbilityLocalInputPressedForSpec(asc, *GameplayAbilitySpecPtr, bAllowAbilityActivation);
         }
 
         if (inInputActionTag == ASSNativeGameplayTags::InputAction_ConfirmTarget)
@@ -220,7 +220,7 @@ void UASSActorComponent_PawnAvatarActorExtension::OnReleasedInputAction(const FG
         for (FGameplayAbilitySpec* GameplayAbilitySpecPtr : GameplayAbilitySpecs)
         {
             // Tell ASC about ability input released.
-            UASSAbilitySystemBlueprintLibrary::AbilityLocalInputReleasedForSpec(asc, *GameplayAbilitySpecPtr);
+            ASSUtils::AbilityLocalInputReleasedForSpec(asc, *GameplayAbilitySpecPtr);
         }
     }
 }

@@ -20,7 +20,6 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySystemComponent : public UAbilitySystemC
 public:
     UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer);
 
-
     virtual bool ShouldDoServerAbilityRPCBatch() const override { return true; }
 
     virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
