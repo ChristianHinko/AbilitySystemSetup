@@ -7,6 +7,9 @@
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "Types/ASSGameplayTargetDataFilter.h"
 #include "AbilitySystemComponent.h"
+#include "GCUtils_Log.h"
+
+DEFINE_LOG_CATEGORY(LogASSUtils)
 
 UAttributeSet* ASSUtils::GetAttributeSet(const UAbilitySystemComponent* asc, const TSubclassOf<UAttributeSet> attributeSetClass)
 {
@@ -84,12 +87,12 @@ void ASSUtils::GiveAbilities(UAbilitySystemComponent* asc, const TArray<FGamepla
 {
     if (!asc)
     {
-        UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() asc was not valid when trying to give list of abilities. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+        GC_LOG_STR_UOBJECT(asc, LogASSUtils, Warning, TEXT("The variable asc was null when trying to give list of abilities. Did nothing"));
         return;
     }
     if (asc->IsOwnerActorAuthoritative() == false)
     {
-        UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() called without Authority. Did nothing"), ANSI_TO_TCHAR(__FUNCTION__));
+        GC_LOG_STR_UOBJECT(asc, LogASSUtils, Warning, TEXT("Called without Authority. Did nothing"));
         return;
     }
 

@@ -7,7 +7,7 @@
 
 #include "ASSAbilitySystemComponent.generated.h"
 
-
+DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemComponent, Log, All)
 
 /**
  * Base Ability System Component

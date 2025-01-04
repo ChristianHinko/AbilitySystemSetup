@@ -2,6 +2,8 @@
 
 #pragma once
 
+DECLARE_LOG_CATEGORY_EXTERN(LogASSUtils, Log, All)
+
 class UAbilitySystemComponent;
 class UAttributeSet;
 class UGameplayAbility;
