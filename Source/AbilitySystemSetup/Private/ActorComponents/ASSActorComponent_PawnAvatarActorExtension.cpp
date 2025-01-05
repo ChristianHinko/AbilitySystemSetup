@@ -3,7 +3,7 @@
 #include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 
 #include "AbilitySystemComponent.h"
-#include "ISEngineSubsystem_ObjectReferenceLibrary.h"
+#include "ISEngineSubsystem_InputActionAssetReferences.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "ASSAbilitySystemBlueprintLibrary.h"
@@ -78,13 +78,13 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
 {
     // Bind to all input actions so we can inform the ability system when ability inputs have been pressed/released.
     check(GEngine);
-    UISEngineSubsystem_ObjectReferenceLibrary& inputSetupAssetSubsystem = UISEngineSubsystem_ObjectReferenceLibrary::GetChecked(*GEngine);
+    UISEngineSubsystem_InputActionAssetReferences& inputActionAssetReferenceSubsystem = UISEngineSubsystem_InputActionAssetReferences::GetChecked(*GEngine);
 
     // Bind to all currently-known input actions.
     UEnhancedInputComponent* playerEnhancedInputComponent = Cast<UEnhancedInputComponent>(&inPlayerInputComponent);
     if (ensureAlways(IsValid(playerEnhancedInputComponent)))
     {
-        const TMap<FGameplayTag, TObjectPtr<const UInputAction>>& tagToInputActionMap = inputSetupAssetSubsystem.GetAllInputActions();
+        const TMap<FGameplayTag, TObjectPtr<const UInputAction>>& tagToInputActionMap = inputActionAssetReferenceSubsystem.GetAllInputActions();
         for (const TPair<FGameplayTag, TObjectPtr<const UInputAction>>& tagInputToActionPair : tagToInputActionMap)
         {
             const UInputAction* inputAction = tagInputToActionPair.Value;
@@ -94,8 +94,8 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
         }
     }
 
-    // When input actions are registered during the game, bind to them.
-    inputSetupAssetSubsystem.OnInputActionRegisteredDelegate.AddWeakLambda(this,
+    // When input actions are added during the game, bind to them.
+    inputActionAssetReferenceSubsystem.OnInputActionAddedDelegate.AddWeakLambda(this,
             [this](const FGameplayTag& inTag, const UInputAction& inInputAction)
             {
                 check(GetOwner());
@@ -111,8 +111,8 @@ void UASSActorComponent_PawnAvatarActorExtension::OnOwnerSetupPlayerInputCompone
             }
         );
 
-    // When input actions are unregistered during the game, unbind from them.
-    inputSetupAssetSubsystem.OnInputActionRegisteredDelegate.AddWeakLambda(this,
+    // When input actions are removed during the game, unbind from them.
+    inputActionAssetReferenceSubsystem.OnInputActionRemovedDelegate.AddWeakLambda(this,
             [this](const FGameplayTag& inTag, const UInputAction& inInputAction)
             {
                 check(GetOwner());
