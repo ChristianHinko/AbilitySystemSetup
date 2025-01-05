@@ -7,7 +7,7 @@
 
 #include "ASSGameplayAbility.generated.h"
 
-
+DECLARE_LOG_CATEGORY_EXTERN(LogASSGameplayAbility, Log, All)
 
 /**
  * Base Gameplay Ability

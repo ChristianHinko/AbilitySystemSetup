@@ -3,6 +3,9 @@
 #include "ASSGameplayAbility.h"
 
 #include "ISNativeGameplayTags.h"
+#include "GCUtils_Log.h"
+
+DEFINE_LOG_CATEGORY(LogASSGameplayAbility)
 
 UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
@@ -51,12 +54,20 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
     if (GetAssetTags().IsEmpty())
     {
-        UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"), ANSI_TO_TCHAR(__FUNCTION__));
+        GC_LOG_STR_UOBJECT(
+            this,
+            LogASSGameplayAbility,
+            Warning,
+            TEXT("Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"));
         check(0);
     }
     if (GetAssetTags().HasTag(ISNativeGameplayTags::InputAction) == false)
     {
-        UE_LOG(LogASSAbilitySetup, Warning, TEXT("%s() Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't intended to be activated by input you can suppress this with InputAction.None tag."), ANSI_TO_TCHAR(__FUNCTION__));
+        GC_LOG_STR_UOBJECT(
+            this,
+            LogASSGameplayAbility,
+            Warning,
+            TEXT("Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't intended to be activated by input you can suppress this with InputAction.None tag."));
         check(0);
     }
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -100,7 +111,13 @@ void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
         }
         else
         {
-            UE_LOG(LogASSAbilitySetup, Warning, TEXT("Ability %s expects event data but none is being supplied. Use Activate Ability instead of Activate Ability From Event."), *GetName());
+            GC_LOG_STR_UOBJECT(
+                this,
+                LogASSGameplayAbility,
+                Warning,
+                GCUtils::Materialize(TStringBuilder<512>()) << TEXT("Ability ") << *GetName() << TEXT(" expects event data but none is being supplied. Use Activate Ability instead of Activate Ability From Event.")
+            );
+
             bool bReplicateEndAbility = false;
             bool bWasCancelled = true;
             EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);

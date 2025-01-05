@@ -2,8 +2,11 @@
 
 #include "ASSAbilityTask_WaitTargetData.h"
 
+#include "GCUtils_Log.h"
 #include "AbilitySystemComponent.h"
 #include "ASSGameplayAbilityTargetActor.h"
+
+DEFINE_LOG_CATEGORY(LogASSAbilityTask_WaitTargetData)
 
 UASSAbilityTask_WaitTargetData* UASSAbilityTask_WaitTargetData::ASSWaitTargetDataUsingActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor)
 {
@@ -77,7 +80,12 @@ void UASSAbilityTask_WaitTargetData::OnDestroy(bool AbilityEnded)
             }
             else
             {
-                UE_LOG(LogASSTargetActorSetup, Warning, TEXT("%s() Your not using our custom base target actor. Tried to call DisableTargetActor() but we couldn't because of this"), ANSI_TO_TCHAR(__FUNCTION__));
+                GC_LOG_STR_UOBJECT(
+                    this,
+                    LogASSAbilityTask_WaitTargetData,
+                    Warning,
+                    TEXT("Your not using our custom base target actor. Tried to call DisableTargetActor() but we couldn't because of this")
+                );
             }
 
             // Clear added callbacks
