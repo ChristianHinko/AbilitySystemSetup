@@ -13,6 +13,28 @@ UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer&
     AffectedAnimInstanceTag = NAME_None;
 }
 
+#if DO_CHECK
+void UASSAbilitySystemComponent::BindToInputComponent(UInputComponent* inputComponent)
+{
+    checkNoEntry();
+}
+
+void UASSAbilitySystemComponent::BindAbilityActivationToInputComponent(UInputComponent* inputComponent, FGameplayAbilityInputBinds bindInfo)
+{
+    checkNoEntry();
+}
+
+void UASSAbilitySystemComponent::AbilityLocalInputPressed(int32 inputID)
+{
+    checkNoEntry();
+}
+
+void UASSAbilitySystemComponent::AbilityLocalInputReleased(int32 inputID)
+{
+    checkNoEntry();
+}
+#endif // #if DO_CHECK
+
 void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)

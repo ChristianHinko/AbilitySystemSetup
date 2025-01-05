@@ -9,6 +9,9 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemComponent, Log, All)
 
+class UInputComponent;
+struct FGameplayAbilityInputBinds;
+
 /**
  * Base Ability System Component
  */
@@ -19,6 +22,15 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySystemComponent : public UAbilitySystemC
 
 public:
     UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer);
+    
+    // NOTE: We abandon the ability system's ability input binding due to its limitations. Therefore we check
+    //       no entry on their input setup functions since we use our setup instead (InputSetup module).
+#if DO_CHECK
+    virtual void BindToInputComponent(UInputComponent* inputComponent) override;
+    virtual void BindAbilityActivationToInputComponent(UInputComponent* inputComponent, FGameplayAbilityInputBinds bindInfo) override;
+    virtual void AbilityLocalInputPressed(int32 inputID) override;
+    virtual void AbilityLocalInputReleased(int32 inputID) override;
+#endif // DO_CHECK
 
     virtual bool ShouldDoServerAbilityRPCBatch() const override { return true; }
 
