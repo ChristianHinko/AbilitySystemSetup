@@ -21,7 +21,7 @@ class ABILITYSYSTEMSETUP_API UASSAbilitySystemComponent : public UAbilitySystemC
     GENERATED_BODY()
 
 public:
-    UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer);
+    UASSAbilitySystemComponent(const FObjectInitializer& objectInitializer);
     
     // NOTE: We abandon the ability system's ability input binding due to its limitations. Therefore we check
     //       no entry on their input setup functions since we use our setup instead (InputSetup module).
@@ -32,10 +32,12 @@ public:
     virtual void AbilityLocalInputReleased(int32 inputID) override;
 #endif // DO_CHECK
 
-    virtual bool ShouldDoServerAbilityRPCBatch() const override { return true; }
+    FORCEINLINE virtual bool ShouldDoServerAbilityRPCBatch() const override { return true; }
+    
+#if DO_CHECK || !NO_LOGGING
+    virtual void OnGiveAbility(FGameplayAbilitySpec& abilitySpec) override;
+#endif // #if DO_CHECK || !NO_LOGGING
 
-    virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
-
-    /** Not tested yet!!!!!!! Beware. Could also be better optimized I'm sure. Anyways this function resets the ASC as if it were new again. */
+    // Not tested yet!!!!!!! Beware. Could also be better optimized I'm sure. Anyways this function resets the ASC as if it were new again.
     void FullReset();
 };

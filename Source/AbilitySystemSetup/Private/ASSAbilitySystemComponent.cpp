@@ -6,11 +6,10 @@
 
 DEFINE_LOG_CATEGORY(LogASSAbilitySystemComponent)
 
-UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer& objectInitializer)
+    : Super(objectInitializer)
 {
-    /** The linked Anim Instance that this component will play montages in. Use NAME_None for the main anim instance. (Havn't explored this much yet) */
-    AffectedAnimInstanceTag = NAME_None;
+
 }
 
 #if DO_CHECK
@@ -35,53 +34,51 @@ void UASSAbilitySystemComponent::AbilityLocalInputReleased(int32 inputID)
 }
 #endif // #if DO_CHECK
 
-void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+#if DO_CHECK || !NO_LOGGING
+void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& abilitySpec)
 {
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-    if (AbilitySpec.SourceObject.IsValid() == false)
-    {
-        GC_LOG_STR_UOBJECT(
-            this,
-            LogASSAbilitySystemComponent,
-            Warning,
-            TEXT("SourceObject was not valid when Ability was given. Someone must have forgotten to set it when giving the Ability")
-        );
-        check(0);
-    }
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+    const bool hasValidSourceObj = abilitySpec.SourceObject.IsValid() == false;
+    GC_CLOG_STR_UOBJECT(
+        this,
+        hasValidSourceObj,
+        LogASSAbilitySystemComponent,
+        Warning,
+        TEXT("`SourceObject` was not valid when ability was given. Someone must have forgotten to set it when giving the ability.")
+    );
+    check(hasValidSourceObj);
 
-    Super::OnGiveAbility(AbilitySpec);
+    Super::OnGiveAbility(abilitySpec);
 }
+#endif // #if DO_CHECK || !NO_LOGGING
 
 void UASSAbilitySystemComponent::FullReset()
 {
-    //    Stop ASC from doing things
+    // Stop ASC from doing things.
     DestroyActiveState();
-
 
     if (IsOwnerActorAuthoritative())
     {
-        //    Ungive abilities. Will remove all abilitity tags/blocked bindings as well
+        // Ungive abilities. Will remove all abilitity tags/blocked bindings as well.
         ClearAllAbilities();
 
-        //    Clear Effects. Will remove all given tags and cues as well
-        for (const FActiveGameplayEffect& Effect : &ActiveGameplayEffects)
+        // Clear effects. Will remove all given tags and cues as well.
+        for (const FActiveGameplayEffect& effect : &ActiveGameplayEffects)
         {
-            RemoveActiveGameplayEffect(Effect.Handle);
+            RemoveActiveGameplayEffect(effect.Handle);
         }
 
-        //    Remove Attribute Sets
+        // Remove attribute sets
         RemoveAllSpawnedAttributes();
     }
 
 
-    //    If cue still exists because it was not from an effect
+    // If cue still exists because it was not from an effect.
     RemoveAllGameplayCues();
 
-    //    Now clean up any loose gameplay tags
+    // Now clean up any loose gameplay tags.
     ResetTagMap();
-    GetMinimalReplicationTags_Mutable().RemoveAllTags();        //    This line may not be necessary
+    GetMinimalReplicationTags_Mutable().RemoveAllTags(); // This line may not be necessary.
 
-    //    Give clients changes ASAP
+    // Give clients changes ASAP.
     ForceReplication();
 }
