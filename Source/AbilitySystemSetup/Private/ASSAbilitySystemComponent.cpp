@@ -37,10 +37,10 @@ void UASSAbilitySystemComponent::AbilityLocalInputReleased(int32 inputID)
 #if DO_CHECK || !NO_LOGGING
 void UASSAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& abilitySpec)
 {
-    const bool hasValidSourceObj = abilitySpec.SourceObject.IsValid() == false;
+    const bool hasValidSourceObj = abilitySpec.SourceObject.IsValid();
     GC_CLOG_STR_UOBJECT(
         this,
-        hasValidSourceObj,
+        !hasValidSourceObj,
         LogASSAbilitySystemComponent,
         Warning,
         TEXT("`SourceObject` was not valid when ability was given. Someone must have forgotten to set it when giving the ability.")
