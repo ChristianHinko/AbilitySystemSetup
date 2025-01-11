@@ -6,7 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
-DEFINE_LOG_CATEGORY(LogASSGameplayTargetDataFilter)
+DEFINE_LOG_CATEGORY_STATIC(LogASSGameplayTargetDataFilter, Log, All);
 
 FASSGameplayTargetDataFilter::FASSGameplayTargetDataFilter()
 {

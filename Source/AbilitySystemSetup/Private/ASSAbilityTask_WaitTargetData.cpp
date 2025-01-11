@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "ASSGameplayAbilityTargetActor.h"
 
-DEFINE_LOG_CATEGORY(LogASSAbilityTask_WaitTargetData)
+DEFINE_LOG_CATEGORY_STATIC(LogASSAbilityTask_WaitTargetData, Log, All);
 
 UASSAbilityTask_WaitTargetData* UASSAbilityTask_WaitTargetData::ASSWaitTargetDataUsingActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor)
 {

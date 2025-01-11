@@ -7,14 +7,11 @@
 
 #include "ASSAbilitySet.generated.h"
 
-
 class UGameplayAbility;
 class UGameplayEffect;
 class UAttributeSet;
 struct FGameplayAbilitySpecHandle;
 struct FActiveGameplayEffectHandle;
-
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySet, Log, All)
 
 /**
  * Stores granted handles from a specific Ability Set.

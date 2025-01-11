@@ -9,7 +9,7 @@
 #include "ASSUtils.h"
 #include "GCUtils_Log.h"
 
-DEFINE_LOG_CATEGORY(LogASSPawnAvatarActorExtensionComponent)
+DEFINE_LOG_CATEGORY_STATIC(LogASSPawnAvatarActorExtensionComponent, Log, All);
 
 UASSActorComponent_PawnAvatarActorExtension::UASSActorComponent_PawnAvatarActorExtension(const FObjectInitializer& inObjectInitializer)
     : Super(inObjectInitializer)

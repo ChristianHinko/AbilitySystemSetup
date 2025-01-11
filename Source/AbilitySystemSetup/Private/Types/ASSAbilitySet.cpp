@@ -5,7 +5,7 @@
 #include "GCUtils_Log.h"
 #include "AbilitySystemComponent.h"
 
-DEFINE_LOG_CATEGORY(LogASSAbilitySet)
+DEFINE_LOG_CATEGORY_STATIC(LogASSAbilitySet, Log, All);
 
 ///////////////////////////////////////
 /// FASSAbilitySetGrantedHandles

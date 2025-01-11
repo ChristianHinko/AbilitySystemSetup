@@ -8,7 +8,7 @@
 #include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 #endif // #if !NO_LOGGING || DO_CHECK
 
-DEFINE_LOG_CATEGORY(LogASSAvatarActorExtensionComponent)
+DEFINE_LOG_CATEGORY_STATIC(LogASSAvatarActorExtensionComponent, Log, All);
 
 UASSActorComponent_AvatarActorExtension::UASSActorComponent_AvatarActorExtension(const FObjectInitializer& inObjectInitializer)
     : Super(inObjectInitializer)

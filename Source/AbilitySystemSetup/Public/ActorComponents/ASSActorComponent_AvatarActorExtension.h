@@ -11,8 +11,6 @@ class UAbilitySystemComponent;
 class UASSAbilitySet;
 struct FASSAbilitySetGrantedHandles;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAvatarActorExtensionComponent, Log, All)
-
 /**
  * Provides common GAS initialization/uninitialization logic with Ability Sets granted while initialized.
  * This component is to be used by avatar actors only.

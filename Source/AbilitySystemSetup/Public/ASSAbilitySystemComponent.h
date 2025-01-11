@@ -7,8 +7,6 @@
 
 #include "ASSAbilitySystemComponent.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilitySystemComponent, Log, All)
-
 class UInputComponent;
 struct FGameplayAbilityInputBinds;
 

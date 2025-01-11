@@ -12,8 +12,6 @@ class UInputAction;
 class UInputComponent;
 class UEnhancedInputComponent;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogASSPawnAvatarActorExtensionComponent, Log, All)
-
 /**
  * Pawn version that handles updating GAS during controller changes and sets up GAS input events.
  *

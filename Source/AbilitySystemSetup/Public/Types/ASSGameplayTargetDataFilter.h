@@ -7,8 +7,6 @@
 
 #include "ASSGameplayTargetDataFilter.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogASSGameplayTargetDataFilter, Log, All)
-
 /**
  * Base Target Data Filter.
  * Has ability to only consider Actors that implement the IAbilitySystemInterface.

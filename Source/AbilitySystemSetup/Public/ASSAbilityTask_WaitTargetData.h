@@ -7,8 +7,6 @@
 
 #include "ASSAbilityTask_WaitTargetData.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogASSAbilityTask_WaitTargetData, Log, All)
-
 /**
  * Base that supports re-using of Target Actors that have bDestroyOnConfirmation disabled
  */

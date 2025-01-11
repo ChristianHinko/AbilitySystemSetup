@@ -5,7 +5,7 @@
 #include "ISNativeGameplayTags.h"
 #include "GCUtils_Log.h"
 
-DEFINE_LOG_CATEGORY(LogASSGameplayAbility)
+DEFINE_LOG_CATEGORY_STATIC(LogASSGameplayAbility, Log, All);
 
 UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)

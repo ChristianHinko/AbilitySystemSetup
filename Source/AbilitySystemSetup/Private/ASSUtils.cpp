@@ -9,7 +9,7 @@
 #include "AbilitySystemComponent.h"
 #include "GCUtils_Log.h"
 
-DEFINE_LOG_CATEGORY(LogASSUtils)
+DEFINE_LOG_CATEGORY_STATIC(LogASSUtils, Log, All);
 
 UAttributeSet* ASSUtils::GetAttributeSet(const UAbilitySystemComponent* asc, const TSubclassOf<UAttributeSet> attributeSetClass)
 {

@@ -4,7 +4,7 @@
 
 #include "GCUtils_Log.h"
 
-DEFINE_LOG_CATEGORY(LogASSAbilitySystemComponent)
+DEFINE_LOG_CATEGORY_STATIC(LogASSAbilitySystemComponent, Log, All);
 
 UASSAbilitySystemComponent::UASSAbilitySystemComponent(const FObjectInitializer& objectInitializer)
     : Super(objectInitializer)
