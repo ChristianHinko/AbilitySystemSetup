@@ -4,6 +4,7 @@
 
 #include "ISNativeGameplayTags.h"
 #include "GCUtils_Log.h"
+#include "AbilitySystemComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSGameplayAbility, Log, All);
 
@@ -14,44 +15,13 @@ UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitial
     InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
     bServerRespectsRemoteAbilityCancellation = false;
     NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnlyTermination;
-
-    bPassiveAbility = false;
 }
 
 void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
     Super::OnAvatarSet(ActorInfo, Spec);
 
-    // TODO: Try to remove usage of `EGameplayAbilityInstancingPolicy::NonInstanced`. This code looks like it
-    // might be unnecessary now too since non-instanced is deprecated.
-
-    // Fix the engine accidently calling OnAvatarSet() on CDO instead of calling it on the instances
-    if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && !IsInstantiated())
-    {
-        // Broken call to OnAvatarSet().
-        // Do the fix - call our version on each instance.
-        for (UGameplayAbility* Ability : Spec.GetAbilityInstances())
-        {
-            UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(Ability);
-            if (IsValid(ASSAbility))
-            {
-                ASSAbility->ASSOnAvatarSet(ActorInfo, Spec);
-            }
-        }
-        return;
-    }
-
-    // Nothing went wrong. Call our version.
-    // If we are NonInstanced, then being the CDO is okay.
-    // If we are instanced, then the engine called us from UGameplayAbility::OnGiveAbility().
-    ASSOnAvatarSet(ActorInfo, Spec);
-    return;
-}
-
-void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-    // Safe event for on avatar set
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#if !NO_LOGGING || DO_ENSURE
     if (GetAssetTags().IsEmpty())
     {
         GC_LOG_STR_UOBJECT(
@@ -59,8 +29,9 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
             LogASSGameplayAbility,
             Warning,
             TEXT("Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"));
-        check(0);
+        ensure(0);
     }
+
     if (GetAssetTags().HasTag(ISNativeGameplayTags::InputAction) == false)
     {
         GC_LOG_STR_UOBJECT(
@@ -68,9 +39,9 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
             LogASSGameplayAbility,
             Warning,
             TEXT("Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't intended to be activated by input you can suppress this with InputAction.None tag."));
-        check(0);
+        ensure(0);
     }
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#endif // #if !NO_LOGGING || DO_ENSURE
 }
 
 void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -78,7 +49,7 @@ void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorIn
     Super::OnGiveAbility(ActorInfo, Spec);
 
     // Passive abilities should auto activate when given
-    if (bPassiveAbility)
+    if (bIsPassiveAbility)
     {
         TryActivatePassiveAbility(ActorInfo, Spec);
     }
@@ -161,7 +132,7 @@ void UASSGameplayAbility::ExternalEndAbility()
 
 void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const
 {
-    if (!bPassiveAbility)
+    if (!bIsPassiveAbility)
     {
         check(0); // passive ability function was called but this ability isn't passive
         return;
