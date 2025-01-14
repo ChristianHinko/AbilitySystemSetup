@@ -8,8 +8,8 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSGameplayAbility, Log, All);
 
-UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& inObjectInitializer)
+    : Super(inObjectInitializer)
 {
     NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
     InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
@@ -17,9 +17,11 @@ UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitial
     NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnlyTermination;
 }
 
-void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UASSGameplayAbility::OnAvatarSet(
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilitySpec& inSpec)
 {
-    Super::OnAvatarSet(ActorInfo, Spec);
+    Super::OnAvatarSet(inActorInfo, inSpec);
 
 #if !NO_LOGGING || DO_ENSURE
     if (GetAssetTags().IsEmpty())
@@ -44,84 +46,61 @@ void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo
 #endif // #if !NO_LOGGING || DO_ENSURE
 }
 
-void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UASSGameplayAbility::OnGiveAbility(
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilitySpec& inSpec)
 {
-    Super::OnGiveAbility(ActorInfo, Spec);
+    Super::OnGiveAbility(inActorInfo, inSpec);
 
     // Passive abilities should auto activate when given
     if (bIsPassiveAbility)
     {
-        TryActivatePassiveAbility(ActorInfo, Spec);
+        TryActivatePassiveAbility(inActorInfo, inSpec);
     }
 }
 
-bool UASSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
+void UASSGameplayAbility::EndAbility(
+    const FGameplayAbilitySpecHandle inSpecHandle,
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilityActivationInfo inActivationInfo,
+    bool inShouldReplicateEndAbility,
+    bool inWasCanceled)
 {
-    if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
+    // Call our `ASSEndAbility()` at a safe point.
+
+    if (!IsEndAbilityValid(inSpecHandle, inActorInfo))
     {
-        return false;
+        Super::EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+        return;
     }
 
-    return true;
+    if (ScopeLockCount > 0)
+    {
+        Super::EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+        return;
+    }
+
+    // TODO: Add a return-early check similar to `bIsAbilityEnding`. Also, document the small duplication of engine
+    // code. Also, try to eliminate our custom `ASSEndAbility()` function and maybe replace it with helper functions or something.
+
+    // This is the safe point to do end ability logic.
+    ASSEndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
 }
 
-void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UASSGameplayAbility::ASSEndAbility(
+    const FGameplayAbilitySpecHandle inSpecHandle,
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilityActivationInfo inActivationInfo,
+    bool inShouldReplicateEndAbility,
+    bool inWasCanceled)
 {
-    //  BEGIN Copied from Super (for Blueprint support)
-    if (bHasBlueprintActivate)
-    {
-        // A Blueprinted ActivateAbility function must call CommitAbility somewhere in its execution chain.
-        K2_ActivateAbility();
-    }
-    else if (bHasBlueprintActivateFromEvent)
-    {
-        if (TriggerEventData)
-        {
-            // A Blueprinted ActivateAbility function must call CommitAbility somewhere in its execution chain.
-            K2_ActivateAbilityFromEvent(*TriggerEventData);
-        }
-        else
-        {
-            GC_LOG_STR_UOBJECT(
-                this,
-                LogASSGameplayAbility,
-                Warning,
-                GCUtils::Materialize(TStringBuilder<512>()) << TEXT("Ability ") << *GetName() << TEXT(" expects event data but none is being supplied. Use Activate Ability instead of Activate Ability From Event.")
-            );
-
-            bool bReplicateEndAbility = false;
-            bool bWasCancelled = true;
-            EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-        }
-    }
-    //  END Copied from Super (for Blueprint support)
+    // End the ability.
+    EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
 }
 
-void UASSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
-    // Call our ASSEndAbility() at a safe point
-    if (IsEndAbilityValid(Handle, ActorInfo))
-    {
-        if (ScopeLockCount > 0)
-        {
-            WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
-            return;
-        }
-
-        // This is the safe point to do end ability event logic
-        ASSEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-    }
-
-    // End the ability
-    Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-}
-
-void UASSGameplayAbility::ASSEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
-    // Safe event for end ability
-}
-
-void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const
+void UASSGameplayAbility::TryActivatePassiveAbility(
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilitySpec& inSpec) const
 {
     if (!bIsPassiveAbility)
     {
@@ -130,11 +109,11 @@ void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorI
     }
 
     // TODO: Try to remove usage of `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and non-instance only.
-    const bool bIsPredicting = (InSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
-    if (InActorInfo && !InSpec.IsActive() && !bIsPredicting)
+    const bool bIsPredicting = (inSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+    if (inActorInfo && !inSpec.IsActive() && !bIsPredicting)
     {
-        UAbilitySystemComponent* ASC = InActorInfo->AbilitySystemComponent.Get();
-        const AActor* AvatarActor = InActorInfo->AvatarActor.Get();
+        UAbilitySystemComponent* ASC = inActorInfo->AbilitySystemComponent.Get();
+        const AActor* AvatarActor = inActorInfo->AvatarActor.Get();
 
         // If avatar actor is torn off or about to die, don't try to activate it.
         if (ASC && AvatarActor && !AvatarActor->GetTearOff() && (AvatarActor->GetLifeSpan() <= 0.0f))
@@ -142,12 +121,12 @@ void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorI
             const bool bIsLocalExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
             const bool bIsServerExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
 
-            const bool bClientShouldActivate = InActorInfo->IsLocallyControlled() && bIsLocalExecution;
-            const bool bServerShouldActivate = InActorInfo->IsNetAuthority() && bIsServerExecution;
+            const bool bClientShouldActivate = inActorInfo->IsLocallyControlled() && bIsLocalExecution;
+            const bool bServerShouldActivate = inActorInfo->IsNetAuthority() && bIsServerExecution;
 
             if (bClientShouldActivate || bServerShouldActivate)
             {
-                ASC->TryActivateAbility(InSpec.Handle);
+                ASC->TryActivateAbility(inSpec.Handle);
             }
         }
     }

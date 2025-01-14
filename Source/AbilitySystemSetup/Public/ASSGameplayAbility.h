@@ -17,16 +17,23 @@ class ABILITYSYSTEMSETUP_API UASSGameplayAbility : public UGameplayAbility
 
 public:
 
-    UASSGameplayAbility(const FObjectInitializer& ObjectInitializer);
+    UASSGameplayAbility(const FObjectInitializer& inObjectInitializer);
 
 protected:
 
     //  BEGIN UGameplayAbility interface
-    virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
-    virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
-    virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
-    virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-    virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override final;
+    virtual void OnAvatarSet(
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilitySpec& inSpec) override;
+    virtual void OnGiveAbility(
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilitySpec& inSpec) override;
+    virtual void EndAbility(
+        const FGameplayAbilitySpecHandle inSpecHandle,
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilityActivationInfo inActivationInfo,
+        bool inShouldReplicateEndAbility,
+        bool inWasCanceled) override final;
     //  END UGameplayAbility interface
 
 protected:
@@ -36,11 +43,18 @@ protected:
      * using it as an event.
      * This version is called at a safe point for ability subclass logic to use as an event.
      */
-    virtual void ASSEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled);
+    virtual void ASSEndAbility(
+        const FGameplayAbilitySpecHandle inSpecHandle,
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilityActivationInfo inActivationInfo,
+        bool inShouldReplicateEndAbility,
+        bool inWasCanceled);
 
 private:
 
-    void TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const;
+    void TryActivatePassiveAbility(
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilitySpec& inSpec) const;
 
 public:
 
