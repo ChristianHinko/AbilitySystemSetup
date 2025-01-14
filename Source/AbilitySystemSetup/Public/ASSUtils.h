@@ -52,12 +52,12 @@ namespace ASSUtils
      * Tell Ability System that Ability input has been pressed.
      * Similar to UAbilitySystemComponent::AbilityLocalInputPressed() but without InputID enum nonsense.
      */
-    ABILITYSYSTEMSETUP_API void AbilityLocalInputPressedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& gameplayAbilitySpec, const bool allowAbilityActivation = true);
+    ABILITYSYSTEMSETUP_API void AbilityLocalInputPressedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& spec, const bool allowAbilityActivation = true);
     /**
      * Tell Ability System that Ability input has been pressed.
      * Similar to UAbilitySystemComponent::AbilityLocalInputReleased() but without InputID enum nonsense.
      */
-    ABILITYSYSTEMSETUP_API void AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& gameplayAbilitySpec);
+    ABILITYSYSTEMSETUP_API void AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& spec);
 
     /**
      * UAbilitySystemComponent::TargetConfirm() but modified to only confirm targeting on

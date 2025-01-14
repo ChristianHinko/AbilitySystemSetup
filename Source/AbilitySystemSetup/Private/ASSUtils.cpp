@@ -110,44 +110,70 @@ void ASSUtils::GiveAbilities(UAbilitySystemComponent* asc, const TArray<FGamepla
     }
 }
 
-void ASSUtils::AbilityLocalInputPressedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& gameplayAbilitySpec, const bool allowAbilityActivation)
-{
-    gameplayAbilitySpec.InputPressed = true;
-    if (gameplayAbilitySpec.IsActive())
+void ASSUtils::AbilityLocalInputPressedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& spec, const bool allowAbilityActivation)
+{    
+    // #duplicate-code-engine
+    // NOTE: Duplicate logic from enigine 5.5 UAbilitySystemComponent::AbilityLocalInputPressed. Only difference it that we are provided a spec rather
+    // than looping through them and choosing one by an ability input id (we don't use GAS's input id enum system).
+    // I wish GAS would break their function up to be more modular since we just want this part that cares about the spec, but
+    // until they do that we have to duplicate this part of their function.
+    // NOTE: We have a small addition to this engine code (allowAbilityActivation).
+    if (spec.Ability)
     {
-        if (gameplayAbilitySpec.Ability->bReplicateInputDirectly && asc->IsOwnerActorAuthoritative() == false)
+        spec.InputPressed = true;
+        if (spec.IsActive())
         {
-            asc->ServerSetInputPressed(gameplayAbilitySpec.Handle);
+            if (spec.Ability->bReplicateInputDirectly && asc->IsOwnerActorAuthoritative() == false)
+            {
+                asc->ServerSetInputPressed(spec.Handle);
+            }
+
+            asc->AbilitySpecInputPressed(spec);
+
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+            // Fixing this up to use the instance activation, but this function should be deprecated as it cannot work with InstancedPerExecution
+            UE_CLOG(spec.Ability->GetInstancingPolicy() == EGameplayAbilityInstancingPolicy::InstancedPerExecution, LogASSUtils, Warning, TEXT("%hs: %s is InstancedPerExecution. This is unreliable for Input as you may only interact with the latest spawned Instance"), __func__, *GetNameSafe(spec.Ability));
+            TArray<UGameplayAbility*> Instances = spec.GetAbilityInstances();
+            const FGameplayAbilityActivationInfo& ActivationInfo = Instances.IsEmpty() ? spec.ActivationInfo : Instances.Last()->GetCurrentActivationInfoRef();
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+            // Invoke the InputPressed event. This is not replicated here. If someone is listening, they may replicate the InputPressed event to the server.
+            asc->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, spec.Handle, ActivationInfo.GetActivationPredictionKey());
         }
-
-        asc->AbilitySpecInputPressed(gameplayAbilitySpec);
-
-        // TODO: Stop using `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and not per-instance.
-        asc->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, gameplayAbilitySpec.Handle, gameplayAbilitySpec.ActivationInfo.GetActivationPredictionKey());
-    }
-    else
-    {
-        if (allowAbilityActivation)
+        else
         {
-            asc->TryActivateAbility(gameplayAbilitySpec.Handle);
+            if (allowAbilityActivation)
+            {
+                // Ability is not active, so try to activate it
+                asc->TryActivateAbility(spec.Handle);
+            }
         }
     }
 }
 
-void ASSUtils::AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& gameplayAbilitySpec)
+void ASSUtils::AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& spec)
 {
-    gameplayAbilitySpec.InputPressed = false;
-    if (gameplayAbilitySpec.IsActive())
+    // #duplicate-code-engine
+    // NOTE: Duplicate logic from enigine 5.5 UAbilitySystemComponent::AbilityLocalInputReleased. Only difference it that we are provided a spec rather
+    // than looping through them and choosing one by an ability input id (we don't use GAS's input id enum system).
+    // I wish GAS would break their function up to be more modular since we just want this part that cares about the spec, but
+    // until they do that we have to duplicate this part of their function.
+    spec.InputPressed = false;
+    if (spec.Ability && spec.IsActive())
     {
-        if (gameplayAbilitySpec.Ability->bReplicateInputDirectly && asc->IsOwnerActorAuthoritative() == false)
+        if (spec.Ability->bReplicateInputDirectly && asc->IsOwnerActorAuthoritative() == false)
         {
-            asc->ServerSetInputReleased(gameplayAbilitySpec.Handle);
+            asc->ServerSetInputReleased(spec.Handle);
         }
 
-        asc->AbilitySpecInputReleased(gameplayAbilitySpec);
+        asc->AbilitySpecInputReleased(spec);
 
-        // TODO: Stop using `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and not per-instance.
-        asc->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, gameplayAbilitySpec.Handle, gameplayAbilitySpec.ActivationInfo.GetActivationPredictionKey());
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+        // Fixing this up to use the instance activation, but this function should be deprecated as it cannot work with InstancedPerExecution
+        UE_CLOG(spec.Ability->GetInstancingPolicy() == EGameplayAbilityInstancingPolicy::InstancedPerExecution, LogASSUtils, Warning, TEXT("%hs: %s is InstancedPerExecution. This is unreliable for Input as you may only interact with the latest spawned Instance"), __func__, *GetNameSafe(spec.Ability));
+        TArray<UGameplayAbility*> Instances = spec.GetAbilityInstances();
+        const FGameplayAbilityActivationInfo& ActivationInfo = Instances.IsEmpty() ? spec.ActivationInfo : Instances.Last()->GetCurrentActivationInfoRef();
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+        asc->InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, spec.Handle, ActivationInfo.GetActivationPredictionKey());
     }
 }
 
