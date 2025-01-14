@@ -8,8 +8,31 @@
 #include "Types/ASSGameplayTargetDataFilter.h"
 #include "AbilitySystemComponent.h"
 #include "GCUtils_Log.h"
+#include "Abilities/GameplayAbility.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSUtils, Log, All);
+
+namespace
+{
+    /**
+     * @brief Internal function for calling on the inaccessable `UGameplayAbility::EndAbility()` function`.
+     */
+    template
+        <
+        void (UGameplayAbility::* pointerToMember)(const FGameplayAbilitySpecHandle, const FGameplayAbilityActorInfo*, const FGameplayAbilityActivationInfo, bool, bool) =
+            &UGameplayAbility::EndAbility
+        >
+    void CallEndAbilityInternal(
+        UGameplayAbility& inGameplayAbility,
+        const FGameplayAbilitySpecHandle& inSpecHandle,
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilityActivationInfo& inActivationInfo,
+        const bool inShouldReplicateEndAbility,
+        const bool inWasCanceled)
+    {
+        (inGameplayAbility.*pointerToMember)(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+    }
+}
 
 UAttributeSet* ASSUtils::GetAttributeSet(const UAbilitySystemComponent* asc, const TSubclassOf<UAttributeSet> attributeSetClass)
 {
@@ -247,4 +270,34 @@ FGameplayTargetDataFilterHandle ASSUtils::MakeMultiFilterHandle(const FASSGamepl
     newFilter->InitializeFilterContext(selfActor);
     filterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(newFilter);
     return filterHandle;
+}
+
+void ASSUtils::CallEndAbility(
+    UGameplayAbility& inGameplayAbility,
+    const FGameplayAbilitySpecHandle& inSpecHandle,
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilityActivationInfo& inActivationInfo,
+    const bool inShouldReplicateEndAbility,
+    const bool inWasCanceled)
+{
+    CallEndAbilityInternal(
+        inGameplayAbility,
+        inSpecHandle,
+        inActorInfo,
+        inActivationInfo,
+        inShouldReplicateEndAbility,
+        inWasCanceled);
+}
+void ASSUtils::CallEndAbility(
+    UGameplayAbility& inGameplayAbility,
+    const bool inShouldReplicateEndAbility,
+    const bool inWasCanceled)
+{
+    CallEndAbility(
+        inGameplayAbility,
+        inGameplayAbility.GetCurrentAbilitySpecHandle(),
+        inGameplayAbility.GetCurrentActorInfo(),
+        inGameplayAbility.GetCurrentActivationInfoRef(),
+        inShouldReplicateEndAbility,
+        inWasCanceled);
 }

@@ -4,54 +4,26 @@
 
 #include "ISNativeGameplayTags.h"
 #include "GCUtils_Log.h"
+#include "AbilitySystemComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSGameplayAbility, Log, All);
 
-UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer)
+UASSGameplayAbility::UASSGameplayAbility(const FObjectInitializer& inObjectInitializer)
+    : Super(inObjectInitializer)
 {
     NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
     InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
     bServerRespectsRemoteAbilityCancellation = false;
     NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnlyTermination;
-
-    bPassiveAbility = false;
 }
 
-void UASSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UASSGameplayAbility::OnAvatarSet(
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilitySpec& inSpec)
 {
-    Super::OnAvatarSet(ActorInfo, Spec);
+    Super::OnAvatarSet(inActorInfo, inSpec);
 
-    // TODO: Try to remove usage of `EGameplayAbilityInstancingPolicy::NonInstanced`. This code looks like it
-    // might be unnecessary now too since non-instanced is deprecated.
-
-    // Fix the engine accidently calling OnAvatarSet() on CDO instead of calling it on the instances
-    if (GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced && !IsInstantiated())
-    {
-        // Broken call to OnAvatarSet().
-        // Do the fix - call our version on each instance.
-        for (UGameplayAbility* Ability : Spec.GetAbilityInstances())
-        {
-            UASSGameplayAbility* ASSAbility = Cast<UASSGameplayAbility>(Ability);
-            if (IsValid(ASSAbility))
-            {
-                ASSAbility->ASSOnAvatarSet(ActorInfo, Spec);
-            }
-        }
-        return;
-    }
-
-    // Nothing went wrong. Call our version.
-    // If we are NonInstanced, then being the CDO is okay.
-    // If we are instanced, then the engine called us from UGameplayAbility::OnGiveAbility().
-    ASSOnAvatarSet(ActorInfo, Spec);
-    return;
-}
-
-void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-    // Safe event for on avatar set
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#if !NO_LOGGING || DO_ENSURE
     if (GetAssetTags().IsEmpty())
     {
         GC_LOG_STR_UOBJECT(
@@ -59,8 +31,9 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
             LogASSGameplayAbility,
             Warning,
             TEXT("Ability implementor forgot to assign an Ability Tag to this ability. We try to enforce activating abilities by tag for organization reasons"));
-        check(0);
+        ensure(0);
     }
+
     if (GetAssetTags().HasTag(ISNativeGameplayTags::InputAction) == false)
     {
         GC_LOG_STR_UOBJECT(
@@ -68,111 +41,79 @@ void UASSGameplayAbility::ASSOnAvatarSet(const FGameplayAbilityActorInfo* ActorI
             LogASSGameplayAbility,
             Warning,
             TEXT("Ability implementor forgot to assign an input action Ability Tag to this ability. We enforce this so that a given an input action can identify any abilities it activates. If the ability isn't intended to be activated by input you can suppress this with InputAction.None tag."));
-        check(0);
+        ensure(0);
     }
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#endif // #if !NO_LOGGING || DO_ENSURE
 }
 
-void UASSGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UASSGameplayAbility::OnGiveAbility(
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilitySpec& inSpec)
 {
-    Super::OnGiveAbility(ActorInfo, Spec);
+    Super::OnGiveAbility(inActorInfo, inSpec);
 
     // Passive abilities should auto activate when given
-    if (bPassiveAbility)
+    if (bIsPassiveAbility)
     {
-        TryActivatePassiveAbility(ActorInfo, Spec);
+        TryActivatePassiveAbility(inActorInfo, inSpec);
     }
 }
 
-bool UASSGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
+void UASSGameplayAbility::EndAbility(
+    const FGameplayAbilitySpecHandle inSpecHandle,
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilityActivationInfo inActivationInfo,
+    bool inShouldReplicateEndAbility,
+    bool inWasCanceled)
 {
-    if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
+    // Call our `ASSEndAbility()` at a safe point.
+
+    if (!IsEndAbilityValid(inSpecHandle, inActorInfo))
     {
-        return false;
+        Super::EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+        return;
     }
 
-    return true;
-}
-
-void UASSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
-{
-    //  BEGIN Copied from Super (for Blueprint support)
-    if (bHasBlueprintActivate)
+    if (ScopeLockCount > 0)
     {
-        // A Blueprinted ActivateAbility function must call CommitAbility somewhere in its execution chain.
-        K2_ActivateAbility();
-    }
-    else if (bHasBlueprintActivateFromEvent)
-    {
-        if (TriggerEventData)
-        {
-            // A Blueprinted ActivateAbility function must call CommitAbility somewhere in its execution chain.
-            K2_ActivateAbilityFromEvent(*TriggerEventData);
-        }
-        else
-        {
-            GC_LOG_STR_UOBJECT(
-                this,
-                LogASSGameplayAbility,
-                Warning,
-                GCUtils::Materialize(TStringBuilder<512>()) << TEXT("Ability ") << *GetName() << TEXT(" expects event data but none is being supplied. Use Activate Ability instead of Activate Ability From Event.")
-            );
-
-            bool bReplicateEndAbility = false;
-            bool bWasCancelled = true;
-            EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-        }
-    }
-    //  END Copied from Super (for Blueprint support)
-}
-
-void UASSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
-    // Call our ASSEndAbility() at a safe point
-    if (IsEndAbilityValid(Handle, ActorInfo))
-    {
-        if (ScopeLockCount > 0)
-        {
-            WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
-            return;
-        }
-
-        // This is the safe point to do end ability event logic
-        ASSEndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+        Super::EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+        return;
     }
 
-    // End the ability
-    Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+    // TODO: Add a return-early check similar to `bIsAbilityEnding`. Also, document the small duplication of engine
+    // code. Also, try to eliminate our custom `ASSEndAbility()` function and maybe replace it with helper functions or something.
+
+    // This is the safe point to do end ability logic.
+    ASSEndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
 }
 
-void UASSGameplayAbility::ASSEndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+void UASSGameplayAbility::ASSEndAbility(
+    const FGameplayAbilitySpecHandle inSpecHandle,
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilityActivationInfo inActivationInfo,
+    bool inShouldReplicateEndAbility,
+    bool inWasCanceled)
 {
-    // Safe event for end ability
+    // End the ability.
+    EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
 }
 
-void UASSGameplayAbility::ExternalEndAbility()
+void UASSGameplayAbility::TryActivatePassiveAbility(
+    const FGameplayAbilityActorInfo* inActorInfo,
+    const FGameplayAbilitySpec& inSpec) const
 {
-    check(CurrentActorInfo);
-
-    const bool bReplicateEndAbility = true;
-    const bool bWasCancelled = false;
-    EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), bReplicateEndAbility, bWasCancelled);
-}
-
-void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const
-{
-    if (!bPassiveAbility)
+    if (!bIsPassiveAbility)
     {
         check(0); // passive ability function was called but this ability isn't passive
         return;
     }
 
     // TODO: Try to remove usage of `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and non-instance only.
-    const bool bIsPredicting = (InSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
-    if (InActorInfo && !InSpec.IsActive() && !bIsPredicting)
+    const bool bIsPredicting = (inSpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+    if (inActorInfo && !inSpec.IsActive() && !bIsPredicting)
     {
-        UAbilitySystemComponent* ASC = InActorInfo->AbilitySystemComponent.Get();
-        const AActor* AvatarActor = InActorInfo->AvatarActor.Get();
+        UAbilitySystemComponent* ASC = inActorInfo->AbilitySystemComponent.Get();
+        const AActor* AvatarActor = inActorInfo->AvatarActor.Get();
 
         // If avatar actor is torn off or about to die, don't try to activate it.
         if (ASC && AvatarActor && !AvatarActor->GetTearOff() && (AvatarActor->GetLifeSpan() <= 0.0f))
@@ -180,12 +121,12 @@ void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorI
             const bool bIsLocalExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
             const bool bIsServerExecution = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
 
-            const bool bClientShouldActivate = InActorInfo->IsLocallyControlled() && bIsLocalExecution;
-            const bool bServerShouldActivate = InActorInfo->IsNetAuthority() && bIsServerExecution;
+            const bool bClientShouldActivate = inActorInfo->IsLocallyControlled() && bIsLocalExecution;
+            const bool bServerShouldActivate = inActorInfo->IsNetAuthority() && bIsServerExecution;
 
             if (bClientShouldActivate || bServerShouldActivate)
             {
-                ASC->TryActivateAbility(InSpec.Handle);
+                ASC->TryActivateAbility(inSpec.Handle);
             }
         }
     }
