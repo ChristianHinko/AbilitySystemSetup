@@ -43,9 +43,4 @@ protected:
         const FGameplayAbilityActivationInfo inActivationInfo,
         bool inShouldReplicateEndAbility,
         bool inWasCanceled);
-
-public:
-
-    /** Passive abilities are auto activated on given */
-    bool bIsPassiveAbility = false;
 };
