@@ -135,13 +135,13 @@ void ASSUtils::GiveAbilities(UAbilitySystemComponent* asc, const TArray<FGamepla
 }
 
 void ASSUtils::AbilityLocalInputPressedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& spec, const bool allowAbilityActivation)
-{    
-    // #duplicate-code-engine
-    // NOTE: Duplicate logic from enigine 5.5 UAbilitySystemComponent::AbilityLocalInputPressed. Only difference it that we are provided a spec rather
-    // than looping through them and choosing one by an ability input id (we don't use GAS's input id enum system).
-    // I wish GAS would break their function up to be more modular since we just want this part that cares about the spec, but
-    // until they do that we have to duplicate this part of their function.
-    // NOTE: We have a small addition to this engine code (allowAbilityActivation).
+{
+    // [duplicate-code-engine] Duplicate logic from enigine 5.5 UAbilitySystemComponent::AbilityLocalInputPressed.
+    //      Only difference it that we are provided a spec rather than looping through them and choosing one by an ability
+    //      input id (we don't use GAS's input id enum system). I wish GAS would break their function up to be more modular
+    //      since we just want this part that cares about the spec, but until they do that we have to duplicate this part of their function.
+    //      We also introduced the allowAbilityActivation in our implementation (super small addition).
+
     if (spec.Ability)
     {
         spec.InputPressed = true;
@@ -165,7 +165,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
         }
         else
         {
-            if (allowAbilityActivation)
+            if (allowAbilityActivation) // [modified-code-engine] Wrapped in if statement with our `allowAbilityActivation` parameter.
             {
                 // Ability is not active, so try to activate it
                 asc->TryActivateAbility(spec.Handle);
@@ -176,11 +176,11 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 void ASSUtils::AbilityLocalInputReleasedForSpec(UAbilitySystemComponent* asc, FGameplayAbilitySpec& spec)
 {
-    // #duplicate-code-engine
-    // NOTE: Duplicate logic from enigine 5.5 UAbilitySystemComponent::AbilityLocalInputReleased. Only difference it that we are provided a spec rather
-    // than looping through them and choosing one by an ability input id (we don't use GAS's input id enum system).
-    // I wish GAS would break their function up to be more modular since we just want this part that cares about the spec, but
-    // until they do that we have to duplicate this part of their function.
+    // [duplicate-code-engine] Duplicate logic from enigine 5.5 UAbilitySystemComponent::AbilityLocalInputReleased.
+    //      Only difference it that we are provided a spec rather than looping through them and choosing one by an ability
+    //      input id (we don't use GAS's input id enum system). I wish GAS would break their function up to be more modular
+    //      since we just want this part that cares about the spec, but until they do that we have to duplicate this part of their function.
+
     spec.InputPressed = false;
     if (spec.Ability && spec.IsActive())
     {
@@ -203,7 +203,8 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 void ASSUtils::TargetConfirmForAbility(UAbilitySystemComponent* asc, const UGameplayAbility* ability)
 {
-    // NOTE: The following is coppied code from UAbilitySystemComponent::TargetConfirm() but with an ability check added.
+    // [duplicate-code-engine] The following is coppied code from UAbilitySystemComponent::TargetConfirm()
+    //      but with an ability check added.
 
     // Callbacks may modify the spawned target actor array so iterate over a copy instead
     TArray<AGameplayAbilityTargetActor*> localTargetActors = asc->SpawnedTargetActors;
@@ -214,7 +215,7 @@ void ASSUtils::TargetConfirmForAbility(UAbilitySystemComponent* asc, const UGame
         {
             if (targetActor->IsConfirmTargetingAllowed())
             {
-                if (targetActor->OwningAbility == ability) // =@MODIFIED MARKER@= wrapped in this if statement
+                if (targetActor->OwningAbility == ability) // [modified-code-engine] Wrapped in this if statement to only trigger confirm for specific ability.
                 {
                     //TODO: There might not be any cases where this bool is false
                     if (!targetActor->bDestroyOnConfirmation)
@@ -234,7 +235,8 @@ void ASSUtils::TargetConfirmForAbility(UAbilitySystemComponent* asc, const UGame
 
 void ASSUtils::TargetCancelForAbility(UAbilitySystemComponent* asc, const UGameplayAbility* ability)
 {
-    // NOTE: The following is coppied code from UAbilitySystemComponent::TargetCancel() but with an ability check added.
+    // [duplicate-code-engine] The following is coppied code from UAbilitySystemComponent::TargetCancel()
+    //      but with an ability check added.
     
     // Callbacks may modify the spawned target actor array so iterate over a copy instead
     TArray<AGameplayAbilityTargetActor*> localTargetActors = asc->SpawnedTargetActors;
@@ -243,11 +245,11 @@ void ASSUtils::TargetCancelForAbility(UAbilitySystemComponent* asc, const UGamep
     {
         if (targetActor)
         {
-            if (targetActor->OwningAbility == ability) // =@MODIFIED MARKER@= wrapped in this if statement
+            if (targetActor->OwningAbility == ability) // [modified-code-engine] Wrapped in this if statement to only trigger cancel for specific ability.
             {
                 targetActor->CancelTargeting();
             }
-            else // =@MODIFIED MARKER@= add this else statement
+            else // [modified-code-engine] Add this else statement.
             {
                 asc->SpawnedTargetActors.Add(targetActor);
             }
