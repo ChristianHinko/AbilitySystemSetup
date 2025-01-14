@@ -22,12 +22,6 @@ public:
 protected:
 
     //  BEGIN UGameplayAbility interface
-    virtual void OnAvatarSet(
-        const FGameplayAbilityActorInfo* inActorInfo,
-        const FGameplayAbilitySpec& inSpec) override;
-    virtual void OnGiveAbility(
-        const FGameplayAbilityActorInfo* inActorInfo,
-        const FGameplayAbilitySpec& inSpec) override;
     virtual void EndAbility(
         const FGameplayAbilitySpecHandle inSpecHandle,
         const FGameplayAbilityActorInfo* inActorInfo,
@@ -49,12 +43,6 @@ protected:
         const FGameplayAbilityActivationInfo inActivationInfo,
         bool inShouldReplicateEndAbility,
         bool inWasCanceled);
-
-private:
-
-    void TryActivatePassiveAbility(
-        const FGameplayAbilityActorInfo* inActorInfo,
-        const FGameplayAbilitySpec& inSpec) const;
 
 public:
 

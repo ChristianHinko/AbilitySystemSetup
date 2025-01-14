@@ -9,6 +9,7 @@
 #include "AbilitySystemComponent.h"
 #include "GCUtils_Log.h"
 #include "Abilities/GameplayAbility.h"
+#include "Abilities/GameplayAbilityTypes.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSUtils, Log, All);
 
@@ -270,6 +271,93 @@ FGameplayTargetDataFilterHandle ASSUtils::MakeMultiFilterHandle(const FASSGamepl
     newFilter->InitializeFilterContext(selfActor);
     filterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(newFilter);
     return filterHandle;
+}
+
+bool ASSUtils::TryActivateAbilityPassive(
+    UAbilitySystemComponent& inAbilitySystemComponent,
+    const FGameplayAbilitySpec& inAbilitySpec)
+{
+    // TODO: Try to remove usage of `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and non-instance only.
+    const bool isPredicting = inAbilitySpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting;
+    if (isPredicting)
+    {
+        return false;
+    }
+
+    if (inAbilitySpec.IsActive())
+    {
+        return false;
+    }
+
+    check(inAbilitySystemComponent.AbilityActorInfo.IsValid());
+    const FGameplayAbilityActorInfo& actorInfo = *inAbilitySystemComponent.AbilityActorInfo.Get();
+
+    {
+        const AActor* avatarActor = actorInfo.AvatarActor.Get();
+
+        if (!avatarActor)
+        {
+            return false;
+        }
+
+        const bool isTornOff = avatarActor->GetTearOff();
+        if (isTornOff)
+        {
+            return false;
+        }
+
+        if (avatarActor->GetLifeSpan() > 0.f)
+        {
+            return false;
+        }
+    }
+
+    {
+        const UGameplayAbility* abilityCDO = inAbilitySpec.Ability;
+
+        if (!ensure(abilityCDO))
+        {
+            return false;
+        }
+
+        const EGameplayAbilityNetExecutionPolicy::Type abilityExecutionPolicy = abilityCDO->GetNetExecutionPolicy();
+
+        const bool shouldActivateLocal = actorInfo.IsLocallyControlled() && IsLocalActivatedExecution(abilityExecutionPolicy);
+        const bool shouldActivateServer = actorInfo.IsNetAuthority() && IsServerActivatedExecution(abilityExecutionPolicy);
+        if (!shouldActivateLocal && !shouldActivateServer)
+        {
+            return false;
+        }
+    }
+
+    constexpr bool shouldAllowRemoteActivation = true;
+    return inAbilitySystemComponent.TryActivateAbility(inAbilitySpec.Handle, shouldAllowRemoteActivation);
+}
+
+bool ASSUtils::IsLocalActivatedExecution(
+    const EGameplayAbilityNetExecutionPolicy::Type inAbilityExecutionPolicy)
+{
+    switch (inAbilityExecutionPolicy)
+    {
+    case EGameplayAbilityNetExecutionPolicy::LocalPredicted:
+    case EGameplayAbilityNetExecutionPolicy::LocalOnly:
+        return true;
+    }
+
+    return false;
+}
+
+bool ASSUtils::IsServerActivatedExecution(
+    const EGameplayAbilityNetExecutionPolicy::Type inAbilityExecutionPolicy)
+{
+    switch (inAbilityExecutionPolicy)
+    {
+    case EGameplayAbilityNetExecutionPolicy::ServerInitiated:
+    case EGameplayAbilityNetExecutionPolicy::ServerOnly:
+        return true;
+    }
+
+    return false;
 }
 
 void ASSUtils::CallEndAbility(

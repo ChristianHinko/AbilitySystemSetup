@@ -15,6 +15,11 @@ struct FGameplayTargetDataFilterHandle;
 struct FASSGameplayTargetDataFilter;
 struct FASSGameplayTargetDataFilter_MultiFilter;
 
+namespace EGameplayAbilityNetExecutionPolicy
+{
+    enum Type : int;
+}
+
 /**
  * Ability System Setup utilities.
  */
@@ -80,6 +85,25 @@ namespace ASSUtils
      * Create a handle for filtering target data, filling out all fields
      */
     ABILITYSYSTEMSETUP_API FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& multiFilter, AActor* selfActor);
+
+    /**
+     * @brief Try activate a passive ability.
+     */
+    ABILITYSYSTEMSETUP_API bool TryActivateAbilityPassive(
+        UAbilitySystemComponent& inAbilitySystemComponent,
+        const FGameplayAbilitySpec& inAbilitySpec);
+
+    /**
+     * @brief Returns whether the given execution policy requires the ability to be initially activated locally.
+     */
+    ABILITYSYSTEMSETUP_API bool IsLocalActivatedExecution(
+        const EGameplayAbilityNetExecutionPolicy::Type inAbilityExecutionPolicy);
+
+    /**
+     * @brief Returns whether the given execution policy requires the ability to be initially activated server-side.
+     */
+    ABILITYSYSTEMSETUP_API bool IsServerActivatedExecution(
+        const EGameplayAbilityNetExecutionPolicy::Type inAbilityExecutionPolicy);
 
     /**
      * @brief An exposed `UGameplayAbility::EndAbility()` that isn't a cancelation. Used for ability batching.

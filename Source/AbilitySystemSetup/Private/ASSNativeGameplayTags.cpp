@@ -5,9 +5,10 @@
 namespace ASSNativeGameplayTags
 {
     // Abilities.
-    UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Type_DisableAutoActivationFromInput, TEXT("Ability.Type.DisableAutoActivationFromInput"), "")
+    UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Type_Passive, TEXT("Ability.Type.Passive"), "");
+    UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Type_DisableAutoActivationFromInput, TEXT("Ability.Type.DisableAutoActivationFromInput"), "");
 
     // Input actions.
-    UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_ConfirmTarget, TEXT("InputAction.ConfirmTarget"), "")
-    UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_CancelTarget, TEXT("InputAction.CancelTarget"), "")
+    UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_ConfirmTarget, TEXT("InputAction.ConfirmTarget"), "");
+    UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputAction_CancelTarget, TEXT("InputAction.CancelTarget"), "");
 }
