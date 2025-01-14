@@ -8,6 +8,8 @@ class UGameplayAbility;
 
 struct FGameplayAbilitySpec;
 struct FGameplayAbilitySpecHandle;
+struct FGameplayAbilityActorInfo;
+struct FGameplayAbilityActivationInfo;
 struct FGameplayCueParameters;
 struct FGameplayTargetDataFilterHandle;
 struct FASSGameplayTargetDataFilter;
@@ -79,6 +81,20 @@ namespace ASSUtils
      */
     ABILITYSYSTEMSETUP_API FGameplayTargetDataFilterHandle MakeMultiFilterHandle(const FASSGameplayTargetDataFilter_MultiFilter& multiFilter, AActor* selfActor);
 
+    /**
+     * @brief An exposed `UGameplayAbility::EndAbility()` that isn't a cancelation. Used for ability batching.
+     */
+    ABILITYSYSTEMSETUP_API void CallEndAbility(
+        UGameplayAbility& inGameplayAbility,
+        const FGameplayAbilitySpecHandle& inSpecHandle,
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilityActivationInfo& inActivationInfo,
+        const bool inShouldReplicateEndAbility,
+        const bool inWasCanceled);
+    ABILITYSYSTEMSETUP_API void CallEndAbility(
+        UGameplayAbility& inGameplayAbility,
+        const bool inShouldReplicateEndAbility,
+        const bool inWasCanceled);
 };
 
 template <class T>

@@ -121,15 +121,6 @@ void UASSGameplayAbility::ASSEndAbility(const FGameplayAbilitySpecHandle Handle,
     // Safe event for end ability
 }
 
-void UASSGameplayAbility::ExternalEndAbility()
-{
-    check(CurrentActorInfo);
-
-    const bool bReplicateEndAbility = true;
-    const bool bWasCancelled = false;
-    EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), bReplicateEndAbility, bWasCancelled);
-}
-
 void UASSGameplayAbility::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* InActorInfo, const FGameplayAbilitySpec& InSpec) const
 {
     if (!bIsPassiveAbility)

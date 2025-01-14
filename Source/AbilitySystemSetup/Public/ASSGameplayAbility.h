@@ -29,11 +29,6 @@ protected:
     virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override final;
     //  END UGameplayAbility interface
 
-public:
-
-    /** An exposed EndAbility() that isn't a cancellation. Used for ability batching. */
-    virtual void ExternalEndAbility();
-
 protected:
 
     /**
