@@ -256,9 +256,9 @@ void ASSUtils::CallEndAbility(
 {
     CallEndAbilityInternal(
         inGameplayAbility,
-        inGameplayAbility.GetCurrentAbilitySpecHandle(),
-        inGameplayAbility.GetCurrentActorInfo(),
-        inGameplayAbility.GetCurrentActivationInfoRef(),
+        inSpecHandle,
+        inActorInfo,
+        inActivationInfo,
         inShouldReplicateEndAbility,
         inWasCanceled);
 }
