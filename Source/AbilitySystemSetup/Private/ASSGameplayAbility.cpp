@@ -94,8 +94,9 @@ void UASSGameplayAbility::ASSEndAbility(
     bool inShouldReplicateEndAbility,
     bool inWasCanceled)
 {
-    // End the ability.
-    EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+    // End the ability. Note: Skip `UASSGameplayAbility::EndAbility()` as that would just continue calling us again until
+    // we stack overflow.
+    Super::EndAbility(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
 }
 
 void UASSGameplayAbility::TryActivatePassiveAbility(
