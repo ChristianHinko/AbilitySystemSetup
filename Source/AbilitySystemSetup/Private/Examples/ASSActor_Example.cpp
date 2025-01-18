@@ -2,7 +2,7 @@
 
 #include "Examples/ASSActor_Example.h"
 
-#include "ASSAbilitySystemComponent.h"
+#include "AbilitySystemComponent.h"
 #include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
 
 AASSActor_Example::AASSActor_Example(const FObjectInitializer& inObjectInitializer)
@@ -10,7 +10,7 @@ AASSActor_Example::AASSActor_Example(const FObjectInitializer& inObjectInitializ
 {
     bReplicates = true;
 
-    AbilitySystemComponent = CreateDefaultSubobject<UASSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+    AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
     AbilitySystemComponent->SetIsReplicated(true);
 
     // No possessing this actor allows for minimal replication mode.
