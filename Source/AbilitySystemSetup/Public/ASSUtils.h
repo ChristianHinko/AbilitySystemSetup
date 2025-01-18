@@ -88,8 +88,22 @@ namespace ASSUtils
 
     /**
      * @brief Try activate a passive ability.
+     * @note No need to specifically call this for your ability. Instead, consider using the
+     *       tag "Ability.Type.Passive" as an asset tag for this to happen automatically on
+     *       give ability.
+     * @see `UASSAbilitySystemComponent::OnGiveAbility()`.
+     * @return Whether the ability was successfully activated. False could either mean that
+     *         the try-activate failed or that it wasn't appropriate to try activating the passive
+     *         ability in the first place.
      */
     ABILITYSYSTEMSETUP_API bool TryActivateAbilityPassive(
+        UAbilitySystemComponent& inAbilitySystemComponent,
+        const FGameplayAbilitySpec& inAbilitySpec);
+
+    /**
+     * @brief Determine whether it's appropriate to try activating a passive ability.
+     */
+    ABILITYSYSTEMSETUP_API bool ShouldTryToActivatePassiveAbility(
         UAbilitySystemComponent& inAbilitySystemComponent,
         const FGameplayAbilitySpec& inAbilitySpec);
 
@@ -110,13 +124,13 @@ namespace ASSUtils
      */
     ABILITYSYSTEMSETUP_API void CallEndAbility(
         UGameplayAbility& inGameplayAbility,
-        const FGameplayAbilitySpecHandle& inSpecHandle,
-        const FGameplayAbilityActorInfo* inActorInfo,
-        const FGameplayAbilityActivationInfo& inActivationInfo,
         const bool inShouldReplicateEndAbility,
         const bool inWasCanceled);
     ABILITYSYSTEMSETUP_API void CallEndAbility(
         UGameplayAbility& inGameplayAbility,
+        const FGameplayAbilitySpecHandle& inSpecHandle,
+        const FGameplayAbilityActorInfo* inActorInfo,
+        const FGameplayAbilityActivationInfo& inActivationInfo,
         const bool inShouldReplicateEndAbility,
         const bool inWasCanceled);
 };
