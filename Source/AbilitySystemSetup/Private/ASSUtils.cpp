@@ -290,9 +290,9 @@ bool ASSUtils::TryActivateAbilityPassive(
             TEXT(" ")
             TEXT("Ability system component: '") << inAbilitySystemComponent.GetFName() << TEXT("'.")
             TEXT(" ")
-            TEXT("Ability system component owner actor: '") << GetFName(inAbilitySystemComponent.GetOwnerActor()) << TEXT("'.")
+            TEXT("Ability system component owner actor: '") << GetFNameSafe(inAbilitySystemComponent.GetOwnerActor()) << TEXT("'.")
             TEXT(" ")
-            TEXT("Ability system component avatar actor: '") << GetFName(inAbilitySystemComponent.GetAvatarActor()) << TEXT("'.")
+            TEXT("Ability system component avatar actor: '") << GetFNameSafe(inAbilitySystemComponent.GetAvatarActor()) << TEXT("'.")
             TEXT(" ")
             TEXT("Ability CDO: '") << GetFNameSafe(inAbilitySpec.Ability) << TEXT("'.")
         );
@@ -335,6 +335,8 @@ bool ASSUtils::TryActivateAbilityPassive(
             );
     }
 #endif // #if !NO_LOGGING
+
+    return didActivate;
 }
 
 bool ASSUtils::ShouldTryToActivatePassiveAbility(
