@@ -3,6 +3,7 @@
 #include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
 
 #include "Types/ASSAbilitySet.h"
+#include "AbilitySystemComponent.h"
 #include "GCUtils_Log.h"
 #if !NO_LOGGING || DO_CHECK
 #include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
