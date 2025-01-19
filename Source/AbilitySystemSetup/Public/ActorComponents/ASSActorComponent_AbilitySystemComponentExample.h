@@ -10,7 +10,8 @@
 #include "ASSActorComponent_AbilitySystemComponentExample.generated.h"
 
 /**
- * Example class for implementing plugin ability system component functionality. 
+ * @brief Example base class for implementing our extended ASC functionality. Feel
+ *        free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API UASSActorComponent_AbilitySystemComponentExample : public UAbilitySystemComponent

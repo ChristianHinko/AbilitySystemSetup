@@ -7,7 +7,6 @@
 #include "AbilitySystemComponent.h"
 #include "ASSUtils.h"
 #include "ASSGameplayAbilityExtensionInterface.h"
-#include "ASSGameplayAbility.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSGameplayAbilityExtensionStruct, Log, All);
 
@@ -85,7 +84,7 @@ void FASSGameplayAbilityExtensionStruct::EndAbility_ReplaceSuper(
         return;
     }
 
-    // It is safe to execute end ability logic. Dispatch call our interface's end ability function.
+    // It is safe to execute end ability logic. Dispatch call to our interface's end ability function.
 
     inASSGameplayAbilityExtensionInterface.ASSEndAbility(
         inSpecHandle,

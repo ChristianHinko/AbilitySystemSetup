@@ -7,19 +7,16 @@
 #include "ASSGameplayAbilityExtensionInterface.h"
 #include "ASSGameplayAbilityExtensionStruct.h"
 
-#include "ASSGameplayAbility.generated.h"
+#include "ASSGameplayAbility_Example.generated.h"
 
 /**
- *
+ * @brief Example base class for implementing our extended ability functionality. Feel
+ *        free to subclass if lazy.
  */
 UCLASS()
-class ABILITYSYSTEMSETUP_API UASSGameplayAbility : public UGameplayAbility, public IASSGameplayAbilityExtensionInterface
+class ABILITYSYSTEMSETUP_API UASSGameplayAbility_Example : public UGameplayAbility, public IASSGameplayAbilityExtensionInterface
 {
     GENERATED_BODY()
-
-public:
-
-    UASSGameplayAbility(const FObjectInitializer& inObjectInitializer);
 
 protected:
 
