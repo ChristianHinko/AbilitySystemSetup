@@ -4,14 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "ASSGameplayAbilityExtensionInterface.h"
+#include "ASSGameplayAbilityExtensionStruct.h"
 
 #include "ASSGameplayAbility.generated.h"
 
 /**
- * Base Gameplay Ability
+ *
  */
 UCLASS()
-class ABILITYSYSTEMSETUP_API UASSGameplayAbility : public UGameplayAbility
+class ABILITYSYSTEMSETUP_API UASSGameplayAbility : public UGameplayAbility, public IASSGameplayAbilityExtensionInterface
 {
     GENERATED_BODY()
 
@@ -21,26 +23,22 @@ public:
 
 protected:
 
-    //  BEGIN UGameplayAbility interface
+    FASSGameplayAbilityExtensionStruct ASSGameplayAbilityExtensionStruct;
+
+protected:
+
+    // ~ UGameplayAbility overrides.
     virtual void EndAbility(
         const FGameplayAbilitySpecHandle inSpecHandle,
         const FGameplayAbilityActorInfo* inActorInfo,
         const FGameplayAbilityActivationInfo inActivationInfo,
         bool inShouldReplicateEndAbility,
         bool inWasCanceled) override final;
-    //  END UGameplayAbility interface
+    // ~ UGameplayAbility overrides.
 
-protected:
+public:
 
-    /**
-     * The engine's EndAbility() is not safe to override out of the box. There are several checks that must be done before
-     * using it as an event.
-     * This version is called at a safe point for ability subclass logic to use as an event.
-     */
-    virtual void ASSEndAbility(
-        const FGameplayAbilitySpecHandle inSpecHandle,
-        const FGameplayAbilityActorInfo* inActorInfo,
-        const FGameplayAbilityActivationInfo inActivationInfo,
-        bool inShouldReplicateEndAbility,
-        bool inWasCanceled);
+    // ~ IASSGameplayAbilityExtensionInterface overrides.
+    virtual UGameplayAbility& GetImplementor() override final;
+    // ~ IASSGameplayAbilityExtensionInterface overrides.
 };

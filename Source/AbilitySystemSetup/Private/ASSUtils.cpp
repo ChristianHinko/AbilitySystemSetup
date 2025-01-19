@@ -16,7 +16,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogASSUtils, Log, All);
 namespace
 {
     /**
-     * @brief Internal function for calling on the inaccessable `UGameplayAbility::EndAbility()` function.
+     * @brief [inaccessible-access-engine] Call `UGameplayAbility::EndAbility`.
      */
     template
         <
@@ -32,6 +32,34 @@ namespace
         const bool inWasCanceled)
     {
         (inGameplayAbility.*pointerToMember)(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+    }
+
+    /**
+     * @brief [inaccessible-access-engine] Get `UGameplayAbility::ScopeLockCount`.
+     */
+    template
+        <
+        int8 UGameplayAbility::* pointerToMember =
+            &UGameplayAbility::ScopeLockCount
+        >
+    int8 GetGameplayAbilityScopeLockCountInternal(
+        const UGameplayAbility& inGameplayAbility)
+    {
+        return inGameplayAbility.*pointerToMember;
+    }
+
+    /**
+     * @brief [inaccessible-access-engine] Get `UAbilitySystemComponent::AbilityScopeLockCount`.
+     */
+    template
+        <
+        int32 UAbilitySystemComponent::* pointerToMember =
+            &UAbilitySystemComponent::AbilityScopeLockCount
+        >
+    int32 GetAbilitySystemComponentAbilityScopeLockCountInternal(
+        const UAbilitySystemComponent& inAbilitySystemComponent)
+    {
+        return inAbilitySystemComponent.*pointerToMember;
     }
 }
 
@@ -455,4 +483,14 @@ void ASSUtils::CallEndAbility(
         inActivationInfo,
         inShouldReplicateEndAbility,
         inWasCanceled);
+}
+
+int8 ASSUtils::GetGameplayAbilityScopeLockCount(const UGameplayAbility& inGameplayAbility)
+{
+    return GetGameplayAbilityScopeLockCountInternal(inGameplayAbility);
+}
+
+int32 ASSUtils::GetAbilitySystemComponentAbilityScopeLockCount(const UAbilitySystemComponent& inAbilitySystemComponent)
+{
+    return GetAbilitySystemComponentAbilityScopeLockCountInternal(inAbilitySystemComponent);
 }

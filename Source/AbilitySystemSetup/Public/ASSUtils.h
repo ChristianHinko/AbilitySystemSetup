@@ -133,6 +133,18 @@ namespace ASSUtils
         const FGameplayAbilityActivationInfo& inActivationInfo,
         const bool inShouldReplicateEndAbility,
         const bool inWasCanceled);
+
+    /**
+     * @brief Get a gameplay ability's current scope lock count.
+     */
+    ABILITYSYSTEMSETUP_API int8 GetGameplayAbilityScopeLockCount(
+        const UGameplayAbility& inGameplayAbility);
+
+    /**
+     * @brief Get an ability system component's current ability scope lock count.
+     */
+    ABILITYSYSTEMSETUP_API int32 GetAbilitySystemComponentAbilityScopeLockCount(
+        const UAbilitySystemComponent& inAbilitySystemComponent);
 };
 
 template <class T>
