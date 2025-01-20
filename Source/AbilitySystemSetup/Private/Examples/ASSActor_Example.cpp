@@ -3,7 +3,6 @@
 #include "Examples/ASSActor_Example.h"
 
 #include "AbilitySystemComponent.h"
-#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
 
 AASSActor_Example::AASSActor_Example(const FObjectInitializer& inObjectInitializer)
     : Super(inObjectInitializer)
@@ -18,9 +17,6 @@ AASSActor_Example::AASSActor_Example(const FObjectInitializer& inObjectInitializ
 
     // Haven't messed with testing a good min net update frequency for adaptive net update frequency yet so we will keep it at max for now.
     SetMinNetUpdateFrequency(GetNetUpdateFrequency());
-
-    // Create the avatar actor extension component to assist in setting us up with the ASC.
-    AvatarActorExtensionComponent = CreateDefaultSubobject<UASSActorComponent_AvatarActorExtension>(TEXT("AvatarActorExtensionComponent"));
 }
 
 void AASSActor_Example::PostInitializeComponents()
@@ -28,12 +24,12 @@ void AASSActor_Example::PostInitializeComponents()
     Super::PostInitializeComponents();
 
     check(AbilitySystemComponent);
-    AvatarActorExtensionComponent->InitializeAbilitySystemComponent(*AbilitySystemComponent);
+    AvatarActorExtensionComponent.InitializeAbilitySystemComponent(*AbilitySystemComponent, *this);
 }
 
 void AASSActor_Example::EndPlay(const EEndPlayReason::Type inEndPlayReason)
 {
-    AvatarActorExtensionComponent->UninitializeAbilitySystemComponent();
+    AvatarActorExtensionComponent.UninitializeAbilitySystemComponent(*this);
 
     Super::EndPlay(inEndPlayReason);
 }

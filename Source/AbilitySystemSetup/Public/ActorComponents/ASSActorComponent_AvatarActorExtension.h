@@ -13,14 +13,14 @@ struct FASSAbilitySetGrantedHandles;
 
 /**
  * Provides common GAS initialization/uninitialization logic with Ability Sets granted while initialized.
- * This component is to be used by avatar actors only.
+ * This is to be used by avatar actors only.
  *
  * For initialization, it sets us up as the AvatarActor for the ASC and grants Ability Sets (allowing you to choose
  * starting Abilities, Effects, and Attribute Sets in BP). For uninitialization it ungrants the granted Ability Sets,
  * gives external sources an opportunity to remove Loose Gameplay Tags (this is the only manual cleanup),
  * and disassociates us from the ASC.
  *
- * This component does not automate anything. You have to manually call on provided functions for anything to happen......
+ * This struct does not automate anything. You have to manually call on provided functions for anything to happen......
  *
  *
  * ----------------------------------
@@ -33,8 +33,8 @@ struct FASSAbilitySetGrantedHandles;
  *            EndPlay()
  *                - Call UninitializeAbilitySystemComponent() before the Super call
  */
-UCLASS(ClassGroup=(AbilitySystemSetup), meta=(BlueprintSpawnableComponent))
-class ABILITYSYSTEMSETUP_API UASSActorComponent_AvatarActorExtension : public UActorComponent
+USTRUCT(BlueprintType)
+struct ABILITYSYSTEMSETUP_API FASSActorComponent_AvatarActorExtension
 {
     GENERATED_BODY()
 
@@ -42,26 +42,18 @@ public:
 
     DECLARE_MULTICAST_DELEGATE_OneParam(FAvatarExtensionNativeDelegate, UAbilitySystemComponent& /* inASC */);
 
-public:
-    UASSActorComponent_AvatarActorExtension(const FObjectInitializer& inObjectInitializer);
-
-protected:
-    //  BEGIN UActorComponent interface
-    virtual void OnRegister() override;
-    //  END UActorComponent interface
-
-public: // Extension functions for owner to call
+public: // Extension functions for avatar actor to call
 
     /**
      * @brief Sets the avatar actor with the ASC.
      * @param inASC The ability system component to associate the avatar actor with.
      */
-    virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC);
+    virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor);
 
     /**
      * @brief Clears the Avatar Actor from the ASC.
      */
-    virtual void UninitializeAbilitySystemComponent();
+    virtual void UninitializeAbilitySystemComponent(AActor& avatarActor);
 
 private:
 
@@ -74,19 +66,18 @@ private:
 public:
 
     /**
-     * @brief Returns whether or not this component has finished setting up the avatar actor with its ability system component.
+     * @brief Returns whether or not this has finished setting up the avatar actor with its ability system component.
      */
     FORCEINLINE bool IsInitializedWithASC() const { return bInitialized; }
 
 protected:
 
-    /** The initialized ASC */
-    UPROPERTY(Transient)
-    TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-
     /** Ability sets to grant to this avatar's ability system. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AbilitySystemSetup | AbilitySets")
     TArray<TSubclassOf<UASSAbilitySet>> AbilitySets;
+
+    /** The initialized ASC */
+    TWeakObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 private:
 

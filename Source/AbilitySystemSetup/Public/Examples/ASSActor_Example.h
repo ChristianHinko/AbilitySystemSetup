@@ -5,18 +5,21 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "AbilitySystemInterface.h"
+#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
+#include "ASSAvatarActorExtentionInterface.h"
 
 #include "ASSActor_Example.generated.h"
 
 class UAbilitySystemComponent;
-class UASSActorComponent_AvatarActorExtension;
 
 /**
  * @brief Example implementation of an Actor initializing with an ASC by using
- *        the `UASSActorComponent_AvatarActorExtension`. Feel free to subclass if lazy.
+ *        the `FASSActorComponent_AvatarActorExtension`. Feel free to subclass if lazy.
  */
 UCLASS()
-class ABILITYSYSTEMSETUP_API AASSActor_Example : public AActor, public IAbilitySystemInterface
+class ABILITYSYSTEMSETUP_API AASSActor_Example : public AActor,
+                                                 public IAbilitySystemInterface,
+                                                 public IASSAvatarActorExtentionInterface
 {
     GENERATED_BODY()
 
@@ -37,11 +40,16 @@ protected:
     virtual void EndPlay(const EEndPlayReason::Type inEndPlayReason) override;
     // ~ AActor overrides.
 
+    // ~ IASSAvatarActorExtentionInterface overrides.
+    FORCEINLINE virtual FASSActorComponent_AvatarActorExtension& GetASSAvatarActorExtension() override { return AvatarActorExtensionComponent; }
+    // ~ IASSAvatarActorExtentionInterface overrides.
+
 protected:
 
     UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
-    TObjectPtr<UASSActorComponent_AvatarActorExtension> AvatarActorExtensionComponent = nullptr;
-
-    UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
     TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
+    
+    // Create the avatar actor extension component to assist in setting us up with the ASC.
+    UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
+    FASSActorComponent_AvatarActorExtension AvatarActorExtensionComponent;
 };

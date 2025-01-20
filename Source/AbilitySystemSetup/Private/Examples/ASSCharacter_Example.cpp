@@ -2,21 +2,20 @@
 
 #include "Examples/ASSCharacter_Example.h"
 
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 #include "GameFramework/PlayerState.h"
-
-AASSCharacter_Example::AASSCharacter_Example(const FObjectInitializer& objectInitializer)
-    : Super(objectInitializer)
-{
-    // Create the pawn avatar actor extension component to assist in setting us up with the ASC.
-    PawnAvatarActorExtensionComponent = CreateDefaultSubobject<UASSActorComponent_PawnAvatarActorExtension>(TEXT("PawnAvatarActorExtensionComponent"));
-}
 
 void AASSCharacter_Example::PreInitializeComponents()
 {
     Super::PreInitializeComponents();
 
-    PawnAvatarActorExtensionComponent->RemoveLooseAvatarRelatedTagsDelegate.AddUObject(this, &ThisClass::OnRemoveLooseAvatarRelatedTags);
+    PawnAvatarActorExtensionComponent.RemoveLooseAvatarRelatedTagsDelegate.AddUObject(this, &ThisClass::OnRemoveLooseAvatarRelatedTags);
+}
+
+void AASSCharacter_Example::EndPlay(const EEndPlayReason::Type endPlayReason)
+{
+    Super::EndPlay(endPlayReason);
+
+    PawnAvatarActorExtensionComponent.OnAvatarActorBeginDestroy();
 }
 
 UAbilitySystemComponent* AASSCharacter_Example::GetAbilitySystemComponent() const
@@ -34,20 +33,20 @@ void AASSCharacter_Example::PossessedBy(AController* newController)
 {
     Super::PossessedBy(newController);
 
-    PawnAvatarActorExtensionComponent->OnOwnerControllerChanged(); // This doesn't do anything in this case because our ASC is not initialized yet but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly.
+    PawnAvatarActorExtensionComponent.OnAvatarActorControllerChanged(*this); // This doesn't do anything in this case because our ASC is not initialized yet but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly.
 
     UAbilitySystemComponent* asc = GetAbilitySystemComponent();
     check(asc);
-    PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(*asc);
+    PawnAvatarActorExtensionComponent.InitializeAbilitySystemComponent(*asc, *this);
 }
 
 void AASSCharacter_Example::UnPossessed()
 {
-    PawnAvatarActorExtensionComponent->UninitializeAbilitySystemComponent();
+    PawnAvatarActorExtensionComponent.UninitializeAbilitySystemComponent(*this);
 
     Super::UnPossessed();
 
-    PawnAvatarActorExtensionComponent->OnOwnerControllerChanged(); // This doesn't do anything in this case because our ASC is uninitialized but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly.
+    PawnAvatarActorExtensionComponent.OnAvatarActorControllerChanged(*this); // This doesn't do anything in this case because our ASC is uninitialized but we are calling it anyways for consistency. However, if your ASC were on the Character, then this is actually necessary in order for actor info to be updated correctly.
 }
 
 void AASSCharacter_Example::OnRep_PlayerState()
@@ -61,12 +60,12 @@ void AASSCharacter_Example::OnRep_PlayerState()
             // We have a player state so initialize its ASC.
             UAbilitySystemComponent* asc = GetAbilitySystemComponent();
             check(asc);
-            PawnAvatarActorExtensionComponent->InitializeAbilitySystemComponent(*asc);
+            PawnAvatarActorExtensionComponent.InitializeAbilitySystemComponent(*asc, *this);
         }
         else
         {
             // No player state so uninitialize the ASC.
-            PawnAvatarActorExtensionComponent->UninitializeAbilitySystemComponent();
+            PawnAvatarActorExtensionComponent.UninitializeAbilitySystemComponent(*this);
         }
     }
 }
@@ -75,7 +74,7 @@ void AASSCharacter_Example::OnRep_Controller()
 {
     Super::OnRep_Controller();
 
-    PawnAvatarActorExtensionComponent->OnOwnerControllerChanged();
+    PawnAvatarActorExtensionComponent.OnAvatarActorControllerChanged(*this);
 }
 
 void AASSCharacter_Example::OnRemoveLooseAvatarRelatedTags(UAbilitySystemComponent& asc)
@@ -92,12 +91,12 @@ void AASSCharacter_Example::SetupPlayerInputComponent(UInputComponent* playerInp
     Super::SetupPlayerInputComponent(playerInputComponent);
 
     check(playerInputComponent);
-    PawnAvatarActorExtensionComponent->OnOwnerSetupPlayerInputComponent(*playerInputComponent);
+    PawnAvatarActorExtensionComponent.OnAvatarActorSetupPlayerInputComponent(*playerInputComponent, *this);
 }
 
 void AASSCharacter_Example::DestroyPlayerInputComponent()
 {
     Super::DestroyPlayerInputComponent();
 
-    PawnAvatarActorExtensionComponent->OnOwnerDestroyPlayerInputComponent();
+    PawnAvatarActorExtensionComponent.OnAvatarActorDestroyPlayerInputComponent();
 }

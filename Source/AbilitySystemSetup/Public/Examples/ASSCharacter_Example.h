@@ -5,30 +5,39 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "ASSPawnAvatarActorExtentionInterface.h"
+#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 
 #include "ASSCharacter_Example.generated.h"
 
-class UASSActorComponent_PawnAvatarActorExtension;
 class UAbilitySystemComponent;
 
 /**
  * @brief An example implementation of a character initializing with an ASC by using
- *        the `UASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
+ *        the `FASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
  */
 UCLASS()
-class ABILITYSYSTEMSETUP_API AASSCharacter_Example : public ACharacter, public IAbilitySystemInterface
+class ABILITYSYSTEMSETUP_API AASSCharacter_Example : public ACharacter,
+                                                     public IAbilitySystemInterface,
+                                                     public IASSPawnAvatarActorExtentionInterface
 {
     GENERATED_BODY()
 
-public:
-
-    AASSCharacter_Example(const FObjectInitializer& objectInitializer);
+protected:
+    
+    // ~ AActor overrides.
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+    // ~ AActor overrides.
 
 public:
 
     // ~ IAbilitySystemInterface overrides.
     virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
     // ~ IAbilitySystemInterface overrides.
+
+    // ~ IASSPawnAvatarActorExtentionInterface overrides.
+    FORCEINLINE virtual FASSActorComponent_PawnAvatarActorExtension& GetASSAvatarActorExtension() override { return PawnAvatarActorExtensionComponent; }
+    // ~ IASSPawnAvatarActorExtentionInterface overrides.
 
 protected:
 
@@ -50,7 +59,8 @@ protected:
     // ~ AvatarActorExtension delegate callbacks.
 
 protected:
-
+    
+    // Create the avatar actor extension component to assist in setting us up with the ASC.
     UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
-    TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent = nullptr;
+    FASSActorComponent_PawnAvatarActorExtension PawnAvatarActorExtensionComponent;
 };

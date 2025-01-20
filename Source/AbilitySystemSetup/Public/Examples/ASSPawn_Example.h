@@ -5,30 +5,36 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "AbilitySystemInterface.h"
+#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
 
 #include "ASSPawn_Example.generated.h"
 
-class UASSActorComponent_PawnAvatarActorExtension;
 class UAbilitySystemComponent;
 
 /**
  * @brief An example implementation of a pawn initializing with an ASC by using
- *        the `UASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
+ *        the `FASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSPawn_Example : public APawn, public IAbilitySystemInterface
 {
     GENERATED_BODY()
 
-public:
-
-    AASSPawn_Example(const FObjectInitializer& objectInitializer);
+protected:
+    
+    // ~ AActor overrides.
+	virtual void EndPlay(const EEndPlayReason::Type endPlayReason) override;
+    // ~ AActor overrides.
 
 public:
 
     // ~ IAbilitySystemInterface overrides.
     virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
     // ~ IAbilitySystemInterface overrides.
+
+    // ~ IASSAvatarActorExtentionInterface overrides.
+    FORCEINLINE virtual FASSActorComponent_AvatarActorExtension& GetASSAvatarActorExtension() { return PawnAvatarActorExtensionComponent; }
+    // ~ IASSAvatarActorExtentionInterface overrides.
 
 protected:
 
@@ -50,7 +56,8 @@ protected:
     // ~ AvatarActorExtension delegate callbacks.
 
 protected:
-
+    
+    // Create the avatar actor extension component to assist in setting us up with the ASC.
     UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
-    TObjectPtr<UASSActorComponent_PawnAvatarActorExtension> PawnAvatarActorExtensionComponent = nullptr;
+    FASSActorComponent_PawnAvatarActorExtension PawnAvatarActorExtensionComponent;
 };

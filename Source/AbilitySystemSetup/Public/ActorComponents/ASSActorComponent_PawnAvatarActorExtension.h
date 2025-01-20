@@ -29,10 +29,10 @@ class UEnhancedInputComponent;
  *        SetupPlayerInputComponent()
  *            - Call OnOwnerSetupPlayerInputComponent() after the Super call at the end of the function
  *        DestroyPlayerInputComponent()
- *            - Call OnOwnerDestroyPlayerInputComponent() after the Super call at the end of the function
+ *            - Call OnAvatarActorDestroyPlayerInputComponent() after the Super call at the end of the function
  *
  *
- * Recomended callsites for Pawn with ASC on the Player State:
+ * Recomended callsites for pawn avatar actor with ASC on the player state:
  *        PossessedBy()
  *            - Call InitializeAbilitySystemComponent() after the Super call
  *        UnPossessed()
@@ -45,40 +45,40 @@ class UEnhancedInputComponent;
  * Recomended callsites for Pawn with ASC on itself:
  *        See ASSActorComponent_AvatarActorExtension for setup
  */
-UCLASS()
-class ABILITYSYSTEMSETUP_API UASSActorComponent_PawnAvatarActorExtension : public UASSActorComponent_AvatarActorExtension
+USTRUCT()
+struct ABILITYSYSTEMSETUP_API FASSActorComponent_PawnAvatarActorExtension : public FASSActorComponent_AvatarActorExtension
 {
     GENERATED_BODY()
 
 public:
-    UASSActorComponent_PawnAvatarActorExtension(const FObjectInitializer& inObjectInitializer);
-
-protected:
-    //  BEGIN UActorComponent interface
-    virtual void OnRegister() override;
-    //  END   UActorComponent interface
-
-public: // Extension functions for owner to call
-
-    //  BEGIN UASSActorComponent_AvatarActorExtension interface
-    virtual void UninitializeAbilitySystemComponent() override;
-    //  END   UASSActorComponent_AvatarActorExtension interface
-
+    
     /**
-     * @brief Should be called by the owning pawn when the Pawn's Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller().
+     * @brief Should be called by the avatar actor on end play (before destruction).
      */
-    void OnOwnerControllerChanged();
+    void OnAvatarActorBeginDestroy();
+
+public: // Extension functions for avatar actor to call
+
+    //  BEGIN FASSActorComponent_AvatarActorExtension interface
+    virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor);
+    virtual void UninitializeAbilitySystemComponent(AActor& avatarActor) override;
+    //  END   FASSActorComponent_AvatarActorExtension interface
 
     /**
-     * @brief Should be called at the end of owning Pawn's SetupPlayerInputComponent() event.
+     * @brief Should be called by the pawn avatar actor when its Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller().
+     */
+    void OnAvatarActorControllerChanged(AActor& avatarActor);
+
+    /**
+     * @brief Should be called at the end of owning avatar actor's SetupPlayerInputComponent() event.
      * @param inPlayerInputComponent: The player input component to set up GAS input events for.
      */
-    void OnOwnerSetupPlayerInputComponent(UInputComponent& inPlayerInputComponent);
+    void OnAvatarActorSetupPlayerInputComponent(UInputComponent& playerInputComponent, AActor& avatarActor);
 
     /**
-     * @brief Should be called at the end of owning Pawn's DestroyPlayerInputComponent() event.
+     * @brief Should be called at the end of avater actor's DestroyPlayerInputComponent() event.
      */
-    void OnOwnerDestroyPlayerInputComponent();
+    void OnAvatarActorDestroyPlayerInputComponent();
 
 protected:
 
@@ -88,7 +88,7 @@ protected:
      * @param inInputAction: The input action asset we want to hook up.
      * @param inInputActionTag: The identification tag for this input action. Passed through to the input event as a payload parameter.
      */
-    void BindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag);
+    void BindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag, const AActor& avatarActor);
 
     /**
      * @brief Unhooks and untracks the binding handles for the given input action.
@@ -96,7 +96,7 @@ protected:
      * @param inInputAction: The input action asset we want to unhook.
      * @param inInputActionTag: The identification tag for this input action.
      */
-    void UnBindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag);
+    void UnBindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag, const AActor& avatarActor);
 
     /**
      * @brief Unhooks and untracks all binding handles for the given enhanced input component.
@@ -117,6 +117,10 @@ protected:
     void OnReleasedInputAction(const FGameplayTag inInputActionTag);
 
 private:
+
+    FDelegateHandle OnInputActionAddedDelegateHandle;
+    FDelegateHandle OnInputActionRemovedDelegateHandle;
+
     // Store our binding handles so that, if a plugin input action gets removed during the game we can unbind from it.
     TMap<TWeakObjectPtr<const UInputAction>, uint32> PressedInputActionBindingHandles;
     TMap<TWeakObjectPtr<const UInputAction>, uint32> ReleasedInputActionBindingHandles;
