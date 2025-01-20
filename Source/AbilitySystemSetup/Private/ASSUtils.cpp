@@ -16,7 +16,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogASSUtils, Log, All);
 namespace
 {
     /**
-     * @brief Internal function for calling on the inaccessable `UGameplayAbility::EndAbility()` function`.
+     * @brief [inaccessible-access-engine] Call `UGameplayAbility::EndAbility`.
      */
     template
         <
@@ -32,6 +32,34 @@ namespace
         const bool inWasCanceled)
     {
         (inGameplayAbility.*pointerToMember)(inSpecHandle, inActorInfo, inActivationInfo, inShouldReplicateEndAbility, inWasCanceled);
+    }
+
+    /**
+     * @brief [inaccessible-access-engine] Get `UGameplayAbility::ScopeLockCount`.
+     */
+    template
+        <
+        int8 UGameplayAbility::* pointerToMember =
+            &UGameplayAbility::ScopeLockCount
+        >
+    int8 GetGameplayAbilityScopeLockCountInternal(
+        const UGameplayAbility& inGameplayAbility)
+    {
+        return inGameplayAbility.*pointerToMember;
+    }
+
+    /**
+     * @brief [inaccessible-access-engine] Get `UAbilitySystemComponent::AbilityScopeLockCount`.
+     */
+    template
+        <
+        int32 UAbilitySystemComponent::* pointerToMember =
+            &UAbilitySystemComponent::AbilityScopeLockCount
+        >
+    int32 GetAbilitySystemComponentAbilityScopeLockCountInternal(
+        const UAbilitySystemComponent& inAbilitySystemComponent)
+    {
+        return inAbilitySystemComponent.*pointerToMember;
     }
 }
 
@@ -279,7 +307,73 @@ bool ASSUtils::TryActivateAbilityPassive(
     UAbilitySystemComponent& inAbilitySystemComponent,
     const FGameplayAbilitySpec& inAbilitySpec)
 {
-    // TODO: Try to remove usage of `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and non-instance only.
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASSUtils::TryActivateAbilityPassive);
+
+    GC_LOG_STR_UOBJECT(
+        &inAbilitySystemComponent,
+        LogASSUtils,
+        Log,
+        GCUtils::Materialize(TStringBuilder<512>())
+            << TEXT("Trying to activate passive ability.")
+            TEXT(" ")
+            TEXT("Ability system component: '") << inAbilitySystemComponent.GetFName() << TEXT("'.")
+            TEXT(" ")
+            TEXT("Ability system component owner actor: '") << GetFNameSafe(inAbilitySystemComponent.GetOwnerActor()) << TEXT("'.")
+            TEXT(" ")
+            TEXT("Ability system component avatar actor: '") << GetFNameSafe(inAbilitySystemComponent.GetAvatarActor()) << TEXT("'.")
+            TEXT(" ")
+            TEXT("Ability CDO: '") << GetFNameSafe(inAbilitySpec.Ability) << TEXT("'.")
+        );
+
+    if (!ShouldTryToActivatePassiveAbility(inAbilitySystemComponent, inAbilitySpec))
+    {
+        GC_LOG_STR_UOBJECT(
+            &inAbilitySystemComponent,
+            LogASSUtils,
+            Log,
+            GCUtils::Materialize(TStringBuilder<512>())
+                << TEXT("Determined that we shouldn't try activating the passive ability.")
+            );
+
+        return false;
+    }
+
+    constexpr bool shouldAllowRemoteActivation = true;
+    const bool didActivate = inAbilitySystemComponent.TryActivateAbility(inAbilitySpec.Handle, shouldAllowRemoteActivation);
+
+#if !NO_LOGGING
+    if (didActivate)
+    {
+        GC_LOG_STR_UOBJECT(
+            &inAbilitySystemComponent,
+            LogASSUtils,
+            Log,
+            GCUtils::Materialize(TStringBuilder<512>())
+                << TEXT("Successfully activated the passive ability.")
+            );
+    }
+    else
+    {
+        GC_LOG_STR_UOBJECT(
+            &inAbilitySystemComponent,
+            LogASSUtils,
+            Log,
+            GCUtils::Materialize(TStringBuilder<512>())
+                << TEXT("Failed to activate the passive ability.")
+            );
+    }
+#endif // #if !NO_LOGGING
+
+    return didActivate;
+}
+
+bool ASSUtils::ShouldTryToActivatePassiveAbility(
+    UAbilitySystemComponent& inAbilitySystemComponent,
+    const FGameplayAbilitySpec& inAbilitySpec)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(ASSUtils::ShouldTryToActivatePassiveAbility);
+
+    // TODO: Try to remove usage of `FGameplayAbilitySpec::ActivationInfo` as it's deprecated and non-instanced only.
     const bool isPredicting = inAbilitySpec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting;
     if (isPredicting)
     {
@@ -332,8 +426,7 @@ bool ASSUtils::TryActivateAbilityPassive(
         }
     }
 
-    constexpr bool shouldAllowRemoteActivation = true;
-    return inAbilitySystemComponent.TryActivateAbility(inAbilitySpec.Handle, shouldAllowRemoteActivation);
+    return true;
 }
 
 bool ASSUtils::IsLocalActivatedExecution(
@@ -364,6 +457,19 @@ bool ASSUtils::IsServerActivatedExecution(
 
 void ASSUtils::CallEndAbility(
     UGameplayAbility& inGameplayAbility,
+    const bool inShouldReplicateEndAbility,
+    const bool inWasCanceled)
+{
+    CallEndAbility(
+        inGameplayAbility,
+        inGameplayAbility.GetCurrentAbilitySpecHandle(),
+        inGameplayAbility.GetCurrentActorInfo(),
+        inGameplayAbility.GetCurrentActivationInfoRef(),
+        inShouldReplicateEndAbility,
+        inWasCanceled);
+}
+void ASSUtils::CallEndAbility(
+    UGameplayAbility& inGameplayAbility,
     const FGameplayAbilitySpecHandle& inSpecHandle,
     const FGameplayAbilityActorInfo* inActorInfo,
     const FGameplayAbilityActivationInfo& inActivationInfo,
@@ -378,16 +484,13 @@ void ASSUtils::CallEndAbility(
         inShouldReplicateEndAbility,
         inWasCanceled);
 }
-void ASSUtils::CallEndAbility(
-    UGameplayAbility& inGameplayAbility,
-    const bool inShouldReplicateEndAbility,
-    const bool inWasCanceled)
+
+int8 ASSUtils::GetGameplayAbilityScopeLockCount(const UGameplayAbility& inGameplayAbility)
 {
-    CallEndAbility(
-        inGameplayAbility,
-        inGameplayAbility.GetCurrentAbilitySpecHandle(),
-        inGameplayAbility.GetCurrentActorInfo(),
-        inGameplayAbility.GetCurrentActivationInfoRef(),
-        inShouldReplicateEndAbility,
-        inWasCanceled);
+    return GetGameplayAbilityScopeLockCountInternal(inGameplayAbility);
+}
+
+int32 ASSUtils::GetAbilitySystemComponentAbilityScopeLockCount(const UAbilitySystemComponent& inAbilitySystemComponent)
+{
+    return GetAbilitySystemComponentAbilityScopeLockCountInternal(inAbilitySystemComponent);
 }
