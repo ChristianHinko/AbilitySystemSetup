@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "ASSAvatarActorExtentionInterface.generated.h"
 
-struct FASSActorComponent_AvatarActorExtension;
+struct FASSAvatarActorExtensionStruct;
 
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UASSAvatarActorExtentionInterface : public UInterface
@@ -23,5 +23,5 @@ public:
     /**
      * @brief Accessor for the avatar actor extention struct.
      */
-    virtual FASSActorComponent_AvatarActorExtension& GetASSAvatarActorExtension() = 0;
+    virtual FASSAvatarActorExtensionStruct& GetASSAvatarActorExtension() = 0;
 };

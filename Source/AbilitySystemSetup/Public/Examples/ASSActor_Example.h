@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "AbilitySystemInterface.h"
-#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
+#include "ASSAvatarActorExtensionStruct.h"
 #include "ASSAvatarActorExtentionInterface.h"
 
 #include "ASSActor_Example.generated.h"
@@ -14,7 +14,7 @@ class UAbilitySystemComponent;
 
 /**
  * @brief Example implementation of an Actor initializing with an ASC by using
- *        the `FASSActorComponent_AvatarActorExtension`. Feel free to subclass if lazy.
+ *        the `FASSAvatarActorExtensionStruct`. Feel free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSActor_Example : public AActor,
@@ -41,7 +41,7 @@ protected:
     // ~ AActor overrides.
 
     // ~ IASSAvatarActorExtentionInterface overrides.
-    FORCEINLINE virtual FASSActorComponent_AvatarActorExtension& GetASSAvatarActorExtension() override { return AvatarActorExtensionComponent; }
+    FORCEINLINE virtual FASSAvatarActorExtensionStruct& GetASSAvatarActorExtension() override { return AvatarActorExtensionComponent; }
     // ~ IASSAvatarActorExtentionInterface overrides.
 
 protected:
@@ -51,5 +51,5 @@ protected:
     
     // Create the avatar actor extension component to assist in setting us up with the ASC.
     UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
-    FASSActorComponent_AvatarActorExtension AvatarActorExtensionComponent;
+    FASSAvatarActorExtensionStruct AvatarActorExtensionComponent;
 };

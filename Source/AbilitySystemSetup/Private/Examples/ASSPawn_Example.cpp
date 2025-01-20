@@ -2,7 +2,7 @@
 
 #include "Examples/ASSPawn_Example.h"
 
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ASSPawnAvatarActorExtensionStruct.h"
 #include "GameFramework/PlayerState.h"
 
 void AASSPawn_Example::PreInitializeComponents()

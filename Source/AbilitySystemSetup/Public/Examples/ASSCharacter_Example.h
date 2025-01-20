@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "ASSPawnAvatarActorExtentionInterface.h"
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ASSPawnAvatarActorExtensionStruct.h"
 
 #include "ASSCharacter_Example.generated.h"
 
@@ -14,7 +14,7 @@ class UAbilitySystemComponent;
 
 /**
  * @brief An example implementation of a character initializing with an ASC by using
- *        the `FASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
+ *        the `FASSPawnAvatarActorExtensionStruct`. Feel free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSCharacter_Example : public ACharacter,
@@ -36,7 +36,7 @@ public:
     // ~ IAbilitySystemInterface overrides.
 
     // ~ IASSPawnAvatarActorExtentionInterface overrides.
-    FORCEINLINE virtual FASSActorComponent_PawnAvatarActorExtension& GetASSAvatarActorExtension() override { return PawnAvatarActorExtensionComponent; }
+    FORCEINLINE virtual FASSPawnAvatarActorExtensionStruct& GetASSAvatarActorExtension() override { return PawnAvatarActorExtensionComponent; }
     // ~ IASSPawnAvatarActorExtentionInterface overrides.
 
 protected:
@@ -62,5 +62,5 @@ protected:
     
     // Create the avatar actor extension component to assist in setting us up with the ASC.
     UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
-    FASSActorComponent_PawnAvatarActorExtension PawnAvatarActorExtensionComponent;
+    FASSPawnAvatarActorExtensionStruct PawnAvatarActorExtensionComponent;
 };

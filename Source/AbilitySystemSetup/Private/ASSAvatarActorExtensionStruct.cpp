@@ -1,18 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
+#include "ASSAvatarActorExtensionStruct.h"
 
 #include "Types/ASSAbilitySet.h"
 #include "AbilitySystemComponent.h"
 #include "GCUtils_Log.h"
 #if !NO_LOGGING || DO_CHECK
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ASSPawnAvatarActorExtensionStruct.h"
 #endif // #if !NO_LOGGING || DO_CHECK
 #include "ASSPawnAvatarActorExtentionInterface.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSAvatarActorExtensionComponent, Log, All);
 
-void FASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor)
+void FASSAvatarActorExtensionStruct::InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor)
 {
     if (AbilitySystemComponent == &inASC)
     {
@@ -45,9 +45,9 @@ void FASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
     // Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client).
     if (currentAvatar != nullptr && currentAvatar != newAvatarToUse) // If we are switching avatars (there was previously one in use).
     {
-        if (IASSPawnAvatarActorExtentionInterface* previousAvatarActorInterface = Cast<IASSPawnAvatarActorExtentionInterface>(currentAvatar)) // Get the previous ASSActorComponent_AvatarActorExtension (the extension component of the old avatar actor).
+        if (IASSPawnAvatarActorExtentionInterface* previousAvatarActorInterface = Cast<IASSPawnAvatarActorExtentionInterface>(currentAvatar)) // Get the previous avatar actor extention component (the extension component of the old avatar actor).
         {
-            FASSActorComponent_PawnAvatarActorExtension& previousAvatarActorExtension = previousAvatarActorInterface->GetASSAvatarActorExtension();
+            FASSPawnAvatarActorExtensionStruct& previousAvatarActorExtension = previousAvatarActorInterface->GetASSAvatarActorExtension();
 
             if (previousAvatarActorExtension.AbilitySystemComponent == &inASC)
             {
@@ -89,7 +89,7 @@ void FASSActorComponent_AvatarActorExtension::InitializeAbilitySystemComponent(U
     OnInitializeAbilitySystemComponentDelegate.Broadcast(inASC);
 }
 
-void FASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent(AActor& avatarActor)
+void FASSAvatarActorExtensionStruct::UninitializeAbilitySystemComponent(AActor& avatarActor)
 {
     UAbilitySystemComponent* asc = AbilitySystemComponent.Get();
     if (!asc)
@@ -152,7 +152,7 @@ void FASSActorComponent_AvatarActorExtension::UninitializeAbilitySystemComponent
     AbilitySystemComponent = nullptr;
 }
 
-void FASSActorComponent_AvatarActorExtension::RemoveLooseAvatarRelatedTags(UAbilitySystemComponent& inASC)
+void FASSAvatarActorExtensionStruct::RemoveLooseAvatarRelatedTags(UAbilitySystemComponent& inASC)
 {
     RemoveLooseAvatarRelatedTagsDelegate.Broadcast(inASC);
 }

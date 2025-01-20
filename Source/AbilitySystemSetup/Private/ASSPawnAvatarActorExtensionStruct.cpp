@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ASSPawnAvatarActorExtensionStruct.h"
 
 #include "AbilitySystemComponent.h"
 #include "ISEngineSubsystem_InputActionAssetReferences.h"
@@ -11,7 +11,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSPawnAvatarActorExtensionComponent, Log, All);
 
-void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorBeginDestroy()
+void FASSPawnAvatarActorExtensionStruct::OnAvatarActorBeginDestroy()
 {
     UISEngineSubsystem_InputActionAssetReferences& inputActionAssetReferenceSubsystem = UISEngineSubsystem_InputActionAssetReferences::GetChecked(*GEngine);
 
@@ -19,7 +19,7 @@ void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorBeginDestroy()
     inputActionAssetReferenceSubsystem.OnInputActionRemovedDelegate.Remove(OnInputActionRemovedDelegateHandle);
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor)
+void FASSPawnAvatarActorExtensionStruct::InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor)
 {
 #if !NO_LOGGING || DO_CHECK
     if (avatarActor.IsA<APawn>() == false)
@@ -36,7 +36,7 @@ void FASSActorComponent_PawnAvatarActorExtension::InitializeAbilitySystemCompone
     Super::InitializeAbilitySystemComponent(inASC, avatarActor);
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::UninitializeAbilitySystemComponent(AActor& avatarActor)
+void FASSPawnAvatarActorExtensionStruct::UninitializeAbilitySystemComponent(AActor& avatarActor)
 {
     Super::UninitializeAbilitySystemComponent(avatarActor);
 
@@ -46,7 +46,7 @@ void FASSActorComponent_PawnAvatarActorExtension::UninitializeAbilitySystemCompo
     }
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorControllerChanged(AActor& avatarActor)
+void FASSPawnAvatarActorExtensionStruct::OnAvatarActorControllerChanged(AActor& avatarActor)
 {
     if (UAbilitySystemComponent* asc = AbilitySystemComponent.Get())
     {
@@ -74,7 +74,7 @@ void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorControllerChanged
 }
 
 //  BEGIN Input setup
-void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorSetupPlayerInputComponent(UInputComponent& playerInputComponent, AActor& avatarActor)
+void FASSPawnAvatarActorExtensionStruct::OnAvatarActorSetupPlayerInputComponent(UInputComponent& playerInputComponent, AActor& avatarActor)
 {
     // Bind to all input actions so we can inform the ability system when ability inputs have been pressed/released.
     UISEngineSubsystem_InputActionAssetReferences& inputActionAssetReferenceSubsystem = UISEngineSubsystem_InputActionAssetReferences::GetChecked(*GEngine);
@@ -133,14 +133,14 @@ void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorSetupPlayerInputC
         );
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::OnAvatarActorDestroyPlayerInputComponent()
+void FASSPawnAvatarActorExtensionStruct::OnAvatarActorDestroyPlayerInputComponent()
 {
     // The InputComponent is destroyed which means all of its bindings are destroyed too. So update our handle lists.
     PressedInputActionBindingHandles.Empty();
     ReleasedInputActionBindingHandles.Empty();
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::BindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag, const AActor& avatarActor)
+void FASSPawnAvatarActorExtensionStruct::BindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag, const AActor& avatarActor)
 {
     const uint32 pressedBindingHandle = inPlayerEnhancedInputComponent.BindActionValueLambda(
         &inInputAction,
@@ -168,7 +168,7 @@ void FASSActorComponent_PawnAvatarActorExtension::BindInputAction(UEnhancedInput
         );
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::UnBindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag, const AActor& avatarActor)
+void FASSPawnAvatarActorExtensionStruct::UnBindInputAction(UEnhancedInputComponent& inPlayerEnhancedInputComponent, const UInputAction& inInputAction, const FGameplayTag& inInputActionTag, const AActor& avatarActor)
 {
     if (const uint32* pressedHandle = PressedInputActionBindingHandles.Find(&inInputAction))
     {
@@ -188,7 +188,7 @@ void FASSActorComponent_PawnAvatarActorExtension::UnBindInputAction(UEnhancedInp
         );
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::UnBindAllInputActions(UEnhancedInputComponent& inPlayerEnhancedInputComponent)
+void FASSPawnAvatarActorExtensionStruct::UnBindAllInputActions(UEnhancedInputComponent& inPlayerEnhancedInputComponent)
 {
     for (const TPair<TWeakObjectPtr<const UInputAction>, uint32>& pressedInputActionBindingHandle : PressedInputActionBindingHandles)
     {
@@ -203,7 +203,7 @@ void FASSActorComponent_PawnAvatarActorExtension::UnBindAllInputActions(UEnhance
     ReleasedInputActionBindingHandles.Empty();
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGameplayTag inInputActionTag)
+void FASSPawnAvatarActorExtensionStruct::OnPressedInputAction(const FGameplayTag inInputActionTag)
 {
     if (UAbilitySystemComponent* asc = AbilitySystemComponent.Get())
     {
@@ -230,7 +230,7 @@ void FASSActorComponent_PawnAvatarActorExtension::OnPressedInputAction(const FGa
     }
 }
 
-void FASSActorComponent_PawnAvatarActorExtension::OnReleasedInputAction(const FGameplayTag inInputActionTag)
+void FASSPawnAvatarActorExtensionStruct::OnReleasedInputAction(const FGameplayTag inInputActionTag)
 {
     if (UAbilitySystemComponent* asc = AbilitySystemComponent.Get())
     {

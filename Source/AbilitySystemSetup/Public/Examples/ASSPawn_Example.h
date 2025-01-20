@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "AbilitySystemInterface.h"
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ASSPawnAvatarActorExtensionStruct.h"
 
 #include "ASSPawn_Example.generated.h"
 
@@ -13,7 +13,7 @@ class UAbilitySystemComponent;
 
 /**
  * @brief An example implementation of a pawn initializing with an ASC by using
- *        the `FASSActorComponent_PawnAvatarActorExtension`. Feel free to subclass if lazy.
+ *        the `FASSPawnAvatarActorExtensionStruct`. Feel free to subclass if lazy.
  */
 UCLASS()
 class ABILITYSYSTEMSETUP_API AASSPawn_Example : public APawn, public IAbilitySystemInterface
@@ -33,7 +33,7 @@ public:
     // ~ IAbilitySystemInterface overrides.
 
     // ~ IASSAvatarActorExtentionInterface overrides.
-    FORCEINLINE virtual FASSActorComponent_AvatarActorExtension& GetASSAvatarActorExtension() { return PawnAvatarActorExtensionComponent; }
+    FORCEINLINE virtual FASSAvatarActorExtensionStruct& GetASSAvatarActorExtension() { return PawnAvatarActorExtensionComponent; }
     // ~ IASSAvatarActorExtentionInterface overrides.
 
 protected:
@@ -59,5 +59,5 @@ protected:
     
     // Create the avatar actor extension component to assist in setting us up with the ASC.
     UPROPERTY(EditAnywhere, Category = "AbilitySystemSetup")
-    FASSActorComponent_PawnAvatarActorExtension PawnAvatarActorExtensionComponent;
+    FASSPawnAvatarActorExtensionStruct PawnAvatarActorExtensionComponent;
 };

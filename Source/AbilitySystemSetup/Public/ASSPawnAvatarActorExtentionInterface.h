@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ASSAvatarActorExtentionInterface.h"
-#include "ActorComponents/ASSActorComponent_PawnAvatarActorExtension.h"
+#include "ASSPawnAvatarActorExtensionStruct.h"
 #include "ASSPawnAvatarActorExtentionInterface.generated.h"
 
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
@@ -21,7 +21,7 @@ public:
     
     /**
      * @brief Accessor for the avatar actor extention struct. This overrides exists to return the more
-     *        specialized FASSActorComponent_PawnAvatarActorExtension extention struct.
+     *        specialized FASSPawnAvatarActorExtensionStruct extention struct.
      */
-    virtual FASSActorComponent_PawnAvatarActorExtension& GetASSAvatarActorExtension() override = 0;
+    virtual FASSPawnAvatarActorExtensionStruct& GetASSAvatarActorExtension() override = 0;
 };

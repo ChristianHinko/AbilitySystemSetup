@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "ASSActorComponent_AvatarActorExtension.generated.h"
+#include "ASSAvatarActorExtensionStruct.generated.h"
 
 class UAbilitySystemComponent;
 class UASSAbilitySet;
@@ -34,7 +34,7 @@ struct FASSAbilitySetGrantedHandles;
  *                - Call UninitializeAbilitySystemComponent() before the Super call
  */
 USTRUCT(BlueprintType)
-struct ABILITYSYSTEMSETUP_API FASSActorComponent_AvatarActorExtension
+struct ABILITYSYSTEMSETUP_API FASSAvatarActorExtensionStruct
 {
     GENERATED_BODY()
 

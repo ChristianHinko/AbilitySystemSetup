@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ActorComponents/ASSActorComponent_AvatarActorExtension.h"
+#include "ASSAvatarActorExtensionStruct.h"
 
-#include "ASSActorComponent_PawnAvatarActorExtension.generated.h"
+#include "ASSPawnAvatarActorExtensionStruct.generated.h"
 
 struct FGameplayTag;
 class UInputAction;
@@ -43,10 +43,10 @@ class UEnhancedInputComponent;
  *                - Call UninitializeAbilitySystemComponent() after the Super call IF we do not have a valid Player State
  *
  * Recomended callsites for Pawn with ASC on itself:
- *        See ASSActorComponent_AvatarActorExtension for setup
+ *        See FASSAvatarActorExtensionStruct for setup
  */
 USTRUCT()
-struct ABILITYSYSTEMSETUP_API FASSActorComponent_PawnAvatarActorExtension : public FASSActorComponent_AvatarActorExtension
+struct ABILITYSYSTEMSETUP_API FASSPawnAvatarActorExtensionStruct : public FASSAvatarActorExtensionStruct
 {
     GENERATED_BODY()
 
@@ -59,10 +59,10 @@ public:
 
 public: // Extension functions for avatar actor to call
 
-    //  BEGIN FASSActorComponent_AvatarActorExtension interface
+    //  BEGIN FASSAvatarActorExtensionStruct interface
     virtual void InitializeAbilitySystemComponent(UAbilitySystemComponent& inASC, AActor& avatarActor);
     virtual void UninitializeAbilitySystemComponent(AActor& avatarActor) override;
-    //  END   FASSActorComponent_AvatarActorExtension interface
+    //  END   FASSAvatarActorExtensionStruct interface
 
     /**
      * @brief Should be called by the pawn avatar actor when its Controller changes i.e. PossessedBy(), UnPossessed(), and OnRep_Controller().
