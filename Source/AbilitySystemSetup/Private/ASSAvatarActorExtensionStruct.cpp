@@ -5,9 +5,6 @@
 #include "Types/ASSAbilitySet.h"
 #include "AbilitySystemComponent.h"
 #include "GCUtils_Log.h"
-#if !NO_LOGGING || DO_CHECK
-#include "ASSPawnAvatarActorExtensionStruct.h"
-#endif // #if !NO_LOGGING || DO_CHECK
 #include "ASSPawnAvatarActorExtentionInterface.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogASSAvatarActorExtensionComponent, Log, All);
@@ -45,9 +42,9 @@ void FASSAvatarActorExtensionStruct::InitializeAbilitySystemComponent(UAbilitySy
     // Resolve edge cases: You forgot to uninitialize the ASC before initializing a new one    OR    destruction of previous avatar hasn't been replicated yet (because of lagged client).
     if (currentAvatar != nullptr && currentAvatar != newAvatarToUse) // If we are switching avatars (there was previously one in use).
     {
-        if (IASSPawnAvatarActorExtentionInterface* previousAvatarActorInterface = Cast<IASSPawnAvatarActorExtentionInterface>(currentAvatar)) // Get the previous avatar actor extention component (the extension component of the old avatar actor).
+        if (IASSAvatarActorExtentionInterface* previousAvatarActorInterface = Cast<IASSAvatarActorExtentionInterface>(currentAvatar)) // Get the previous avatar actor extention component (the extension component of the old avatar actor).
         {
-            FASSPawnAvatarActorExtensionStruct& previousAvatarActorExtension = previousAvatarActorInterface->GetASSAvatarActorExtension();
+            FASSAvatarActorExtensionStruct& previousAvatarActorExtension = previousAvatarActorInterface->GetASSAvatarActorExtension();
 
             if (previousAvatarActorExtension.AbilitySystemComponent == &inASC)
             {
