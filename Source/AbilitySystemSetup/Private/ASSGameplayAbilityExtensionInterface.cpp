@@ -9,6 +9,8 @@ namespace
     /**
      * @brief Call the base implementation of `EndAbility()` without dispatching
      *        the call to the final override.
+     * @note [inaccessible-access-engine] This function externally accesses the
+     *       function `UGameplayAbility::EndAbility` to be able to call it directly.
      */
     void CallBaseEndAbilityInternal(
         UGameplayAbility& inAbility,
@@ -67,7 +69,11 @@ namespace
             }
         };
 
-        reinterpret_cast<UASSGameplayAbility_Dummy&>(inAbility).CallBaseEndAbility(
+        // Note: We have to go through a non-static member function and use the `this` pointer
+        // because, although the class has protected access to `UGameplayAbility::EndAbility`, it's
+        // not allowed to call that function on behalf of other instances. That's how protected
+        // member access works.
+        static_cast<UASSGameplayAbility_Dummy&>(inAbility).CallBaseEndAbility(
             inSpecHandle,
             inActorInfo,
             inActivationInfo,
