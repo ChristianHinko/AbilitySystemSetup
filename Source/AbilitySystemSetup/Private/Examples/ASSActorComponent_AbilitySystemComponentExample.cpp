@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ActorComponents/ASSActorComponent_AbilitySystemComponentExample.h"
+#include "Examples/ASSActorComponent_AbilitySystemComponentExample.h"
 
 UASSActorComponent_AbilitySystemComponentExample::UASSActorComponent_AbilitySystemComponentExample(const FObjectInitializer& inObjectInitializer)
     : Super(inObjectInitializer)

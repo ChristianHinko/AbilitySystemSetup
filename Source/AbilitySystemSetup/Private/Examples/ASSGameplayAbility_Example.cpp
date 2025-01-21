@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ASSGameplayAbility_Example.h"
+#include "Examples/ASSGameplayAbility_Example.h"
 
 void UASSGameplayAbility_Example::EndAbility(
     const FGameplayAbilitySpecHandle inSpecHandle,
