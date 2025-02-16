@@ -26,16 +26,21 @@ protected:
 
     // ~ UGameplayAbility overrides.
     virtual void EndAbility(
-        const FGameplayAbilitySpecHandle inSpecHandle,
-        const FGameplayAbilityActorInfo* inActorInfo,
-        const FGameplayAbilityActivationInfo inActivationInfo,
-        bool inShouldReplicateEndAbility,
-        bool inWasCanceled) override final;
+        const FGameplayAbilitySpecHandle specHandle,
+        const FGameplayAbilityActorInfo* actorInfo,
+        const FGameplayAbilityActivationInfo activationInfo,
+        bool shouldReplicateEndAbility,
+        bool wasCanceled) override final;
     // ~ UGameplayAbility overrides.
 
-public:
+protected:
 
     // ~ IASSGameplayAbilityExtensionInterface overrides.
-    virtual UGameplayAbility& GetImplementor() override final;
+    virtual void CallBaseEndAbility(
+        const FGameplayAbilitySpecHandle& specHandle,
+        const FGameplayAbilityActorInfo* actorInfo,
+        const FGameplayAbilityActivationInfo& activationInfo,
+        const bool shouldReplicateEndAbility,
+        const bool wasCanceled) override final;
     // ~ IASSGameplayAbilityExtensionInterface overrides.
 };

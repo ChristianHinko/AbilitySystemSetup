@@ -3,22 +3,27 @@
 #include "Examples/ASSGameplayAbility_Example.h"
 
 void UASSGameplayAbility_Example::EndAbility(
-    const FGameplayAbilitySpecHandle inSpecHandle,
-    const FGameplayAbilityActorInfo* inActorInfo,
-    const FGameplayAbilityActivationInfo inActivationInfo,
-    bool inShouldReplicateEndAbility,
-    bool inWasCanceled)
+    const FGameplayAbilitySpecHandle specHandle,
+    const FGameplayAbilityActorInfo* actorInfo,
+    const FGameplayAbilityActivationInfo activationInfo,
+    const bool shouldReplicateEndAbility,
+    const bool wasCanceled)
 {
     ASSGameplayAbilityExtensionStruct.EndAbility_ReplaceSuper(
         *this,
-        inSpecHandle,
-        inActorInfo,
-        inActivationInfo,
-        inShouldReplicateEndAbility,
-        inWasCanceled);
+        specHandle,
+        actorInfo,
+        activationInfo,
+        shouldReplicateEndAbility,
+        wasCanceled);
 }
 
-UGameplayAbility& UASSGameplayAbility_Example::GetImplementor()
+void UASSGameplayAbility_Example::CallBaseEndAbility(
+    const FGameplayAbilitySpecHandle& specHandle,
+    const FGameplayAbilityActorInfo* actorInfo,
+    const FGameplayAbilityActivationInfo& activationInfo,
+    const bool shouldReplicateEndAbility,
+    const bool wasCanceled)
 {
-    return *this;
+    UGameplayAbility::EndAbility(specHandle, actorInfo, activationInfo, shouldReplicateEndAbility, wasCanceled);
 }

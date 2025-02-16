@@ -24,17 +24,24 @@ public:
      *        other safety checks that the base gameplay ability class performs.
      */
     virtual void ASSEndAbility(
-        const FGameplayAbilitySpecHandle& inSpecHandle,
-        const FGameplayAbilityActorInfo& inActorInfo,
-        const FGameplayAbilityActivationInfo& inActivationInfo,
-        const bool inShouldReplicateEndAbility,
-        const bool inWasCanceled);
+        const FGameplayAbilitySpecHandle& specHandle,
+        const FGameplayAbilityActorInfo& actorInfo,
+        const FGameplayAbilityActivationInfo& activationInfo,
+        const bool shouldReplicateEndAbility,
+        const bool wasCanceled);
+
+protected:
 
     /**
-     * @brief Get the gameplay ability that is implementing this interface.
+     * @brief Call the base implementation of `EndAbility()` without dispatching
+     *        the call to the final override.
      * @note The immediate subclass of this interface should mark their override of
-     *       this function as `final`, as there are no other ability instances to
-     *       return per subclass.
+     *       this function as `final`, as behavior should not differ in further subclasses.
      */
-    virtual UGameplayAbility& GetImplementor() = 0;
+    virtual void CallBaseEndAbility(
+        const FGameplayAbilitySpecHandle& specHandle,
+        const FGameplayAbilityActorInfo* actorInfo,
+        const FGameplayAbilityActivationInfo& activationInfo,
+        const bool shouldReplicateEndAbility,
+        const bool wasCanceled) = 0;
 };
